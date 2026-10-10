@@ -5,29 +5,131 @@ function Test-MadarWindows {
     return $env:OS -eq 'Windows_NT' -and $PSVersionTable.PSVersion -ge [version]'5.1'
 }
 
-function Protect-MadarPath {
-    param([string]$Path, [switch]$Directory)
-    if ((Get-Item -LiteralPath $Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) {
-        throw 'Private settings must not be a junction or symbolic link.'
+function Invoke-MadarPrivateOperation {
+    param(
+        [ValidateSet('settings-directory', 'settings-file', 'legacy-env')][string]$Target,
+        [ValidateSet('directory-create', 'path-inspection', 'drive-inspection', 'identity', 'acl-read', 'acl-construct', 'acl-write', 'acl-verify', 'legacy-copy', 'env-create', 'env-read', 'production-guard')][string]$Stage,
+        [scriptblock]$Action
+    )
+    $ErrorActionPreference = 'Stop'
+    try { & $Action } catch {
+        # Never retain/print the original message, path, stack, inner exception or env.
+        $cause = $_.Exception
+        while ($cause.InnerException) { $cause = $cause.InnerException }
+        $kind = switch ($cause.GetType().FullName) {
+            'System.UnauthorizedAccessException' { 'access-denied' }
+            'System.Security.SecurityException' { 'security-policy' }
+            'System.Security.AccessControl.PrivilegeNotHeldException' { 'privilege-not-held' }
+            'System.ArgumentException' { 'argument-error' }
+            'System.Management.Automation.MethodException' { 'method-binding' }
+            'System.Management.Automation.ParameterBindingException' { 'parameter-binding' }
+            'System.IO.IOException' { 'io-error' }
+            default { 'operation-error' }
+        }
+        $safe = 'Target={0}; Stage={1}; Kind={2}; Category={3}; HResult=0x{4:X8}.' -f $Target, $Stage, $kind, $_.CategoryInfo.Category, $cause.HResult
+        $failure = [InvalidOperationException]::new('Private configuration operation failed.')
+        $failure.Data['MadarPrivateDiagnostic'] = $safe
+        throw $failure
     }
-    $drive = New-Object IO.DriveInfo ([IO.Path]::GetPathRoot($Path))
-    if ($drive.DriveFormat -notin @('NTFS', 'ReFS')) { throw 'Use a local folder supporting Windows access controls.' }
-    $owner = [Security.Principal.WindowsIdentity]::GetCurrent().User
-    $system = New-Object Security.Principal.SecurityIdentifier 'S-1-5-18'
+}
+
+function Get-MadarPrivateIdentity {
+    return [pscustomobject]@{
+        Owner = [Security.Principal.WindowsIdentity]::GetCurrent().User
+        System = [Security.Principal.SecurityIdentifier]::new('S-1-5-18')
+    }
+}
+
+function Get-MadarDriveFormat {
+    param([string]$Path)
+    return [IO.DriveInfo]::new([IO.Path]::GetPathRoot($Path)).DriveFormat
+}
+
+function New-MadarPrivateRule {
+    param($Identity, [Security.AccessControl.InheritanceFlags]$Inheritance)
+    # Typed constructors and enums avoid New-Object's overload/string coercion.
+    # ::new is supported by Windows PowerShell 5.1; no PowerShell 7 APIs required.
+    return [Security.AccessControl.FileSystemAccessRule]::new(
+        $Identity, [Security.AccessControl.FileSystemRights]::FullControl, $Inheritance,
+        [Security.AccessControl.PropagationFlags]::None, [Security.AccessControl.AccessControlType]::Allow)
+}
+
+function Set-MadarPrivateAcl {
+    param([string]$Path, $Acl, [switch]$Directory)
+    # Set-Acl copies security-descriptor sections and may request owner/group/audit
+    # privileges. Persist an Access-only descriptor directly instead.
     if ($Directory) {
-        $acl = New-Object Security.AccessControl.DirectorySecurity
-        $inherit = [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'
+        $accessOnly = [Security.AccessControl.DirectorySecurity]::new()
+        $item = [IO.DirectoryInfo]::new($Path)
     } else {
-        $acl = New-Object Security.AccessControl.FileSecurity
-        $inherit = [Security.AccessControl.InheritanceFlags]::None
+        $accessOnly = [Security.AccessControl.FileSecurity]::new()
+        $item = [IO.FileInfo]::new($Path)
     }
-    $acl.SetOwner($owner)
-    $acl.SetAccessRuleProtection($true, $false)
-    foreach ($sid in @($owner, $system)) {
-        $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid, 'FullControl', $inherit, 'None', 'Allow')
-        $acl.AddAccessRule($rule)
+    $accessOnly.SetSecurityDescriptorBinaryForm($Acl.GetSecurityDescriptorBinaryForm(), [Security.AccessControl.AccessControlSections]::Access)
+    if ($PSVersionTable.PSVersion.Major -le 5) {
+        # .NET Framework instance API used by Windows PowerShell 5.1.
+        $item.SetAccessControl($accessOnly)
+    } else {
+        # .NET Core exposes the same operation through extension APIs.
+        [IO.FileSystemAclExtensions]::SetAccessControl($item, $accessOnly)
     }
-    Set-Acl -LiteralPath $Path -AclObject $acl
+}
+
+function Test-MadarPrivateAcl {
+    param($Acl, $Identity, [Security.AccessControl.InheritanceFlags]$Inheritance)
+    if (-not $Acl.AreAccessRulesProtected -or $Acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $Identity.Owner.Value) { return $false }
+    $rules = @($Acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]))
+    if ($rules.Count -ne 2) { return $false }
+    foreach ($sid in @($Identity.Owner, $Identity.System)) {
+        $matching = @($rules | Where-Object { $_.IdentityReference.Value -eq $sid.Value })
+        if ($matching.Count -ne 1) { return $false }
+        $rule = $matching[0]
+        if ($rule.IsInherited -or $rule.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow -or
+            $rule.FileSystemRights -ne [Security.AccessControl.FileSystemRights]::FullControl -or
+            $rule.InheritanceFlags -ne $Inheritance -or $rule.PropagationFlags -ne [Security.AccessControl.PropagationFlags]::None) { return $false }
+    }
+    return $true
+}
+
+function Protect-MadarPath {
+    param([string]$Path, [switch]$Directory, [ValidateSet('settings-directory', 'settings-file', 'legacy-env')][string]$Target = 'settings-file')
+    $item = Invoke-MadarPrivateOperation $Target 'path-inspection' {
+        $found = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+        if (($found.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $found.PSIsContainer -ne [bool]$Directory) {
+            throw 'Private settings must have the expected type and must not be a reparse point.'
+        }
+        return $found
+    }
+    $null = Invoke-MadarPrivateOperation $Target 'drive-inspection' {
+        if ((Get-MadarDriveFormat $item.FullName) -notin @('NTFS', 'ReFS')) { throw 'Local Windows access controls required.' }
+    }
+    $identity = Invoke-MadarPrivateOperation $Target 'identity' { Get-MadarPrivateIdentity }
+    $acl = Invoke-MadarPrivateOperation $Target 'acl-read' { Get-Acl -LiteralPath $Path -ErrorAction Stop }
+    $inherit = [Security.AccessControl.InheritanceFlags]::None
+    if ($Directory) { $inherit = [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit' }
+    $alreadyPrivate = Invoke-MadarPrivateOperation $Target 'acl-verify' {
+        if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $identity.Owner.Value) {
+            throw 'Private settings must already belong to the current Windows user; ownership will not be changed.'
+        }
+        Test-MadarPrivateAcl $acl $identity $inherit
+    }
+    if ($alreadyPrivate) { return }
+    $null = Invoke-MadarPrivateOperation $Target 'acl-construct' {
+        # Modify only the existing DACL. Do not mark owner/group/SACL for writing:
+        # SetOwner on a fresh descriptor needlessly requests WRITE_OWNER privileges.
+        $acl.SetAccessRuleProtection($true, $false)
+        foreach ($rule in @($acl.GetAccessRules($true, $false, [Security.Principal.SecurityIdentifier]))) {
+            $acl.RemoveAccessRuleSpecific($rule)
+        }
+        foreach ($sid in @($identity.Owner, $identity.System)) {
+            $acl.AddAccessRule((New-MadarPrivateRule $sid $inherit))
+        }
+    }
+    $null = Invoke-MadarPrivateOperation $Target 'acl-write' { Set-MadarPrivateAcl -Path $Path -Acl $acl -Directory:$Directory }
+    $null = Invoke-MadarPrivateOperation $Target 'acl-verify' {
+        $verified = Get-Acl -LiteralPath $Path -ErrorAction Stop
+        if (-not (Test-MadarPrivateAcl $verified $identity $inherit)) { throw 'Private access rules could not be verified.' }
+    }
 }
 
 function Get-MadarDockerCommand {
@@ -136,7 +238,9 @@ function Invoke-MadarStep {
         return $true
     } catch {
         # Exceptions/HTTP bodies/native stderr could contain sensitive values.
-        $Report[$Name] = [pscustomobject]@{ Component = $Name; Status = 'FAIL'; Detail = $Fail }
+        $detail = $Fail
+        if ($_.Exception.Data.Contains('MadarPrivateDiagnostic')) { $detail += ' ' + $_.Exception.Data['MadarPrivateDiagnostic'] }
+        $Report[$Name] = [pscustomobject]@{ Component = $Name; Status = 'FAIL'; Detail = $detail }
         return $false
     }
 }
@@ -183,15 +287,22 @@ function Start-MadarLocal {
         if (-not (Invoke-MadarStep $report 'Private configuration' {
             $state.Private = Join-Path $RepoRoot '.madar-local'
             $state.EnvFile = Join-Path $state.Private '.env'
-            $null = New-Item -ItemType Directory -Path $state.Private -Force
-            Protect-MadarPath $state.Private -Directory
+            $null = Invoke-MadarPrivateOperation 'settings-directory' 'directory-create' {
+                if (-not (Test-Path -LiteralPath $state.Private -ErrorAction Stop)) { $null = New-Item -ItemType Directory -Path $state.Private -ErrorAction Stop }
+            }
+            Protect-MadarPath $state.Private -Directory -Target 'settings-directory'
             if (-not (Test-Path -LiteralPath $state.EnvFile)) {
                 $legacy = Join-Path $RepoRoot '.env'
-                if (Test-Path -LiteralPath $legacy) { Protect-MadarPath $legacy; Copy-Item -LiteralPath $legacy -Destination $state.EnvFile } else { [IO.File]::WriteAllText($state.EnvFile, '') }
+                if (Test-Path -LiteralPath $legacy) {
+                    Protect-MadarPath $legacy -Target 'legacy-env'
+                    $null = Invoke-MadarPrivateOperation 'settings-file' 'legacy-copy' { Copy-Item -LiteralPath $legacy -Destination $state.EnvFile -ErrorAction Stop }
+                } else { $null = Invoke-MadarPrivateOperation 'settings-file' 'env-create' { [IO.File]::WriteAllText($state.EnvFile, '') } }
             }
             Protect-MadarPath $state.EnvFile
-            $existing = [IO.File]::ReadAllText($state.EnvFile)
-            if ($existing -match '(?m)^\s*MADAR_ENV\s*=\s*["'']?production\b') { throw 'Production settings cannot be converted' }
+            $existing = Invoke-MadarPrivateOperation 'settings-file' 'env-read' { [IO.File]::ReadAllText($state.EnvFile) }
+            $null = Invoke-MadarPrivateOperation 'settings-file' 'production-guard' {
+                if ($existing -match '(?m)^\s*MADAR_ENV\s*=\s*["'']?production\b') { throw 'Production settings cannot be converted' }
+            }
             $state.HasKey = $existing -match '(?m)^\s*N8N_API_KEY\s*=\s*[^\r\n]+' -and $existing -notmatch '(?m)^\s*N8N_API_KEY\s*=\s*(?:""|'''')?\s*$'
             $state.Compose = @('compose', '--project-name', 'madar-ai', '--env-file', $state.EnvFile, '-f', (Join-Path $RepoRoot 'docker-compose.windows.yml'))
         } 'Ignored settings restricted to your Windows account and SYSTEM; existing tokens preserved.' 'Use a local NTFS/ReFS checkout with writable permissions and development settings. Private ACL/configuration check failed.')) { return $false }

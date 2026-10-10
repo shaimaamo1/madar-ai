@@ -66,7 +66,7 @@ def test_powershell_orchestration_without_windows_or_network(tmp_path):
                             env=dict(os.environ, XDG_CACHE_HOME=str(tmp_path / 'cache'), XDG_CONFIG_HOME=str(tmp_path / 'config'),
                                      XDG_DATA_HOME=str(tmp_path / 'data')), timeout=30)
     assert result.returncode == 0, result.stdout + result.stderr
-    assert '11 scenarios PASS' in result.stdout
+    assert '13 scenarios PASS' in result.stdout
     assert 'test-private-stdin-key' not in result.stdout + result.stderr
 
 
@@ -98,3 +98,31 @@ $result.Output
     assert received['argv'] == ['compose','run','C:\\Projects with spaces:/workspace','--api-key-stdin']
     assert received['stdin_hash'] == hashlib.sha256(b'private-native-stdin-test').hexdigest()
     assert 'private-native-stdin-test' not in result.stdout + result.stderr
+
+
+def test_private_acl_algorithm_and_safe_diagnostics(tmp_path):
+    pwsh = os.getenv('MADAR_PWSH_PATH') or shutil.which('pwsh')
+    if not pwsh:
+        pytest.skip('PowerShell unavailable; simulated ACL regression not executed')
+    result = subprocess.run([pwsh, '-NoProfile', '-File', str(ROOT / 'tests/windows_private_acl.tests.ps1'),
+                             '-RepoRoot', str(ROOT), '-OutputRoot', str(tmp_path / 'fixture')],
+                            capture_output=True, text=True, timeout=30,
+                            env=dict(os.environ, XDG_CACHE_HOME=str(tmp_path / 'cache'),
+                                     XDG_CONFIG_HOME=str(tmp_path / 'config'), XDG_DATA_HOME=str(tmp_path / 'data')))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert '16 scenarios PASS' in result.stdout
+    assert 'secret-env-value' not in result.stdout + result.stderr
+
+
+def test_private_acl_native_windows(tmp_path):
+    if os.name != 'nt':
+        pytest.skip('Actual Windows ACLs and PowerShell 5.1 require Windows; not verified here')
+    powershell = shutil.which('powershell.exe')
+    if not powershell:
+        pytest.skip('Windows PowerShell 5.1 unavailable')
+    result = subprocess.run([powershell, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                             str(ROOT / 'tests/windows_private_acl.native.tests.ps1'),
+                             '-RepoRoot', str(ROOT), '-OutputRoot', str(tmp_path / 'fixture')],
+                            capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, 'Native Windows ACL regression failed; inspect locally without sharing credentials'
+    assert 'Native Windows ACL: PASS' in result.stdout

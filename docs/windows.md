@@ -37,6 +37,34 @@ If a legacy root `.env` exists, the launcher restricts its ACL and copies it int
 
 `MADAR_AI_API_KEY` is optional; the rules assistant, CRM, dashboard and n8n operate without it. It authorizes OpenAI provider calls, not MADAR endpoint or dashboard access. If you later authorize paid inference, create a restricted project key in the provider's API-key settings, set a budget, and store it only in your private server settings. A random locally generated string cannot replace a provider-issued key. The Windows launcher keeps model inference disabled. Bridge/ingestion tokens authenticate MADAR integration endpoints and are generated cryptographically when missing.
 
+## Private configuration failure: permission fix and safe diagnostics
+
+The launcher now verifies an existing owner/SYSTEM-only ACL before writing. A valid protected ACL is reused. If repair is needed, only the DACL (access rules) is persisted: the existing owner, group and audit sections are not rewritten. Files and directories must already belong to the current Windows account. Foreign ownership, reparse points, incorrect path types, unsupported filesystems and failed read-back verification stop startup; there is no permission-bypass fallback. Existing `.env` bytes are not changed by this step.
+
+The old `Protect-MadarPath` built a fresh descriptor, called `SetOwner` unconditionally, and passed it to `Set-Acl`. That requests security-section updates beyond the DACL even when ownership already matches. The PowerShell filesystem provider's descriptor-copy behavior can require owner/group/audit privileges; a fresh descriptor also lacks the existing group context. The old string-based `New-Object` constructor calls used runtime overload coercion, and tests replaced `Protect-MadarPath` entirely. The fix uses typed constructors/enums supported by PowerShell 5.1 and an explicit Access-only descriptor, written using .NET Framework's instance API on 5.1 and .NET's extension API on newer PowerShell.
+
+These are identified code defects and compatibility risks, **not a claim that the owner's exact original exception was reproduced**. The original generic FAIL suppressed that evidence. Neither real Windows PowerShell 5.1 nor Windows ACL execution is available in this Linux environment.
+
+Future private-configuration failures include only fixed target/stage labels, an allowlisted error kind, the PowerShell error category and numeric HRESULT in the console/report. No original exception messages, stack traces, usernames, literal paths, `.env` values, API keys, HTTP bodies or Docker output are included. For example:
+
+```text
+Target=settings-file; Stage=acl-write; Kind=access-denied; Category=OperationStopped; HResult=0x80070005.
+```
+
+| Diagnostic stage | Local check |
+| --- | --- |
+| `directory-create`, `path-inspection`, `drive-inspection` | Use a normal local NTFS/ReFS checkout and regular directory/file; avoid links/junctions |
+| `identity`, `acl-read` | Run under the Windows account that owns the checkout; inspect local access policy |
+| `acl-construct` | Check the reported error kind and PowerShell version; typed rule construction failed |
+| `acl-write` | Current account needs permission to change access rules; the script will not take ownership or grant broad access |
+| `acl-verify` | Verify current-user ownership and exactly owner/SYSTEM full control, with protected inheritance; failed write-back also reports this stage |
+| `legacy-copy`, `env-create`, `env-read` | Check private folder/file read/write access and local file locks |
+| `production-guard` | Production settings are refused; preserve them and use a separate development checkout |
+
+Update the existing branch and rerun `Start-Madar.ps1` normally, **without** `-ReplaceApiKey`; this reuses the saved key. If it still fails, share only the `Private configuration` report row and your PowerShell version, never your `.env` or raw Docker output. Do not delete private settings, reset volumes or duplicate/import workflows manually as a workaround.
+
+Regression coverage includes sixteen simulated OS-ACL cases and thirteen mocked launcher scenarios. It checks that protected ACLs are reused, broader ACLs are narrowed, permission failures are redacted, foreign ownership is refused, read-back is required and existing environment bytes are preserved. A native test is supplied at `tests/windows_private_acl.native.tests.ps1`; it refuses existing output paths and operates only on a newly created dummy fixture. It is automatically exercised by the Python test suite **on Windows when Windows PowerShell is available**, and is explicitly skipped on Linux. Windows end users need neither Python nor Node to run the launcher or the standalone PowerShell test.
+
 ## Workflow import and local verification
 
 The key needs n8n workflow read/create/update and credential-create access. Ten callback-adjusted, secret-free importable files are also prepared in `var/n8n-import/`; source exports are in `workflows/`.
@@ -70,6 +98,6 @@ docker compose --project-name madar-ai --env-file .\.madar-local\.env -f .\docke
 
 ## Tested here versus on your laptop
 
-The Linux Cloud environment runs the Python/API suite, workflow import recovery mocks, browser journeys, Docker runtime checks, PowerShell parsing, and eleven full PowerShell orchestration scenarios using fake Windows/Docker/HTTP operations. The actual PowerShell native-process stdin transfer and local HTTP check are also exercised. The Windows Compose app configuration passed all nine browser journeys using an offline-built runtime and isolated dummy settings with n8n disabled. The official PowerShell Core package used for testing was downloaded over verified TLS and checked against its official SHA256 metadata.
+The Linux Cloud environment runs the Python/API suite, workflow import recovery mocks, browser journeys, Docker runtime checks, PowerShell parsing, and thirteen full PowerShell orchestration scenarios using fake Windows/Docker/HTTP operations, plus sixteen simulated OS-ACL cases. The actual PowerShell native-process stdin transfer and local HTTP check are also exercised. The Windows Compose app configuration passed all nine browser journeys using an offline-built runtime and isolated dummy settings with n8n disabled. The official PowerShell Core package used for testing was downloaded over verified TLS and checked against its official SHA256 metadata.
 
 **Real Windows PowerShell 5.1 execution, NTFS ACL enforcement, Docker Desktop/WSL routing, your local n8n API permissions and workflow execution remain local checks.** Cloud cannot reach your laptop, and no attempt was made. Existing Cloud build DNS limitations are recorded in [verification](premium-verification.md); the standard multi-stage build must complete on your laptop. Actual external provider accounts/delivery remain unverified and disabled. Real messaging, billable model use and production deployment require separate authorization.
