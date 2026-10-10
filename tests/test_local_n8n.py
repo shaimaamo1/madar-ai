@@ -104,7 +104,7 @@ def test_redirect_never_forwards_credentials_to_another_host():
 def test_prepared_workflows_contain_no_secret_values(tmp_path):
     prepare({'MADAR_N8N_APP_URL': 'http://host.docker.internal:8000', 'MADAR_BRIDGE_TOKEN': 'must-not-leak'}, tmp_path)
     files = list(tmp_path.glob('*.json'))
-    assert len(files) == 4
+    assert len(files) == 10
     for path in files:
         text = path.read_text()
         assert 'must-not-leak' not in text
@@ -143,7 +143,7 @@ def test_deployment_is_inactive_idempotent_and_instance_scoped(tmp_path):
     state = tmp_path / 'deployment.json'
     deploy(settings, transport=transport, state_path=state)
     deploy(settings, transport=transport, state_path=state)
-    assert len(workflows) == 4 and len(credentials) == 2
+    assert len(workflows) == 10 and len(credentials) == 2
     assert all(not w['active'] for w in workflows.values())
     assert not any('activate' in path for _, path in calls)
     assert 'test-bridge' not in state.read_text()

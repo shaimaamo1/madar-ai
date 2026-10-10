@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="520" viewBox="0 0 1040 520" role="img" aria-labelledby="title desc">
+<title id="title">MADAR Error Monitor — actual inactive n8n architecture</title>
+<desc id="desc">Generated directly from importable workflow nodes and connections. No workflows are activated.</desc>
+<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#263b53"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#79b2b6"/></marker></defs>
+<rect width="1040" height="520" fill="#101E31"/><rect width="1040" height="520" fill="url(#dots)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="45" y="43" fill="#D8BE83" font-size="13" letter-spacing="3">MADAR AI / AUTOMATION ARCHITECTURE</text>
+<text x="45" y="82" fill="#F7F2E8" font-size="27" font-weight="600">Error Monitor</text>
+<rect x="110" y="200" width="850" height="250" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="128" y="225" fill="#D8BE83" font-size="11" letter-spacing="1.4">RESTRICTED INCIDENT ESCALATION</text>
+<path d="M375,362 C425,362 375,362 430,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M645,362 C695,362 645,362 700,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<g data-node-id="error"><rect x="160" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="173" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="186" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="210" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Workflow failure</text>
+<text x="175" y="389" font-size="10" fill="#adbed2">errorTrigger</text></g>
+<g data-node-id="summary"><rect x="430" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="443" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="456" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="480" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Redacted incident summary</text>
+<text x="445" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="record-operator-incident"><rect x="700" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="713" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="726" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="750" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Record operator incident</text>
+<text x="715" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
+<text x="45" y="484" font-size="11" fill="#adbed2">3 executable nodes · source: workflows/madar-error-monitor.json · INACTIVE · live integration NOT VERIFIED</text>
+</g></svg>

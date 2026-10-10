@@ -65,7 +65,7 @@ def settings(c, tenant):
 
 
 def default_settings(name):
-    return {'company_name': name, 'brand_color': '#b6ee6a', 'logo_url': '', 'currency': 'EGP',
+    return {'company_name': name, 'brand_color': '#D8BE83', 'logo_url': '', 'currency': 'EGP',
             'language': 'en', 'timezone': 'Africa/Cairo', 'business_start': 9, 'business_end': 18,
             'stages': ['New', 'Qualified', 'Viewing', 'Negotiation', 'Won', 'Lost'],
             'assistant_name': 'Madar', 'personality': 'Helpful, concise, honest property adviser',

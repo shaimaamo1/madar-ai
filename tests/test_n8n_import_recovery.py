@@ -44,10 +44,10 @@ def test_lost_manifest_recovers_paginated_workflows_without_duplicate_imports(tm
     state.unlink()
     mutations.clear()
     deploy(SETTINGS, transport=transport, state_path=state)
-    assert len(workflows) == 4 and all(not w['active'] for w in workflows.values())
+    assert len(workflows) == 10 and all(not w['active'] for w in workflows.values())
     assert not any(method == 'POST' and path == '/api/v1/workflows' for method, path in mutations)
     assert 'page-two' in cursors
-    assert len(json.loads(state.read_text())['workflows']) == 4
+    assert len(json.loads(state.read_text())['workflows']) == 10
 
 
 @pytest.mark.parametrize('problem', ['duplicate', 'unrelated', 'active'])

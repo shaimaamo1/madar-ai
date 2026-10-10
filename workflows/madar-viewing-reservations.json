@@ -1,0 +1,132 @@
+{
+  "name": "MADAR Viewing Reservations",
+  "nodes": [
+    {
+      "id": "sub",
+      "name": "Called by workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        220
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "validate-explicit-viewing-request",
+      "name": "Validate explicit viewing request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        410,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>{if(!json.event_id||!json.appointment?.lead_id||!json.appointment?.start_at) throw new Error('Expected booking event_id and explicit appointment'); return {json:{event_id:json.event_id,appointment:json.appointment}};});"
+      }
+    },
+    {
+      "id": "reserve-conflict-safe-appointment",
+      "name": "Reserve conflict-safe appointment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/appointments",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "return-confirmed-crm-booking",
+      "name": "Return confirmed CRM booking",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>({json:{appointment_id:json.appointment.id,start_at:json.appointment.start_at,status:json.appointment.status,duplicate:json.duplicate}}));"
+      }
+    },
+    {
+      "id": "idempotent-reservation",
+      "name": "IDEMPOTENT RESERVATION",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        110,
+        90
+      ],
+      "parameters": {
+        "content": "## IDEMPOTENT RESERVATION\nRequires an explicit customer, listing, adviser and timezone-aware future time. SQLite transaction prevents all resource overlaps; changed replay payloads conflict.",
+        "width": 1120,
+        "height": 270,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Called by workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate explicit viewing request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate explicit viewing request": {
+      "main": [
+        [
+          {
+            "node": "Reserve conflict-safe appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reserve conflict-safe appointment": {
+      "main": [
+        [
+          {
+            "node": "Return confirmed CRM booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "active": false,
+  "tags": []
+}

@@ -7,8 +7,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        200,
-        200
+        160,
+        220
       ],
       "parameters": {
         "rule": {
@@ -27,12 +27,9 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        440,
-        200
+        420,
+        220
       ],
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 2000,
       "parameters": {
         "method": "POST",
         "url": "http://app:8000/api/bridge/tick",
@@ -42,10 +39,74 @@
           "timeout": 30000
         }
       },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
       "credentials": {
         "httpHeaderAuth": {
           "name": "MADAR bridge"
         }
+      }
+    },
+    {
+      "id": "read-delivery-authorization",
+      "name": "Read delivery authorization",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "owner-authorized-delivery",
+      "name": "Owner authorized delivery",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        940,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.external_send_enabled === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       }
     },
     {
@@ -54,12 +115,9 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        680,
-        200
+        1200,
+        150
       ],
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 2000,
       "parameters": {
         "method": "POST",
         "url": "http://app:8000/api/bridge/dispatch",
@@ -69,10 +127,58 @@
           "timeout": 30000
         }
       },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
       "credentials": {
         "httpHeaderAuth": {
           "name": "MADAR bridge"
         }
+      }
+    },
+    {
+      "id": "return-queued-sandbox-status",
+      "name": "Return queued sandbox status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        340
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{delivery:'disabled',queued:$('Evaluate due follow-ups').first().json.queued}}];"
+      }
+    },
+    {
+      "id": "consent-and-re-engagement",
+      "name": "CONSENT AND RE-ENGAGEMENT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        100,
+        75
+      ],
+      "parameters": {
+        "content": "## CONSENT AND RE-ENGAGEMENT\nBackend enforces consent, opt-out, human takeover, due dates, reactivation and per-task idempotency.",
+        "width": 790,
+        "height": 280,
+        "color": 5
+      }
+    },
+    {
+      "id": "approval-boundary",
+      "name": "APPROVAL BOUNDARY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        900,
+        75
+      ],
+      "parameters": {
+        "content": "## APPROVAL BOUNDARY\nProvider dispatch independently re-checks authorization, messaging windows and attempt limits.",
+        "width": 520,
+        "height": 410,
+        "color": 5
       }
     }
   ],
@@ -92,7 +198,36 @@
       "main": [
         [
           {
+            "node": "Read delivery authorization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read delivery authorization": {
+      "main": [
+        [
+          {
+            "node": "Owner authorized delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Owner authorized delivery": {
+      "main": [
+        [
+          {
             "node": "Dispatch approved delivery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return queued sandbox status",
             "type": "main",
             "index": 0
           }
@@ -103,7 +238,7 @@
   "settings": {
     "executionOrder": "v1",
     "saveDataSuccessExecution": "none",
-    "saveDataErrorExecution": "all"
+    "saveDataErrorExecution": "none"
   },
   "active": false,
   "tags": []

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="990" height="520" viewBox="0 0 990 520" role="img" aria-labelledby="title desc">
+<title id="title">MADAR Test Evaluation — actual inactive n8n architecture</title>
+<desc id="desc">Generated directly from importable workflow nodes and connections. No workflows are activated.</desc>
+<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#263b53"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#79b2b6"/></marker></defs>
+<rect width="990" height="520" fill="#101E31"/><rect width="990" height="520" fill="url(#dots)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="45" y="43" fill="#D8BE83" font-size="13" letter-spacing="3">MADAR AI / AUTOMATION ARCHITECTURE</text>
+<text x="45" y="82" fill="#F7F2E8" font-size="27" font-weight="600">Test Evaluation</text>
+<rect x="110" y="200" width="800" height="250" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="128" y="225" fill="#D8BE83" font-size="11" letter-spacing="1.4">LOCAL ACCEPTANCE</text>
+<path d="M375,362 C425,362 355,362 410,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M625,362 C675,362 615,362 670,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<g data-node-id="manual"><rect x="160" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="173" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="186" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="210" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Safe manual test</text>
+<text x="175" y="389" font-size="10" fill="#adbed2">manualTrigger</text></g>
+<g data-node-id="evaluate-due-follow-ups"><rect x="410" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="423" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="436" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="460" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Evaluate due follow-ups</text>
+<text x="425" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="read-operational-safeguards"><rect x="670" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="683" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="696" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="720" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Read operational safeguards</text>
+<text x="685" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
+<text x="45" y="484" font-size="11" fill="#adbed2">3 executable nodes · source: workflows/madar-test-evaluation.json · INACTIVE · live integration NOT VERIFIED</text>
+</g></svg>

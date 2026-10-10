@@ -31,7 +31,7 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title='MADAR AI', version='1.0.0', lifespan=lifespan, docs_url=None, redoc_url=None)
+app = FastAPI(title='MADAR AI', version='1.1.0', lifespan=lifespan, docs_url=None, redoc_url=None)
 
 
 @app.get('/api/docs', include_in_schema=False)
@@ -147,9 +147,10 @@ def state(user=Depends(current_user)):
         company = dict(c.execute('SELECT * FROM tenants WHERE id=?', (tenant,)).fetchone())
         company['settings'] = json.loads(company['settings'])
         result = {'company': company, 'user': {k: user[k] for k in ('id', 'name', 'email', 'role')}, 'insights': insights(c, tenant)}
-        for table in ('leads', 'properties', 'messages', 'appointments', 'tasks', 'deals', 'activities', 'outbox'):
+        for table in ('leads', 'properties', 'messages', 'appointments', 'tasks', 'deals', 'activities', 'outbox', 'incidents', 'consent_events'):
             result[table] = [record(r) for r in c.execute(f'SELECT * FROM {table} WHERE tenant_id=? ORDER BY created_at DESC LIMIT 1000', (tenant,))]
         result['users'] = [dict(r) for r in c.execute('SELECT id,name,email,role,active FROM users WHERE tenant_id=?', (tenant,))]
+        result['conversation_controls'] = [dict(r) for r in c.execute('SELECT * FROM conversation_controls WHERE tenant_id=?', (tenant,))]
     result['integrations'] = integration_status(tenant)
     return result
 
@@ -192,6 +193,10 @@ def edit_lead(lead_id: str, data: LeadPatch, user=Depends(current_user)):
                 raise HTTPException(409, 'Choose an active agent')
         if patch.get('opted_out'):
             patch['consent'] = False
+        if patch.get('consent') and lead['opted_out'] and patch.get('opted_out') is not False:
+            raise HTTPException(422, 'Explicitly clear opt-out before recording new consent')
+        if 'consent' in patch or 'opted_out' in patch:
+            c.execute('INSERT INTO consent_events VALUES(?,?,?,?,?,?,?)', (db.uid(), tenant, lead_id, int(patch.get('consent', lead['consent'])), user['id'], 'Operator recorded customer permission', db.now()))
         lead.update(patch)
         patch['score'] = score(lead)
         patch['updated_at'] = db.now()
@@ -416,7 +421,7 @@ def reset_demo(user=Depends(current_user)):
         tenant = c.execute('SELECT demo FROM tenants WHERE id=?', (user['tenant_id'],)).fetchone()
         if not tenant[0]:
             raise HTTPException(403, 'Reset is available only for fictional demo workspaces')
-        for table in ('chat_sessions', 'outbox', 'webhook_events', 'activities', 'deals', 'appointments', 'tasks', 'messages', 'leads', 'properties'):
+        for table in ('chat_sessions', 'conversation_controls', 'consent_events', 'automation_receipts', 'incidents', 'outbox', 'webhook_events', 'activities', 'deals', 'appointments', 'tasks', 'messages', 'leads', 'properties'):
             c.execute(f'DELETE FROM {table} WHERE tenant_id=?', (user['tenant_id'],))
         c.execute('DELETE FROM users WHERE tenant_id=? AND id<>?', (user['tenant_id'], user['id']))
         from .seed import seed_demo
@@ -450,10 +455,14 @@ from .integrations import router
 app.include_router(router)
 from .availability import router as availability_router
 app.include_router(availability_router)
+from .operations import router as operations_router
+app.include_router(operations_router)
 
 DIST = Path(__file__).resolve().parent.parent / 'frontend' / 'dist'
 if (DIST / 'assets').exists():
     app.mount('/assets', StaticFiles(directory=DIST / 'assets'), name='assets')
+if (DIST / 'fonts').exists():
+    app.mount('/fonts', StaticFiles(directory=DIST / 'fonts'), name='fonts')
 
 
 @app.get('/{path:path}')

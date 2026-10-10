@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1310" height="530" viewBox="0 0 1310 530" role="img" aria-labelledby="title desc">
+<title id="title">MADAR Viewing Reservations — actual inactive n8n architecture</title>
+<desc id="desc">Generated directly from importable workflow nodes and connections. No workflows are activated.</desc>
+<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#263b53"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#79b2b6"/></marker></defs>
+<rect width="1310" height="530" fill="#101E31"/><rect width="1310" height="530" fill="url(#dots)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="45" y="43" fill="#D8BE83" font-size="13" letter-spacing="3">MADAR AI / AUTOMATION ARCHITECTURE</text>
+<text x="45" y="82" fill="#F7F2E8" font-size="27" font-weight="600">Viewing Reservations</text>
+<rect x="110" y="190" width="1120" height="270" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="128" y="215" fill="#D8BE83" font-size="11" letter-spacing="1.4">IDEMPOTENT RESERVATION</text>
+<path d="M375,362 C425,362 355,362 410,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M625,362 C675,362 625,362 680,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M895,362 C945,362 925,362 980,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<g data-node-id="sub"><rect x="160" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="173" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="186" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="210" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Called by workflow</text>
+<text x="175" y="389" font-size="10" fill="#adbed2">executeWorkflowTrigger</text></g>
+<g data-node-id="validate-explicit-viewing-request"><rect x="410" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="423" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="436" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="460" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate explicit viewing</text>
+<text x="460" y="364" font-size="11" fill="#F7F2E8" font-weight="600">request</text>
+<text x="425" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="reserve-conflict-safe-appointment"><rect x="680" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="693" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="706" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="730" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Reserve conflict-safe</text>
+<text x="730" y="364" font-size="11" fill="#F7F2E8" font-weight="600">appointment</text>
+<text x="695" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="return-confirmed-crm-booking"><rect x="980" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="993" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1006" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1030" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Return confirmed CRM</text>
+<text x="1030" y="364" font-size="11" fill="#F7F2E8" font-weight="600">booking</text>
+<text x="995" y="389" font-size="10" fill="#adbed2">code</text></g>
+<text x="45" y="494" font-size="11" fill="#adbed2">4 executable nodes · source: workflows/madar-viewing-reservations.json · INACTIVE · live integration NOT VERIFIED</text>
+</g></svg>

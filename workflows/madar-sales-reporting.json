@@ -1,0 +1,112 @@
+{
+  "name": "MADAR Sales Reporting",
+  "nodes": [
+    {
+      "id": "schedule",
+      "name": "Daily company reporting",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        220
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "compute-tenant-sales-report",
+      "name": "Compute tenant sales report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        430,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/report",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "build-executive-report-artifact",
+      "name": "Build executive report artifact",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>({json:{generated_at:json.generated_at,summary:json.summary,metrics:json.metrics,method:json.method,published:false}}));"
+      }
+    },
+    {
+      "id": "real-crm-measurement",
+      "name": "REAL CRM MEASUREMENT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        110,
+        90
+      ],
+      "parameters": {
+        "content": "## REAL CRM MEASUREMENT\nRecorded sales, earned commissions, sources, response time and team conversion. Returns a report artifact; no email, public publishing or predicted revenue claims.",
+        "width": 850,
+        "height": 270,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Daily company reporting": {
+      "main": [
+        [
+          {
+            "node": "Compute tenant sales report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute tenant sales report": {
+      "main": [
+        [
+          {
+            "node": "Build executive report artifact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "active": false,
+  "tags": []
+}

@@ -7,8 +7,8 @@
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
-        200,
-        200
+        160,
+        220
       ],
       "parameters": {}
     },
@@ -18,11 +18,57 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        440,
-        200
+        430,
+        220
       ],
       "parameters": {
-        "jsCode": "return $input.all().map(item => ({json: {workflowId: item.json.workflow?.id, executionId: item.json.execution?.id, timestamp: new Date().toISOString(), incident: 'Workflow failed; inspect restricted n8n execution logs'}}));"
+        "jsCode": "return $input.all().map(({json})=>{const clean=v=>String(v||'').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,100); const w=clean(json.workflow?.id),e=clean(json.execution?.id); return {json:{event_id:('failure:'+w+':'+e).slice(0,200),workflow_id:w,execution_id:e,category:'workflow_failure'}};});"
+      }
+    },
+    {
+      "id": "record-operator-incident",
+      "name": "Record operator incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/incidents",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "restricted-incident-escalation",
+      "name": "RESTRICTED INCIDENT ESCALATION",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        110,
+        100
+      ],
+      "parameters": {
+        "content": "## RESTRICTED INCIDENT ESCALATION\nIdentifiers only. Opens an auditable dashboard incident. No customer payloads, tokens, email or Slack notifications.",
+        "width": 850,
+        "height": 250,
+        "color": 5
       }
     }
   ],
@@ -37,12 +83,23 @@
           }
         ]
       ]
+    },
+    "Redacted incident summary": {
+      "main": [
+        [
+          {
+            "node": "Record operator incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
     "saveDataSuccessExecution": "none",
-    "saveDataErrorExecution": "all"
+    "saveDataErrorExecution": "none"
   },
   "active": false,
   "tags": []

@@ -12,7 +12,7 @@ bash scripts/local-dev.sh --replace-api-key
 
 Use `--replace-api-key` for your newly generated key. On later runs, omit that flag to reuse the private saved key. Replacing the API key preserves the administrator password, bridge/ingestion tokens and n8n encryption key.
 
-The script builds MADAR, prompts for `N8N_API_KEY` with hidden input, writes an ignored `.env` with mode 0600, generates missing local authentication tokens, starts the dashboard, and attaches the single running n8n container publishing port 5678 to the `madar-local` network. It preserves your existing n8n account, volume and encryption key. It verifies workflow read access and the authenticated MADAR bridge, then installs four **inactive** workflows. It never activates workflows, dispatches messages, or enables paid model calls. A scoped n8n key needs workflow read/create/update and credential create permissions; use the narrowest permissions your version supports.
+The script builds MADAR, prompts for `N8N_API_KEY` with hidden input, writes an ignored `.env` with mode 0600, generates missing local authentication tokens, starts the dashboard, and attaches the single running n8n container publishing port 5678 to the `madar-local` network. It preserves your existing n8n account, volume and encryption key. It verifies workflow read access and the authenticated MADAR bridge, then installs ten **inactive** workflows. It never activates workflows, dispatches messages, or enables paid model calls. A scoped n8n key needs workflow read/create/update and credential create permissions; use the narrowest permissions your version supports.
 
 Open **http://localhost:8000** and select **Open interactive demo**. The real workspace is `madar`; the initial email defaults to `admin@madar.local`. For a fresh MADAR database, the generated administrator password stays in your private `.env`. Existing accounts are preserved; changing `.env` does not reset their passwords. Do not paste that file into chat. Local demo sessions contain fictional data and are isolated from the real workspace.
 
@@ -58,7 +58,7 @@ The deployment manifest in ignored `var/n8n-deployments/` stores only instance U
 
 ## Import JSON without API deployment
 
-All four files in `workflows/` are importable exports with inactive defaults. Prepare callback addresses without embedding secrets:
+All ten files in `workflows/` are importable exports with inactive defaults. Prepare callback addresses without embedding secrets:
 
 ```bash
 .venv/bin/python -m scripts.local_n8n prepare --callback-url http://localhost:8000

@@ -1,0 +1,230 @@
+{
+  "name": "MADAR Lead Intelligence",
+  "nodes": [
+    {
+      "id": "sub",
+      "name": "Called by workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        220
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "validate-customer-reference",
+      "name": "Validate customer reference",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>{if(typeof json.lead_id!=='string'||!json.lead_id) throw new Error('lead_id required'); return {json:{lead_id:json.lead_id}};});"
+      }
+    },
+    {
+      "id": "read-intent-score-and-inventory",
+      "name": "Read intent score and inventory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        670,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/intelligence",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "human-adviser-requested",
+      "name": "Human adviser requested",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        950,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.human_active === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ensure-adviser-escalation-task",
+      "name": "Ensure adviser escalation task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1230,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/handoff",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({lead_id:$json.lead_id,active:true,reason:\"Customer requested an adviser\"}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "return-actionable-recommendations",
+      "name": "Return actionable recommendations",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1230,
+        340
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>({json:{lead_id:json.lead_id,intent:json.intent,score:json.score,next_action:json.next_action,missing_fields:json.missing_fields,assigned_agent_id:json.assigned_agent_id,recommendations:json.recommendations,followup_eligible:json.followup_eligible,template_required:json.template_required}}));"
+      }
+    },
+    {
+      "id": "authoritative-intelligence",
+      "name": "AUTHORITATIVE INTELLIGENCE",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        110,
+        75
+      ],
+      "parameters": {
+        "content": "## AUTHORITATIVE INTELLIGENCE\nArabic / English qualification and workload assignment happen atomically at ingestion. This module reads persisted CRM evidence and real available inventory.",
+        "width": 810,
+        "height": 280,
+        "color": 5
+      }
+    },
+    {
+      "id": "human-ownership",
+      "name": "HUMAN OWNERSHIP",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        920,
+        35
+      ],
+      "parameters": {
+        "content": "## HUMAN OWNERSHIP\nPersistent handoff pauses automated sales replies. Escalation tasks are deduplicated. Recommendations never fabricate listing facts.",
+        "width": 580,
+        "height": 440,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Called by workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate customer reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate customer reference": {
+      "main": [
+        [
+          {
+            "node": "Read intent score and inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read intent score and inventory": {
+      "main": [
+        [
+          {
+            "node": "Human adviser requested",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human adviser requested": {
+      "main": [
+        [
+          {
+            "node": "Ensure adviser escalation task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return actionable recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "active": false,
+  "tags": []
+}

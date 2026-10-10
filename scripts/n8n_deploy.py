@@ -13,6 +13,30 @@ from backend.urls import service_url
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def workflow_templates():
+    definitions = [json.loads(path.read_text()) for path in sorted((ROOT / 'workflows').glob('*.json'))]
+    by_name = {item['name']: item for item in definitions}
+    ordered, visiting, done = [], set(), set()
+    def visit(name):
+        if name in done:
+            return
+        if name in visiting or name not in by_name:
+            raise ValueError('Workflow dependency is cyclic or missing')
+        visiting.add(name)
+        for node in by_name[name]['nodes']:
+            target = node.get('parameters', {}).get('workflowId', {})
+            value = target.get('value', '') if isinstance(target, dict) else ''
+            if value.startswith('MADAR_WORKFLOW:'):
+                visit(value.removeprefix('MADAR_WORKFLOW:'))
+        visiting.remove(name)
+        done.add(name)
+        ordered.append(by_name[name])
+    visit('MADAR Error Monitor')
+    for name in sorted(by_name):
+        visit(name)
+    return ordered
+
+
 def deploy(settings, transport=None, state_path=None):
     base = service_url(settings.get('N8N_BASE_URL', ''), 'n8n')
     callback = service_url(settings.get('MADAR_N8N_APP_URL', 'http://app:8000'), 'MADAR callback')
@@ -39,7 +63,8 @@ def deploy(settings, transport=None, state_path=None):
             return response.json()
         # Preflight every template before mutations. Recover workflows after a lost
         # manifest or a manual import, while refusing ambiguous names and takeovers.
-        templates = [json.loads(path.read_text()) for path in sorted((ROOT / 'workflows').glob('*.json'), key=lambda p: 'error-monitor' not in p.name)]
+        templates = workflow_templates()
+        legacy = json.loads((ROOT / 'scripts' / 'legacy_workflow_identities.json').read_text())
         catalog, cursors, cursor = [], set(), None
         while True:
             page = request('GET', 'workflows', params={'limit': 100, **({'cursor': cursor} if cursor else {})})
@@ -65,7 +90,8 @@ def deploy(settings, transport=None, state_path=None):
                 current = request('GET', 'workflows/' + str(matches[0]['id']))
                 expected = {(n['id'], n['type']) for n in definition['nodes']}
                 actual = {(n.get('id'), n.get('type')) for n in current.get('nodes', [])}
-                if actual != expected:
+                previous_version = {tuple(n) for n in legacy.get(definition['name'], [])}
+                if actual != expected and (not previous_version or actual != previous_version):
                     raise ValueError('An unrelated same-name workflow exists; refusing to overwrite or duplicate it')
                 saved['workflows'][definition['name']] = current['id']
             else:
@@ -86,6 +112,10 @@ def deploy(settings, transport=None, state_path=None):
                     node['parameters']['url'] = node['parameters']['url'].replace('http://app:8000', callback)
                 for credential in node.get('credentials', {}).values():
                     credential['id'] = saved['credentials'][credential['name']]
+                target = node['parameters'].get('workflowId', {})
+                if isinstance(target, dict) and str(target.get('value', '')).startswith('MADAR_WORKFLOW:'):
+                    name = target['value'].removeprefix('MADAR_WORKFLOW:')
+                    target['value'] = str(saved['workflows'][name])
             if error_id and not is_error:
                 definition['settings']['errorWorkflow'] = error_id
             body = {k: definition[k] for k in ('name', 'nodes', 'connections', 'settings')}

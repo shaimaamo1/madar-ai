@@ -39,7 +39,9 @@ If a legacy root `.env` exists, the launcher restricts its ACL and copies it int
 
 ## Workflow import and local verification
 
-The key needs n8n workflow read/create/update and credential-create access. Four callback-adjusted, secret-free importable files are also prepared in `var/n8n-import/`; source exports are in `workflows/`.
+The key needs n8n workflow read/create/update and credential-create access. Ten callback-adjusted, secret-free importable files are also prepared in `var/n8n-import/`; source exports are in `workflows/`.
+
+The upgraded launcher imports ten modules and automatically binds their subworkflow reference. It preserves recognized legacy identities for the original four workflows. See [module architecture](workflow-architecture.md) and [WhatsApp studio](whatsapp-setup.md).
 
 Import preflights n8n's paginated workflow list. Normal repeat starts update the IDs recorded in `var/n8n-deployments/`. If that manifest is missing, matching MADAR workflow names and node identities are recognized and reused. Ambiguous duplicate names, unrelated same-name workflows, mismatched IDs, and active workflows cause a FAIL before workflow mutations; nothing is silently deleted or activated. Preserve the manifest. Losing it may create replacement Header Auth credentials, but existing managed workflows are reused rather than duplicated. Manual same-name imports must be resolved by you; the launcher never deletes them.
 
@@ -68,6 +70,6 @@ docker compose --project-name madar-ai --env-file .\.madar-local\.env -f .\docke
 
 ## Tested here versus on your laptop
 
-The Linux Cloud environment runs the Python/API suite, workflow import recovery mocks, browser journeys, Docker runtime checks, PowerShell parsing, and eleven full PowerShell orchestration scenarios using fake Windows/Docker/HTTP operations. The actual PowerShell native-process stdin transfer and local HTTP check are also exercised. The Windows Compose app configuration passed all four browser journeys using an offline-built runtime and isolated dummy settings with n8n disabled. The official PowerShell Core package used for testing was downloaded over verified TLS and checked against its official SHA256 metadata.
+The Linux Cloud environment runs the Python/API suite, workflow import recovery mocks, browser journeys, Docker runtime checks, PowerShell parsing, and eleven full PowerShell orchestration scenarios using fake Windows/Docker/HTTP operations. The actual PowerShell native-process stdin transfer and local HTTP check are also exercised. The Windows Compose app configuration passed all nine browser journeys using an offline-built runtime and isolated dummy settings with n8n disabled. The official PowerShell Core package used for testing was downloaded over verified TLS and checked against its official SHA256 metadata.
 
-**Real Windows PowerShell 5.1 execution, NTFS ACL enforcement, Docker Desktop/WSL routing, your local n8n API permissions and workflow execution remain local checks.** Cloud cannot reach your laptop, and no attempt was made. Existing Cloud build DNS limitations are recorded in [status](status.md); the standard multi-stage build must complete on your laptop. Actual external provider accounts/delivery remain unverified and disabled. Real messaging, billable model use and production deployment require separate authorization.
+**Real Windows PowerShell 5.1 execution, NTFS ACL enforcement, Docker Desktop/WSL routing, your local n8n API permissions and workflow execution remain local checks.** Cloud cannot reach your laptop, and no attempt was made. Existing Cloud build DNS limitations are recorded in [verification](premium-verification.md); the standard multi-stage build must complete on your laptop. Actual external provider accounts/delivery remain unverified and disabled. Real messaging, billable model use and production deployment require separate authorization.

@@ -61,6 +61,8 @@ def create_lead(c, tenant, data, actor='system'):
     due = (datetime.now(timezone.utc) + timedelta(hours=settings(c, tenant)['followup_hours'])).isoformat()
     c.execute('INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?)', (uid(), tenant, lead['id'], 'Qualify new inquiry', due, 'Pending', 'followup', now()))
     audit(c, tenant, actor, 'lead.created', lead['id'], lead['source'])
+    if lead['consent']:
+        c.execute('INSERT INTO consent_events VALUES(?,?,?,?,?,?,?)', (uid(), tenant, lead['id'], 1, actor, 'Permission recorded at inquiry intake', now()))
     return lead, True
 
 
@@ -101,6 +103,10 @@ def match_properties(c, tenant, lead):
 
 def qualify(c, tenant, lead, text):
     lowered = text.casefold().translate(str.maketrans('٠١٢٣٤٥٦٧٨٩', '0123456789'))
+    # Normalize common spoken Egyptian numbers only beside an explicit unit.
+    spoken = {'واحد': '1', 'اتنين': '2', 'اثنين': '2', 'تلات': '3', 'ثلاث': '3', 'تلاتة': '3', 'ثلاثة': '3', 'أربع': '4', 'اربعة': '4', 'أربعة': '4', 'خمس': '5', 'خمسة': '5', 'ست': '6', 'ستة': '6', 'سبع': '7', 'سبعة': '7', 'تمان': '8', 'تمانية': '8', 'تسع': '9', 'تسعة': '9', 'عشر': '10', 'عشرة': '10'}
+    for word, digit in spoken.items():
+        lowered = re.sub(r'(?<!\w)' + word + r'(?=\s+(?:مليون|ألف|غرف))', digit, lowered)
     updates = {}
     budget = re.search(r'(\d+(?:\.\d+)?)\s*(million|m\b|مليون|k\b|thousand|ألف)', lowered)
     if budget:
@@ -112,7 +118,8 @@ def qualify(c, tenant, lead, text):
             updates['budget'] = float(budget[1].replace(',', ''))
     locations = {'new cairo': 'New Cairo', 'التجمع': 'New Cairo', 'القاهرة الجديدة': 'New Cairo',
                  'sheikh zayed': 'Sheikh Zayed', 'الشيخ زايد': 'Sheikh Zayed', 'dubai': 'Dubai', 'دبي': 'Dubai',
-                 'north coast': 'North Coast', 'الساحل': 'North Coast', 'riyadh': 'Riyadh', 'الرياض': 'Riyadh'}
+                 'north coast': 'North Coast', 'الساحل': 'North Coast', 'riyadh': 'Riyadh', 'الرياض': 'Riyadh',
+                 'abu dhabi': 'Abu Dhabi', 'أبوظبي': 'Abu Dhabi', 'ابوظبي': 'Abu Dhabi', 'jeddah': 'Jeddah', 'جدة': 'Jeddah'}
     for phrase, location in locations.items():
         if phrase in lowered:
             updates['location'] = location
@@ -123,6 +130,13 @@ def qualify(c, tenant, lead, text):
             updates['bedrooms'] = bedrooms
     if 'budget' in updates and not 0 <= updates['budget'] <= 1e12:
         del updates['budget']
+    area = re.search(r'(\d+(?:\.\d+)?)\s*(?:m²|m2|sqm|متر(?:\s*مربع)?)', lowered)
+    if area and 0 < float(area[1]) <= 1_000_000:
+        updates['min_size'] = float(area[1])
+    amenities = {'pool': 'Pool', 'حمام سباحة': 'Pool', 'gym': 'Gym', 'جيم': 'Gym', 'parking': 'Parking', 'جراج': 'Parking', 'garden': 'Garden', 'حديقة': 'Garden', 'security': 'Security', 'أمن': 'Security', 'beach': 'Beach', 'شاطئ': 'Beach'}
+    requested = [value for phrase, value in amenities.items() if phrase in lowered]
+    if requested:
+        updates['amenities'] = list(dict.fromkeys([*lead.get('amenities', []), *requested]))
     if any(word in lowered for word in ('rent', 'إيجار', 'ايجار')):
         updates['intent'] = 'rent'
     elif any(word in lowered for word in ('buy', 'شراء', 'اشتري')):
@@ -133,13 +147,23 @@ def qualify(c, tenant, lead, text):
     if any(word in lowered for word in ('stop', 'unsubscribe', 'إلغاء', 'متبعتش', 'وقف الرسائل')):
         updates['opted_out'] = True
         updates['consent'] = False
+    elif any(word in lowered for word in ('i agree to follow-up', 'i consent to follow-up', 'موافق على المتابعة', 'موافق على رسائل المتابعة')):
+        updates['opted_out'] = False
+        updates['consent'] = True
+    if 'consent' in updates:
+        c.execute('INSERT INTO consent_events VALUES(?,?,?,?,?,?,?)', (uid(), tenant, lead['id'], int(updates['consent']), 'customer', 'Explicit opt-in phrase' if updates['consent'] else 'Opt-out phrase', now()))
+        if not updates['consent']:
+            c.execute("UPDATE outbox SET status='Held',error='Customer opted out' WHERE tenant_id=? AND lead_id=? AND status IN ('Pending','Retry')", (tenant, lead['id']))
     if updates:
         lead.update(updates)
         updates['score'] = score(lead)
         if lead['budget'] and lead['location'] and lead['stage'] == 'New':
             updates['stage'] = 'Qualified'
         updates['updated_at'] = now()
-        c.execute(f"UPDATE leads SET {','.join(k+'=?' for k in updates)} WHERE tenant_id=? AND id=?", [*updates.values(), tenant, lead['id']])
+        stored = dict(updates)
+        if 'amenities' in stored:
+            stored['amenities'] = json.dumps(stored['amenities'])
+        c.execute(f"UPDATE leads SET {','.join(k+'=?' for k in stored)} WHERE tenant_id=? AND id=?", [*stored.values(), tenant, lead['id']])
         lead.update(updates)
     return lead
 
@@ -147,10 +171,11 @@ def qualify(c, tenant, lead, text):
 def rules_reply(c, tenant, lead, text):
     arabic = bool(re.search('[\u0600-\u06ff]', text))
     if lead['opted_out']:
-        return ('تم إيقاف رسائل المتابعة.' if arabic else 'Follow-up messages are stopped.'), []
-    if any(w in text.casefold() for w in ('human', 'complaint', 'إنسان', 'موظف', 'شكوى', 'legal', 'عقد')):
-        c.execute('INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?)', (uid(), tenant, lead['id'], 'Human handoff requested', now(), 'Pending', 'handoff', now()))
-        return ('سأحوّل طلبك لمستشار عقاري. تم تسجيل طلبك.' if arabic else 'I have recorded your request for a human adviser.'), []
+        return ('تمام، وقفنا رسائل المتابعة. مش هنبعت لك تاني إلا بموافقتك.' if arabic else 'Follow-up messages are stopped.'), []
+    if any(w in text.casefold() for w in ('human', 'complaint', 'إنسان', 'موظف', 'شكوى', 'legal', 'عقد', 'مستشار', 'حد يكلمني')):
+        from .operations import set_handoff
+        set_handoff(c, tenant, lead['id'], True, 'Customer requested an adviser', 'assistant')
+        return ('أكيد، سجّلنا طلبك ومستشار عقاري هيتابع معاك. الردود الآلية متوقفة لحد ما المستشار يرجع المساعد.' if arabic else 'I have recorded your request for a human adviser.'), []
     matches = match_properties(c, tenant, lead)
     currency = settings(c, tenant)['currency']
     missing = []
@@ -159,12 +184,12 @@ def rules_reply(c, tenant, lead, text):
     if not lead['location']:
         missing.append('المنطقة المفضلة' if arabic else 'preferred location')
     if missing:
-        return (('ممكن أعرف ' + ' و'.join(missing) + '؟') if arabic else 'What is your ' + ' and '.join(missing) + '?'), matches
+        return (('أهلاً بيك. ممكن أعرف ' + ' و'.join(missing) + ' عشان نرشّح لك المناسب؟') if arabic else 'What is your ' + ' and '.join(missing) + '?'), matches
     if not matches:
-        return ('لا توجد عقارات متاحة تطابق طلبك حاليًا. هل ترغب بتعديل معايير البحث؟' if arabic else 'No available properties match these requirements. Would you like to adjust the search?'), []
+        return ('حالياً مفيش عقارات متاحة مطابقة لطلبك. تحب نعدّل المنطقة أو الميزانية، ولا مستشار يساعدك؟' if arabic else 'No available properties match these requirements. Would you like to adjust the search?'), []
     lines = [f"{p['title']} — {p['price']:,.0f} {currency}, {p['bedrooms']} {'غرف' if arabic else 'bedrooms'}, {p['size']:g} m²" for p in matches[:3]]
-    prefix = 'العقارات التالية تطابق طلبك:' if arabic else 'These available properties match your requirements:'
-    suffix = 'يمكنك اختيار عقار وموعد معاينة من التقويم.' if arabic else 'Choose a property and an available viewing time in the booking calendar.'
+    prefix = 'دي العقارات المتاحة اللي بتطابق طلبك:' if arabic else 'These available properties match your requirements:'
+    suffix = 'اختار العقار المناسب وموعد معاينة متاح من التقويم. الحجز بيتأكد بعد اختيار الموعد.' if arabic else 'Choose a property and an available viewing time in the booking calendar.'
     return prefix + '\n' + '\n'.join(lines) + '\n' + suffix, matches
 
 
@@ -226,7 +251,7 @@ def insights(c, tenant):
 def tick(c, tenant):
     count = 0
     due = now()
-    for row in c.execute("SELECT t.*,l.source,l.consent,l.opted_out FROM tasks t JOIN leads l ON l.id=t.lead_id AND l.tenant_id=t.tenant_id WHERE t.tenant_id=? AND t.status='Pending' AND t.due_at<=?", (tenant, due)).fetchall():
+    for row in c.execute("SELECT t.*,l.source,l.consent,l.opted_out FROM tasks t JOIN leads l ON l.id=t.lead_id AND l.tenant_id=t.tenant_id WHERE t.tenant_id=? AND t.status='Pending' AND t.kind<>'handoff' AND t.due_at<=? AND NOT EXISTS (SELECT 1 FROM conversation_controls cc WHERE cc.lead_id=l.id AND cc.tenant_id=l.tenant_id AND cc.human_active=1)", (tenant, due)).fetchall():
         if not row['consent'] or row['opted_out']:
             continue
         body = 'Your property adviser is ready to help with your inquiry.'
@@ -246,7 +271,7 @@ def tick(c, tenant):
         count += cursor.rowcount
     # Once-per-lead reactivation and retention; consent and opt-out are enforced.
     dormant = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
-    for row in c.execute("SELECT * FROM leads WHERE tenant_id=? AND consent=1 AND opted_out=0 AND ((updated_at<? AND stage NOT IN ('Won','Lost')) OR stage='Won')", (tenant, dormant)).fetchall():
+    for row in c.execute("SELECT * FROM leads l WHERE tenant_id=? AND consent=1 AND opted_out=0 AND NOT EXISTS (SELECT 1 FROM conversation_controls cc WHERE cc.lead_id=l.id AND cc.tenant_id=l.tenant_id AND cc.human_active=1) AND ((updated_at<? AND stage NOT IN ('Won','Lost')) OR stage='Won')", (tenant, dormant)).fetchall():
         kind = 'retention' if row['stage'] == 'Won' else 'reactivation'
         text = 'Your property adviser is available if you need further help.' if kind == 'retention' else 'Would you like to review your property search preferences?'
         cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['id'], row['source'], text, '', kind + ':' + row['id'], 'Pending', 0, due, '', '', due))

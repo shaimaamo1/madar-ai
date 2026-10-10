@@ -1,8 +1,16 @@
-# MADAR AI
+# MADAR AI · Real Estate Operating System
 
 A real estate operations workspace for Egypt and the Gulf, with a React/TypeScript dashboard and a tenant-scoped FastAPI backend.
 
 The working local journey is **website inquiry → bilingual qualification → verified property matching → CRM → viewing booking → follow-up → analytics**. All seeded demo data is fictional. The rules assistant operates without external services; a real language model is optional and not yet authorized here.
+
+## Premium product upgrade
+
+The midnight navy, sapphire, champagne gold, deep teal and warm ivory interface includes thirteen operational pages, self-hosted Manrope/Arabic typography, dark mode, mobile RTL and keyboard dialogs. The **WhatsApp studio** rehearses a complete fictional inquiry → qualification → inventory → viewing → human handoff/opt-out journey without Meta or paid-model requests. Ten modular n8n exports add authenticated intake, sales intelligence, reservations, policy-gated delivery, reporting and incident reconciliation.
+
+[View actual dashboard previews](docs/previews/README.md) · [Workflow architecture and SVG diagrams](docs/workflow-architecture.md) · [WhatsApp sandbox/live setup](docs/whatsapp-setup.md) · [PASS / FAIL / NOT VERIFIED report](docs/premium-verification.md)
+
+![MADAR dashboard — fictional demonstration workspace](docs/previews/overview.png)
 
 ## Run on Windows
 
@@ -22,7 +30,7 @@ For your existing local n8n and Docker development, run **on your computer**:
 bash scripts/local-dev.sh --replace-api-key
 ```
 
-The hidden API-key prompt writes private ignored settings; four workflows deploy inactive. Open **http://localhost:8000**. See [the local setup guide](docs/local-development.md) for native n8n, networking, JSON import and key explanations. `MADAR_AI_API_KEY` is optional and unnecessary for the rules assistant or n8n.
+The hidden API-key prompt writes private ignored settings; ten workflows deploy inactive. Open **http://localhost:8000**. See [the local setup guide](docs/local-development.md) for native n8n, networking, JSON import and key explanations. `MADAR_AI_API_KEY` is optional and unnecessary for the rules assistant or n8n.
 
 For source development / Cloud Web Preview, use Python 3.12+ and Node 24:
 
@@ -35,6 +43,10 @@ Use Web Preview on port **3000** (Vite) or the built application on port 8000 an
 
 For the initial real workspace, sign in with workspace `madar` and the configured administrator email. In development only, an initial private password is written to `var/initial-admin-password` (0600); it is never committed or logged. Production requires an explicitly injected password, HTTPS, and demo mode disabled. `.env.example` documents configuration names without credentials.
 
+## Upgrade existing local data
+
+Update this checkout on `codex/self-hosted-n8n`, preserve the private settings, deployment manifest and named MADAR volume, then rerun `Start-Madar.ps1` (omit `-ReplaceApiKey` if reusing the local key). The launcher creates no n8n instance. Startup adds operational tables without rewriting existing CRM tables; migration preservation is tested. Back up the SQLite database before a real-data upgrade using the existing backup guide. Inactive managed workflows are updated in place; active or ambiguous workflows fail safely and require local review. Import does not activate them.
+
 ## Verify
 
 ```bash
@@ -42,19 +54,22 @@ For the initial real workspace, sign in with workspace `madar` and the configure
 npm --prefix frontend run build
 # Requires the application running and /usr/bin/chromium:
 npm --prefix frontend run test:e2e
+# Avoid unrelated existing APIs by selecting a loopback target when needed:
+# MADAR_DEV_API_URL=http://localhost:8002 npm --prefix frontend run dev -- --port 3001
+# MADAR_E2E_BASE_URL=http://localhost:3001 npm --prefix frontend run test:e2e
 ```
 
-The API contract is available at `/api/docs`. SQLite migration 001 is in `backend/schema.sql`; repeatable initialization runs during startup. Local state is kept in ignored `var/`.
+The API contract is available at `/api/docs`. Additive SQLite migrations 001/002 is in `backend/schema.sql`; repeatable initialization runs during startup. Local state is kept in ignored `var/`.
 
 ## What is implemented
 
 - Tenant isolation, administrator/agent roles, Argon2 passwords, expiring HttpOnly sessions, password changes, audit records, and cross-site mutation guards.
 - Contact deduplication, lead scoring, stage changes, least-loaded active-agent assignment, conversation history, tasks, and recorded deals/loss reasons.
-- English/Egyptian Arabic inquiry parsing, customer intent, strict inventory matching, human handoff, and self-service viewing slots with transactional conflict checks.
+- English/Egyptian Arabic inquiry parsing, customer intent, strict inventory matching, persistent human handoff, consent audit history, and self-service viewing slots with transactional conflict checks.
 - Follow-up and reminder evaluation, availability tasks, dormant reactivation/retention queues, opt-outs, and an approval-gated delivery outbox.
-- Responsive light/dark dashboard, Arabic navigation and RTL, management metrics/report exports, property comparison, listing-copy drafts, and an editable ROI scenario calculator.
-- Official Telegram and Meta webhook/dispatch adapters, Facebook Lead Ads fetch, message status updates, approved parameter-free WhatsApp template support, and normalized email/CRM ingestion.
-- Four modular inactive n8n workflows and a direct API deployment tool; Docker preparation, backup helper, client customization guide, sales presentation, pricing assumptions, and portfolio draft.
+- Luxury responsive light/dark dashboard, Arabic navigation and RTL, management metrics/report exports, property comparison, listing-copy drafts, and an editable ROI scenario calculator.
+- Official Telegram and Meta webhook/dispatch adapters, Facebook Lead Ads fetch, message status updates, approved WhatsApp templates with text body parameters, and normalized email/CRM ingestion.
+- Ten modular inactive n8n workflows and a direct API deployment tool; Docker preparation, backup helper, client customization guide, sales presentation, pricing assumptions, and portfolio draft.
 
 ## External access and current limits
 
@@ -67,6 +82,9 @@ This release uses one process and SQLite with persistent storage; it is suitable
 - [Windows one-command deployment](docs/windows.md)
 - [Local Docker, n8n, secrets and preview](docs/local-development.md)
 - [Architecture](docs/architecture.md)
+- [Actual n8n workflow architecture](docs/workflow-architecture.md)
+- [Official WhatsApp setup and sandbox](docs/whatsapp-setup.md)
+- [Premium upgrade verification](docs/premium-verification.md)
 - [Integration access and official providers](docs/integrations.md)
 - [Deployment and operations](docs/deployment.md)
 - [Client customization](docs/client-customization.md)

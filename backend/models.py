@@ -110,7 +110,7 @@ class PasswordInput(Model):
 
 class SettingsInput(Model):
     company_name: str = Field(min_length=1, max_length=160)
-    brand_color: str = '#b6ee6a'
+    brand_color: str = '#D8BE83'
     logo_url: str = Field(default='', max_length=1000)
     currency: Literal['EGP', 'AED', 'SAR', 'USD'] = 'EGP'
     language: Literal['en', 'ar'] = 'en'

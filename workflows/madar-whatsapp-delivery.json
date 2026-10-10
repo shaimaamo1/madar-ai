@@ -1,0 +1,198 @@
+{
+  "name": "MADAR WhatsApp Delivery",
+  "nodes": [
+    {
+      "id": "manual",
+      "name": "Operator delivery evaluation",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        160,
+        220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "read-owner-delivery-authorization",
+      "name": "Read owner delivery authorization",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        430,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "real-delivery-explicitly-enabled",
+      "name": "Real delivery explicitly enabled",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        710,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.external_send_enabled === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "dispatch-eligible-whatsapp-outbox",
+      "name": "Dispatch eligible WhatsApp outbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1010,
+        110
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/whatsapp/dispatch",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "return-sandbox-boundary",
+      "name": "Return sandbox boundary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1010,
+        330
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{delivery:'disabled',provider_called:false,note:'Official Meta credentials and owner authorization required'}}];"
+      }
+    },
+    {
+      "id": "official-meta-adapter",
+      "name": "OFFICIAL META ADAPTER",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        110,
+        70
+      ],
+      "parameters": {
+        "content": "## OFFICIAL META ADAPTER\nCredentials stay in MADAR server settings. No Graph tokens in n8n exports. This workflow is inactive and starts only on operator evaluation.",
+        "width": 770,
+        "height": 300,
+        "color": 5
+      }
+    },
+    {
+      "id": "per-message-policy",
+      "name": "PER-MESSAGE POLICY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        910,
+        30
+      ],
+      "parameters": {
+        "content": "## PER-MESSAGE POLICY\nBackend enforces opt-out, proactive consent, 24-hour service window, template shape and sandbox contact blocking. Uncertain requests are never auto-retried.",
+        "width": 360,
+        "height": 460,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Operator delivery evaluation": {
+      "main": [
+        [
+          {
+            "node": "Read owner delivery authorization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read owner delivery authorization": {
+      "main": [
+        [
+          {
+            "node": "Real delivery explicitly enabled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Real delivery explicitly enabled": {
+      "main": [
+        [
+          {
+            "node": "Dispatch eligible WhatsApp outbox",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return sandbox boundary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "active": false,
+  "tags": []
+}

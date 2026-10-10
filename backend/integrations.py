@@ -45,7 +45,8 @@ async def ingest(c, tenant, channel, event_id, name, contact, text, consent=Fals
         return {'duplicate': True}
     lead, _ = create_lead(c, tenant, {'name': name, 'source': channel, 'external_id': contact, 'consent': consent})
     result = await respond(c, tenant, lead, text, channel, event_id)
-    queue_message(c, tenant, lead['id'], channel, result['reply'], 'event:' + channel + ':' + event_id)
+    if result['reply']:
+        queue_message(c, tenant, lead['id'], channel, result['reply'], 'event:' + channel + ':' + event_id)
     return {'accepted': True}
 
 
@@ -145,7 +146,10 @@ async def integration_ingest(data: IngestInput, request: Request):
             return {'duplicate': True}
         lead, created = create_lead(c, tenant, data.lead.model_dump())
         if data.text:
-            await respond(c, tenant, lead, data.text, data.lead.source)
+            result = await respond(c, tenant, lead, data.text, data.lead.source)
+            if result['reply'] and data.lead.source != 'website':
+                from .main import queue_message
+                queue_message(c, tenant, lead['id'], data.lead.source, result['reply'], 'event:' + data.lead.source + ':' + data.event_id)
         return {'lead_id': lead['id'], 'created': created}
 
 
@@ -174,6 +178,7 @@ class TemplateInput(Model):
     lead_id: str
     template_name: str = Field(pattern=r'^[a-z0-9_]{1,100}$')
     language: str = Field(pattern=r'^[a-z]{2}(?:_[A-Z]{2})?$')
+    parameters: list[str] = Field(default_factory=list, max_length=10)
 
 
 @router.post('/api/integrations/whatsapp/template')
@@ -183,12 +188,17 @@ def template(data: TemplateInput, user=Depends(current_user)):
         lead = require(c, 'leads', user['tenant_id'], data.lead_id)
         if lead['source'] != 'whatsapp' or not lead['consent'] or lead['opted_out']:
             raise HTTPException(422, 'Template requires a WhatsApp lead with recorded consent')
-        payload = json.dumps({'name': data.template_name, 'language': {'code': data.language}})
+        if any(not text.strip() or len(text) > 1000 for text in data.parameters):
+            raise HTTPException(422, 'Template text parameters must be nonempty and at most 1000 characters')
+        content = {'name': data.template_name, 'language': {'code': data.language}}
+        if data.parameters:
+            content['components'] = [{'type': 'body', 'parameters': [{'type': 'text', 'text': value} for value in data.parameters]}]
+        payload = json.dumps(content)
         c.execute('INSERT INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (db.uid(), user['tenant_id'], data.lead_id, 'whatsapp', '', payload, 'template:' + db.uid(), 'Pending', 0, db.now(), '', '', db.now()))
     return {'queued': True, 'note': 'Provider must approve the template; send approval gate still applies'}
 
 
-async def dispatch(tenant):
+async def dispatch(tenant, channel=None):
     if os.getenv('MADAR_ALLOW_EXTERNAL_SEND') != 'true':
         return {'sent': 0, 'blocked': 'Owner approval required before real external messages'}
     if tenant != os.getenv('MADAR_INTEGRATION_TENANT_ID'):
@@ -197,7 +207,7 @@ async def dispatch(tenant):
     with db.connection() as c:
         c.execute('BEGIN IMMEDIATE')
         # Never retry uncertain delivery automatically; operator must reconcile provider state.
-        rows = [dict(r) for r in c.execute("SELECT * FROM outbox WHERE tenant_id=? AND status IN ('Pending','Retry') AND next_attempt<=? AND attempts<5 ORDER BY created_at LIMIT 10", (tenant, db.now()))]
+        rows = [dict(r) for r in c.execute("SELECT * FROM outbox WHERE tenant_id=? AND status IN ('Pending','Retry') AND next_attempt<=? AND attempts<5 AND (? IS NULL OR channel=?) ORDER BY created_at LIMIT 10", (tenant, db.now(), channel, channel))]
         for row in rows:
             c.execute("UPDATE outbox SET status='Sending',attempts=attempts+1 WHERE id=? AND tenant_id=?", (row['id'], tenant))
     for row in rows:
@@ -207,7 +217,9 @@ async def dispatch(tenant):
         reactive = row['dedupe_key'].startswith(('event:', 'manual:'))
         recent = last and datetime.fromisoformat(last) > datetime.now(timezone.utc) - timedelta(hours=24)
         status, error, external_id = 'Held', '', ''
-        if lead['opted_out'] or (not reactive and not lead['consent']):
+        if lead['external_id'].startswith('sandbox:'):
+            error = 'Sandbox contact cannot receive real provider messages'
+        elif lead['opted_out'] or (not reactive and not lead['consent']):
             error = 'Opt-out or no follow-up consent'
         elif row['channel'] in ('whatsapp', 'instagram', 'facebook') and not recent and not row['template']:
             error = 'Outside messaging window; approved template required'
@@ -234,7 +246,7 @@ async def dispatch(tenant):
                     else:
                         raise ValueError('No delivery provider configured for this channel')
                 if response.status_code == 429 or response.status_code >= 500:
-                    status, error = 'Retry', 'Provider temporarily unavailable'
+                    status, error = ('Failed', 'Provider retry limit reached') if row['attempts'] + 1 >= 5 else ('Retry', 'Provider temporarily unavailable')
                 elif response.status_code >= 400:
                     status, error = 'Failed', f'Provider rejected request (HTTP {response.status_code})'
                 else:

@@ -7,8 +7,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        200,
-        200
+        160,
+        220
       ],
       "parameters": {}
     },
@@ -18,12 +18,9 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        440,
-        200
+        410,
+        220
       ],
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 2000,
       "parameters": {
         "method": "POST",
         "url": "http://app:8000/api/bridge/tick",
@@ -33,10 +30,56 @@
           "timeout": 30000
         }
       },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
       "credentials": {
         "httpHeaderAuth": {
           "name": "MADAR bridge"
         }
+      }
+    },
+    {
+      "id": "read-operational-safeguards",
+      "name": "Read operational safeguards",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        670,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "local-acceptance",
+      "name": "LOCAL ACCEPTANCE",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        110,
+        100
+      ],
+      "parameters": {
+        "content": "## LOCAL ACCEPTANCE\nQueues eligible records only. No dispatch, no activation, no paid inference.",
+        "width": 800,
+        "height": 250,
+        "color": 5
       }
     }
   ],
@@ -51,12 +94,23 @@
           }
         ]
       ]
+    },
+    "Evaluate due follow-ups": {
+      "main": [
+        [
+          {
+            "node": "Read operational safeguards",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
     "saveDataSuccessExecution": "none",
-    "saveDataErrorExecution": "all"
+    "saveDataErrorExecution": "none"
   },
   "active": false,
   "tags": []

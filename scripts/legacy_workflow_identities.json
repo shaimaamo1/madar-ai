@@ -1,0 +1,46 @@
+{
+  "MADAR Ingestion Subworkflow": [
+    [
+      "sub",
+      "n8n-nodes-base.executeWorkflowTrigger"
+    ],
+    [
+      "normalize-inquiry",
+      "n8n-nodes-base.httpRequest"
+    ]
+  ],
+  "MADAR Error Monitor": [
+    [
+      "error",
+      "n8n-nodes-base.errorTrigger"
+    ],
+    [
+      "summary",
+      "n8n-nodes-base.code"
+    ]
+  ],
+  "MADAR Test Evaluation": [
+    [
+      "manual",
+      "n8n-nodes-base.manualTrigger"
+    ],
+    [
+      "evaluate-due-follow-ups",
+      "n8n-nodes-base.httpRequest"
+    ]
+  ],
+  "MADAR Follow-up Scheduler": [
+    [
+      "schedule",
+      "n8n-nodes-base.scheduleTrigger"
+    ],
+    [
+      "evaluate-due-follow-ups",
+      "n8n-nodes-base.httpRequest"
+    ],
+    [
+      "dispatch-approved-delivery",
+      "n8n-nodes-base.httpRequest"
+    ]
+  ]
+}

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1350" height="660" viewBox="0 0 1350 660" role="img" aria-labelledby="title desc">
+<title id="title">MADAR WhatsApp Delivery — actual inactive n8n architecture</title>
+<desc id="desc">Generated directly from importable workflow nodes and connections. No workflows are activated.</desc>
+<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#263b53"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#79b2b6"/></marker></defs>
+<rect width="1350" height="660" fill="#101E31"/><rect width="1350" height="660" fill="url(#dots)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="45" y="43" fill="#D8BE83" font-size="13" letter-spacing="3">MADAR AI / AUTOMATION ARCHITECTURE</text>
+<text x="45" y="82" fill="#F7F2E8" font-size="27" font-weight="600">WhatsApp Delivery</text>
+<rect x="110" y="170" width="770" height="300" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="128" y="195" fill="#D8BE83" font-size="11" letter-spacing="1.4">OFFICIAL META ADAPTER</text>
+<rect x="910" y="130" width="360" height="460" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="928" y="155" fill="#D8BE83" font-size="11" letter-spacing="1.4">PER-MESSAGE POLICY</text>
+<path d="M375,362 C425,362 375,362 430,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M645,362 C695,362 655,362 710,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M925,362 C975,362 955,252 1010,252" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M925,362 C975,362 955,472 1010,472" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<g data-node-id="manual"><rect x="160" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="173" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="186" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="210" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Operator delivery</text>
+<text x="210" y="364" font-size="11" fill="#F7F2E8" font-weight="600">evaluation</text>
+<text x="175" y="389" font-size="10" fill="#adbed2">manualTrigger</text></g>
+<g data-node-id="read-owner-delivery-authorization"><rect x="430" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="443" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="456" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="480" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Read owner delivery</text>
+<text x="480" y="364" font-size="11" fill="#F7F2E8" font-weight="600">authorization</text>
+<text x="445" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="real-delivery-explicitly-enabled"><rect x="710" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="723" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="736" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="760" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Real delivery explicitly</text>
+<text x="760" y="364" font-size="11" fill="#F7F2E8" font-weight="600">enabled</text>
+<text x="725" y="389" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="dispatch-eligible-whatsapp-outbox"><rect x="1010" y="210" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1023" y="224" width="26" height="26" rx="7" fill="#247F8644"/><text x="1036" y="242" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="1060" y="237" font-size="11" fill="#F7F2E8" font-weight="600">Dispatch eligible WhatsApp</text>
+<text x="1060" y="254" font-size="11" fill="#F7F2E8" font-weight="600">outbox</text>
+<text x="1025" y="279" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="return-sandbox-boundary"><rect x="1010" y="430" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1023" y="444" width="26" height="26" rx="7" fill="#247F8644"/><text x="1036" y="462" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1060" y="457" font-size="11" fill="#F7F2E8" font-weight="600">Return sandbox boundary</text>
+<text x="1025" y="499" font-size="10" fill="#adbed2">code</text></g>
+<text x="45" y="624" font-size="11" fill="#adbed2">5 executable nodes · source: workflows/madar-whatsapp-delivery.json · INACTIVE · live integration NOT VERIFIED</text>
+</g></svg>

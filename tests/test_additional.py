@@ -50,7 +50,7 @@ def test_matching_all_constraints_and_human_handoff(client):
 
 def test_workflow_definitions_have_safe_defaults():
     paths = list(Path('workflows').glob('*.json'))
-    assert len(paths) == 4
+    assert len(paths) == 10
     for path in paths:
         wf = json.loads(path.read_text())
         assert wf['active'] is False

@@ -1,0 +1,244 @@
+{
+  "name": "MADAR Omnichannel Intake",
+  "nodes": [
+    {
+      "id": "intake-webhook",
+      "name": "Authenticated normalized events",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        220
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "madar-intake",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "madar-normalized-intake",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR ingestion"
+        }
+      }
+    },
+    {
+      "id": "normalize-trusted-envelope",
+      "name": "Normalize trusted envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>{const body=json.body; if(!body||typeof body.event_id!=='string'||!body.lead||typeof body.text!=='string') throw new Error('Invalid normalized envelope'); if(body.text.length>4000) throw new Error('Message too long'); const lead={...body.lead,consent:body.lead.consent===true}; return {json:{event_id:body.event_id,lead,text:body.text}};});"
+      }
+    },
+    {
+      "id": "crm-intake-transaction",
+      "name": "CRM intake transaction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/integrations/ingest",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR ingestion"
+        }
+      }
+    },
+    {
+      "id": "new-event-accepted",
+      "name": "New event accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        930,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.duplicate !== true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "resolve-sales-intelligence",
+      "name": "Resolve sales intelligence",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        950,
+        300
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "MADAR_WORKFLOW:MADAR Lead Intelligence",
+          "mode": "id"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "acknowledge-accepted-event",
+      "name": "Acknowledge accepted event",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1450,
+        220
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({accepted:true,duplicate:$(\"CRM intake transaction\").first().json.duplicate === true}) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "authenticated-intake",
+      "name": "AUTHENTICATED INTAKE",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        100,
+        0
+      ],
+      "parameters": {
+        "content": "## AUTHENTICATED INTAKE\nWebsite / CRM / authorized inbox sources send normalized events. Meta signatures terminate at MADAR /webhooks/meta, never at this JSON webhook.",
+        "width": 770,
+        "height": 440,
+        "color": 5
+      }
+    },
+    {
+      "id": "replay-and-context",
+      "name": "REPLAY AND CONTEXT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        890,
+        0
+      ],
+      "parameters": {
+        "content": "## REPLAY AND CONTEXT\nDuplicate events skip intelligence work. Import helper resolves subworkflow IDs. HTTP retries reuse stable event IDs.",
+        "width": 780,
+        "height": 460,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Authenticated normalized events": {
+      "main": [
+        [
+          {
+            "node": "Normalize trusted envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize trusted envelope": {
+      "main": [
+        [
+          {
+            "node": "CRM intake transaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM intake transaction": {
+      "main": [
+        [
+          {
+            "node": "New event accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New event accepted": {
+      "main": [
+        [
+          {
+            "node": "Resolve sales intelligence",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Acknowledge accepted event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve sales intelligence": {
+      "main": [
+        [
+          {
+            "node": "Acknowledge accepted event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "active": false,
+  "tags": []
+}
