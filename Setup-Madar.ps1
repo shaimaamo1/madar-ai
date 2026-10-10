@@ -2,4 +2,4 @@
 [CmdletBinding()]
 param([switch]$ReplaceApiKey)
 & (Join-Path $PSScriptRoot 'Start-Madar.ps1') -NoBrowser -ReplaceApiKey:$ReplaceApiKey
-if ($LASTEXITCODE) { exit $LASTEXITCODE }
+exit $global:LASTEXITCODE

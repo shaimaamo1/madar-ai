@@ -132,12 +132,49 @@ function Protect-MadarPath {
     }
 }
 
+function Get-MadarDockerInstallRoots {
+    if ($env:ProgramFiles) { Join-Path $env:ProgramFiles 'Docker/Docker' }
+    if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA 'Programs/DockerDesktop' }
+}
+
+function New-MadarDockerFailure {
+    param([ValidateSet('cli-not-found', 'compose-version-invalid', 'compose-version-too-old', 'command-failed', 'desktop-not-found')][string]$Code, [int]$ExitCode)
+    $failure = [InvalidOperationException]::new('Docker prerequisite or operation failed.')
+    $detail = 'DockerCode=' + $Code + '.'
+    if ($PSBoundParameters.ContainsKey('ExitCode')) { $detail += ' ExitCode=' + $ExitCode + '.' }
+    $failure.Data['MadarDockerDiagnostic'] = $detail
+    return $failure
+}
+
 function Get-MadarDockerCommand {
-    $command = Get-Command docker -CommandType Application -ErrorAction SilentlyContinue
-    if ($command) { return $command.Source }
-    $candidate = Join-Path $env:ProgramFiles 'Docker/Docker/resources/bin/docker.exe'
-    if (Test-Path -LiteralPath $candidate) { return $candidate }
-    throw 'Install Docker Desktop with Linux containers, then run this script again.'
+    # Resolve the Windows executable explicitly; discard additional PATH matches.
+    # Application-only lookup ignores aliases/functions and .cmd/.ps1 wrappers.
+    $command = Get-Command docker.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($command -and -not [string]::IsNullOrWhiteSpace($command.Source)) { return [string]$command.Source }
+    foreach ($root in @(Get-MadarDockerInstallRoots)) {
+        $candidate = Join-Path $root 'resources/bin/docker.exe'
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
+    }
+    throw (New-MadarDockerFailure 'cli-not-found')
+}
+
+function Get-MadarComposeVersion {
+    param([AllowNull()][AllowEmptyString()][string]$Output)
+    # Do not use PowerShell's mutable $Matches, including in compound conditions.
+    # Accept official short/full output, v prefix and Desktop/build suffixes only.
+    $found = [regex]::Match([string]$Output, '\A\s*(?:Docker Compose version\s+)?v?(?<version>\d+\.\d+\.\d+)(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?(?:\+[0-9A-Za-z][0-9A-Za-z.-]*)?\s*\z', [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    $parsed = $null
+    if (-not $found.Success) { throw (New-MadarDockerFailure 'compose-version-invalid') }
+    if (-not [version]::TryParse($found.Groups['version'].Value, [ref]$parsed)) { throw (New-MadarDockerFailure 'compose-version-invalid') }
+    return $parsed
+}
+
+function Enter-MadarSetupLock {
+    param($Mutex)
+    try { return $Mutex.WaitOne(0) } catch [Threading.AbandonedMutexException] {
+        # WaitOne grants ownership when a previous launcher died holding the lock.
+        return $true
+    }
 }
 
 function Invoke-MadarDocker {
@@ -145,13 +182,19 @@ function Invoke-MadarDocker {
     # Never echo argv, stdin, expanded Compose configuration, or captured output.
     $previous = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
+    # Native commands update the global automatic variable. A caller's local
+    # LASTEXITCODE can shadow it, and failed launches can leave an old zero behind.
+    $global:LASTEXITCODE = 127
     try {
         if ($PSBoundParameters.ContainsKey('InputText')) {
             $output = @($InputText | & $script:MadarDockerExe @DockerArgs 2>&1)
         } else {
             $output = @(& $script:MadarDockerExe @DockerArgs 2>&1)
         }
-        $code = $LASTEXITCODE
+        $code = [int]$global:LASTEXITCODE
+    } catch {
+        $code = 127
+        $output = @()  # Do not expose a native launch exception or argv/stdin.
     } finally { $ErrorActionPreference = $previous }
     return [pscustomobject]@{ ExitCode = $code; Output = ($output | Out-String).Trim() }
 }
@@ -161,24 +204,29 @@ function Assert-MadarDocker {
     $options = @{ DockerArgs = $DockerArgs }
     if ($PSBoundParameters.ContainsKey('InputText')) { $options.InputText = $InputText }
     $result = Invoke-MadarDocker @options
-    if ($result.ExitCode -ne 0) { throw 'Docker operation failed; captured output omitted to protect credentials.' }
+    if ($result.ExitCode -ne 0) { throw (New-MadarDockerFailure 'command-failed' -ExitCode $result.ExitCode) }
     return $result.Output
 }
 
 function Start-MadarDockerDesktop {
-    $desktop = Join-Path $env:ProgramFiles 'Docker/Docker/Docker Desktop.exe'
-    if (-not (Test-Path -LiteralPath $desktop)) { throw 'Start Docker Desktop and enable Linux containers.' }
-    Start-Process -FilePath $desktop | Out-Null
+    foreach ($root in @(Get-MadarDockerInstallRoots)) {
+        $desktop = Join-Path $root 'Docker Desktop.exe'
+        if (Test-Path -LiteralPath $desktop -PathType Leaf) {
+            Start-Process -FilePath $desktop -ErrorAction Stop | Out-Null
+            return
+        }
+    }
+    throw (New-MadarDockerFailure 'desktop-not-found')
 }
 
 function Test-MadarPortFree {
     param([int]$Port)
-    $listener = New-Object Net.Sockets.TcpListener([Net.IPAddress]::Loopback, $Port)
+    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
     try { $listener.Start(); return $true } catch { return $false } finally { $listener.Stop() }
 }
 
 function Test-MadarN8nPort {
-    $client = New-Object Net.Sockets.TcpClient
+    $client = [Net.Sockets.TcpClient]::new()
     try {
         $task = $client.ConnectAsync('127.0.0.1', 5678)
         return $task.Wait(2500) -and $client.Connected
@@ -195,7 +243,7 @@ function Get-MadarHttp {
     $request.AllowAutoRedirect = $false
     $response = $request.GetResponse()
     try {
-        $reader = New-Object IO.StreamReader($response.GetResponseStream())
+        $reader = [IO.StreamReader]::new($response.GetResponseStream())
         try { $content = $reader.ReadToEnd() } finally { $reader.Dispose() }
         return [pscustomobject]@{ StatusCode = [int]$response.StatusCode; Content = $content }
     } finally { $response.Dispose() }
@@ -240,6 +288,7 @@ function Invoke-MadarStep {
         # Exceptions/HTTP bodies/native stderr could contain sensitive values.
         $detail = $Fail
         if ($_.Exception.Data.Contains('MadarPrivateDiagnostic')) { $detail += ' ' + $_.Exception.Data['MadarPrivateDiagnostic'] }
+        if ($_.Exception.Data.Contains('MadarDockerDiagnostic')) { $detail += ' ' + $_.Exception.Data['MadarDockerDiagnostic'] }
         $Report[$Name] = [pscustomobject]@{ Component = $Name; Status = 'FAIL'; Detail = $detail }
         return $false
     }
@@ -261,13 +310,14 @@ function Start-MadarLocal {
         if (-not (Invoke-MadarStep $report 'Windows PowerShell' { if (-not (Test-MadarWindows)) { throw 'Windows required' } } 'Windows PowerShell 5.1+ available.' 'Run this launcher in Windows PowerShell 5.1+ on your laptop.')) { return $false }
         $hash = [Security.Cryptography.SHA256]::Create()
         try { $identity = [BitConverter]::ToString($hash.ComputeHash([Text.Encoding]::UTF8.GetBytes($RepoRoot.ToLowerInvariant()))).Replace('-', '').Substring(0, 16) } finally { $hash.Dispose() }
-        $mutex = New-Object Threading.Mutex($false, ('Local\MadarSetup-' + $identity))
-        $locked = $mutex.WaitOne(0)
+        $mutex = [Threading.Mutex]::new($false, ('Local\MadarSetup-' + $identity))
+        $locked = Enter-MadarSetupLock $mutex
         if (-not $locked) { $report['Windows PowerShell'].Status = 'FAIL'; $report['Windows PowerShell'].Detail = 'Another MADAR launcher is already running for this checkout.'; return $false }
         if (-not (Invoke-MadarStep $report 'Docker dependencies' {
             $script:MadarDockerExe = Get-MadarDockerCommand
-            $version = Assert-MadarDocker @('compose', 'version', '--short')
-            if ($version -notmatch '(\d+\.\d+\.\d+)' -or [version]$Matches[1] -lt [version]'2.24.4') { throw 'Compose version unsupported' }
+            $composeOutput = Assert-MadarDocker @('compose', 'version', '--short')
+            $composeVersion = Get-MadarComposeVersion $composeOutput
+            if ($composeVersion -lt [version]'2.24.4') { throw (New-MadarDockerFailure 'compose-version-too-old') }
         } 'Docker CLI and Compose 2.24.4+ available; host Python/Node/Bash unnecessary.' 'Install/update Docker Desktop with Compose 2.24.4+ and rerun.')) { return $false }
         if (-not (Invoke-MadarStep $report 'Docker Desktop' {
             if ($env:DOCKER_HOST -and $env:DOCKER_HOST -notmatch '^npipe:////\./pipe/') { throw 'A remote Docker override is not supported' }
@@ -319,7 +369,13 @@ function Start-MadarLocal {
             $ownPort = 0
             if ($own) {
                 $bindings = (Assert-MadarDocker @('inspect', '--format', '{{json .NetworkSettings.Ports}}', $own.Trim()) | ConvertFrom-Json)
-                if ($bindings.'8000/tcp') { $ownPort = [int]$bindings.'8000/tcp'[0].HostPort }
+                $portProperty = $null
+                if ($bindings) { $portProperty = $bindings.PSObject.Properties['8000/tcp'] }
+                if ($portProperty -and $portProperty.Value) {
+                    $binding = @($portProperty.Value)[0]
+                    $hostPort = $binding.PSObject.Properties['HostPort']
+                    if ($hostPort -and $hostPort.Value) { $ownPort = [int]$hostPort.Value }
+                }
             }
             for ($port = 8000; $port -le 8010; $port++) {
                 if ($port -eq $ownPort -or (Test-MadarPortFree $port)) { $state.Port = $port; $state.PortFound = $true; break }
@@ -348,11 +404,15 @@ function Start-MadarLocal {
                 # Avoid embedded quotes in native argv: Windows PowerShell 5.1
                 # uses legacy argument marshalling. Parse the JSON locally.
                 $networks = Assert-MadarDocker @('inspect', '--format', '{{json .NetworkSettings.Networks}}', $state.N8nContainer) | ConvertFrom-Json
-                $network = $networks.PSObject.Properties['madar-local']
+                $network = $null
+                if ($networks) { $network = $networks.PSObject.Properties['madar-local'] }
                 if (-not $network) { $null = Assert-MadarDocker @('network', 'connect', '--alias', 'n8n', 'madar-local', $state.N8nContainer) }
-                elseif (@($network.Value.Aliases) -notcontains 'n8n') {
-                    $ip = [string]$network.Value.IPAddress
-                    if (-not $ip) { throw 'Existing n8n network has no IP address' }
+                else {
+                    $aliases = $network.Value.PSObject.Properties['Aliases']
+                    if ($aliases -and @($aliases.Value) -contains 'n8n') { return }
+                    $ipProperty = $network.Value.PSObject.Properties['IPAddress']
+                    if (-not $ipProperty -or -not $ipProperty.Value) { throw 'Existing n8n network has no IP address' }
+                    $ip = [string]$ipProperty.Value
                     $state.Route = 'http://' + $ip + ':5678'
                     $env:N8N_CONTAINER_URL = $state.Route
                     $null = Assert-MadarDocker ($state.Helper + @('init', '--container-url', $state.Route))
@@ -373,13 +433,14 @@ function Start-MadarLocal {
         $null = Invoke-MadarStep $report 'Frontend health' {
             if (-not $state.Healthy) { throw 'Backend not ready' }
             $page = Get-MadarHttp $state.Url
-            if ($page.StatusCode -ne 200 -or $page.Content -notmatch 'id="root"' -or $page.Content -notmatch 'src="(/assets/[^"\s]+\.js)"') { throw 'Frontend HTML missing' }
-            $asset = $Matches[1]
+            $assetMatch = [regex]::Match($page.Content, 'src="(?<asset>/assets/[^"\s]+\.js)"')
+            if ($page.StatusCode -ne 200 -or -not [regex]::IsMatch($page.Content, 'id="root"') -or -not $assetMatch.Success) { throw 'Frontend HTML missing' }
+            $asset = $assetMatch.Groups['asset'].Value
             $bundle = Get-MadarHttp ($state.Url + $asset)
             if ($bundle.StatusCode -ne 200 -or $bundle.Content.Length -lt 100) { throw 'Frontend bundle missing' }
             $state.Frontend = $true
         } 'Built React dashboard HTML and JavaScript bundle are served.' 'Frontend HTML/bundle check failed; rebuild MADAR and retry.'
-        $null = Invoke-MadarStep $report 'External sends disabled' {
+        $runtimeSafe = Invoke-MadarStep $report 'External sends disabled' {
             $code = "import os; assert os.getenv('MADAR_ALLOW_EXTERNAL_SEND') == 'false'; assert os.getenv('MADAR_ALLOW_MODEL_USAGE') == 'false'; print('disabled')"
             $null = Assert-MadarDocker ($state.Compose + @('exec', '-T', 'app', 'python', '-c', $code))
         } 'Real external messaging and billable model inference remain disabled.' 'Runtime safety flags were not verified; do not activate external delivery.'
@@ -387,7 +448,7 @@ function Start-MadarLocal {
             $null = Assert-MadarDocker ($state.Helper + @('prepare'))
         } 'Ten inactive, callback-adjusted JSON files prepared in var/n8n-import/.' 'Workflow export failed; source JSON remains in workflows/.'
         $bridge = Invoke-MadarStep $report 'n8n API and bridge' {
-            if (-not $state.N8nReady -or -not $state.Healthy) { throw 'Local prerequisite unavailable' }
+            if (-not $state.N8nReady -or -not $state.Healthy -or -not $runtimeSafe) { throw 'Local prerequisite unavailable' }
             $helper = $state.Compose + @('run', '--rm', '--no-deps', '-T', '--volume', ($RepoRoot + ':/workspace'), '--workdir', '/workspace', '--entrypoint', 'python', '-e', 'MADAR_TEST_APP_URL=http://app:8000', 'app', '-m', 'scripts.local_n8n', '--env-file', '/workspace/.madar-local/.env', 'test', '--n8n-url', $state.Route)
             $null = Assert-MadarDocker $helper
         } 'n8n workflow-read permission and authenticated MADAR bridge verified; no dispatch called.' 'Check the local key/scopes and Docker-to-n8n routing. Native n8n must be reachable from Docker Desktop via host.docker.internal; Windows/WSL routes require local testing.'

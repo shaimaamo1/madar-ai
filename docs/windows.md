@@ -37,6 +37,34 @@ If a legacy root `.env` exists, the launcher restricts its ACL and copies it int
 
 `MADAR_AI_API_KEY` is optional; the rules assistant, CRM, dashboard and n8n operate without it. It authorizes OpenAI provider calls, not MADAR endpoint or dashboard access. If you later authorize paid inference, create a restricted project key in the provider's API-key settings, set a budget, and store it only in your private server settings. A random locally generated string cannot replace a provider-issued key. The Windows launcher keeps model inference disabled. Bridge/ingestion tokens authenticate MADAR integration endpoints and are generated cryptographically when missing.
 
+## Permanent Docker detection and startup reliability fixes
+
+The owner's working local fix is now tracked in the repository: the launcher resolves **`docker.exe` as an Application** and selects only the first result. It ignores aliases/functions and avoids returning an array of executable paths. If the executable is missing from PATH, it checks both Docker Desktop's system installation (`Program Files/Docker/Docker`) and per-user installation (`LOCALAPPDATA/Programs/DockerDesktop`), accepting only a real file. The same locations are used to start Desktop; PATH and Windows installation settings are not changed.
+
+Compose extraction is separate from its minimum-version comparison. A .NET regex Match object supplies a typed version without reading or modifying PowerShell's shared `$Matches`. Official short/full output, a `v` prefix, surrounding whitespace and Desktop/build suffixes are accepted; malformed/multiple versions, overflowing components and versions below 2.24.4 are refused. Frontend asset extraction also uses its own Match object.
+
+Additional startup checks now guard against recurring PowerShell issues:
+
+- Native exit status is reset before execution and read explicitly from the global automatic variable. Missing executables cannot reuse a previous successful exit code, and a caller's local `$LASTEXITCODE` cannot hide an actual failure. Native output remains captured and private.
+- `Start-Madar.ps1` explicitly exits 0/1; `Setup-Madar.ps1` forwards that status. A stale native exit no longer turns a successful setup into a failure.
+- Missing/null app port metadata falls back to available-port selection. Existing app ports are reused. Missing n8n alias metadata uses its existing IP route without disconnecting/recreating n8n.
+- An abandoned setup mutex is recovered after a previous launcher process dies; an active competing launcher is still refused.
+- Remaining socket/stream/mutex constructors are typed, using APIs available in PowerShell 5.1. Bridge evaluation and workflow import stop if runtime messaging/model safety flags cannot be verified; a healthy dashboard can still open with the failed checks visible.
+
+Dependency failures include a fixed `DockerCode` and, where applicable, a numeric `ExitCode` in the report. Raw output, arguments, credentials and exception messages are omitted:
+
+| DockerCode | Meaning |
+| --- | --- |
+| `cli-not-found` | No docker.exe on PATH or in supported Desktop install locations |
+| `compose-version-invalid` | Compose returned an unexpected or ambiguous version format |
+| `compose-version-too-old` | Parsed version is below 2.24.4 |
+| `command-failed` | Native operation failed; numeric exit code is safe to share (127 means the executable did not start) |
+| `desktop-not-found` | Desktop could not be located for automatic startup |
+
+These changes preserve the private ACL protections. Dependency failures stop before changing settings, app containers or workflows. Keys, company data, volumes and existing n8n are not reset; successful setup continues using the existing initialization/import safeguards. No locally installed Node/Python is required.
+
+Automated evidence: thirty helper cases exercise real detection/parsing/lock logic with simulated Windows discovery, twenty-six launcher scenarios use fake Windows/Docker/HTTP, and Linux native-process fixtures cover stdin, exit status and entry-script propagation. **Actual Windows PowerShell 5.1, Docker Desktop discovery/routing and the owner's n8n remain NOT VERIFIED here.** After pulling the fix, rerun the single normal launcher command above without `-ReplaceApiKey`. If a step still fails, share only its redacted report row and PowerShell version.
+
 ## Private configuration failure: permission fix and safe diagnostics
 
 The launcher now verifies an existing owner/SYSTEM-only ACL before writing. A valid protected ACL is reused. If repair is needed, only the DACL (access rules) is persisted: the existing owner, group and audit sections are not rewritten. Files and directories must already belong to the current Windows account. Foreign ownership, reparse points, incorrect path types, unsupported filesystems and failed read-back verification stop startup; there is no permission-bypass fallback. Existing `.env` bytes are not changed by this step.
@@ -63,7 +91,7 @@ Target=settings-file; Stage=acl-write; Kind=access-denied; Category=OperationSto
 
 Update the existing branch and rerun `Start-Madar.ps1` normally, **without** `-ReplaceApiKey`; this reuses the saved key. If it still fails, share only the `Private configuration` report row and your PowerShell version, never your `.env` or raw Docker output. Do not delete private settings, reset volumes or duplicate/import workflows manually as a workaround.
 
-Regression coverage includes sixteen simulated OS-ACL cases and thirteen mocked launcher scenarios. It checks that protected ACLs are reused, broader ACLs are narrowed, permission failures are redacted, foreign ownership is refused, read-back is required and existing environment bytes are preserved. A native test is supplied at `tests/windows_private_acl.native.tests.ps1`; it refuses existing output paths and operates only on a newly created dummy fixture. It is automatically exercised by the Python test suite **on Windows when Windows PowerShell is available**, and is explicitly skipped on Linux. Windows end users need neither Python nor Node to run the launcher or the standalone PowerShell test.
+Regression coverage includes sixteen simulated OS-ACL cases and twenty-six mocked launcher scenarios. It checks that protected ACLs are reused, broader ACLs are narrowed, permission failures are redacted, foreign ownership is refused, read-back is required and existing environment bytes are preserved. A native test is supplied at `tests/windows_private_acl.native.tests.ps1`; it refuses existing output paths and operates only on a newly created dummy fixture. It is automatically exercised by the Python test suite **on Windows when Windows PowerShell is available**, and is explicitly skipped on Linux. Windows end users need neither Python nor Node to run the launcher or the standalone PowerShell test.
 
 ## Workflow import and local verification
 
@@ -98,6 +126,6 @@ docker compose --project-name madar-ai --env-file .\.madar-local\.env -f .\docke
 
 ## Tested here versus on your laptop
 
-The Linux Cloud environment runs the Python/API suite, workflow import recovery mocks, browser journeys, Docker runtime checks, PowerShell parsing, and thirteen full PowerShell orchestration scenarios using fake Windows/Docker/HTTP operations, plus sixteen simulated OS-ACL cases. The actual PowerShell native-process stdin transfer and local HTTP check are also exercised. The Windows Compose app configuration passed all nine browser journeys using an offline-built runtime and isolated dummy settings with n8n disabled. The official PowerShell Core package used for testing was downloaded over verified TLS and checked against its official SHA256 metadata.
+The Linux Cloud environment runs the Python/API suite, workflow import recovery mocks, browser journeys, Docker runtime checks, PowerShell parsing, and twenty-six full PowerShell orchestration scenarios using fake Windows/Docker/HTTP operations, plus sixteen simulated OS-ACL cases and thirty Docker helper cases. The actual PowerShell native-process stdin transfer and local HTTP check are also exercised. The Windows Compose app configuration passed all nine browser journeys using an offline-built runtime and isolated dummy settings with n8n disabled. The official PowerShell Core package used for testing was downloaded over verified TLS and checked against its official SHA256 metadata.
 
 **Real Windows PowerShell 5.1 execution, NTFS ACL enforcement, Docker Desktop/WSL routing, your local n8n API permissions and workflow execution remain local checks.** Cloud cannot reach your laptop, and no attempt was made. Existing Cloud build DNS limitations are recorded in [verification](premium-verification.md); the standard multi-stage build must complete on your laptop. Actual external provider accounts/delivery remain unverified and disabled. Real messaging, billable model use and production deployment require separate authorization.

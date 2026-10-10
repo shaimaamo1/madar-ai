@@ -66,7 +66,7 @@ def test_powershell_orchestration_without_windows_or_network(tmp_path):
                             env=dict(os.environ, XDG_CACHE_HOME=str(tmp_path / 'cache'), XDG_CONFIG_HOME=str(tmp_path / 'config'),
                                      XDG_DATA_HOME=str(tmp_path / 'data')), timeout=30)
     assert result.returncode == 0, result.stdout + result.stderr
-    assert '13 scenarios PASS' in result.stdout
+    assert '26 scenarios PASS' in result.stdout
     assert 'test-private-stdin-key' not in result.stdout + result.stderr
 
 
@@ -126,3 +126,86 @@ def test_private_acl_native_windows(tmp_path):
                             capture_output=True, text=True, timeout=30)
     assert result.returncode == 0, 'Native Windows ACL regression failed; inspect locally without sharing credentials'
     assert 'Native Windows ACL: PASS' in result.stdout
+
+
+def test_docker_discovery_compose_parser_and_lock_recovery(tmp_path):
+    pwsh = os.getenv('MADAR_PWSH_PATH') or shutil.which('pwsh')
+    if not pwsh:
+        pytest.skip('PowerShell unavailable; Docker helper regressions not executed')
+    result = subprocess.run([pwsh, '-NoProfile', '-File', str(ROOT / 'tests/windows_docker_helpers.tests.ps1'),
+                             '-RepoRoot', str(ROOT), '-OutputRoot', str(tmp_path / 'fixture')],
+                            capture_output=True, text=True, timeout=30,
+                            env=dict(os.environ, XDG_CACHE_HOME=str(tmp_path / 'cache'),
+                                     XDG_CONFIG_HOME=str(tmp_path / 'config'), XDG_DATA_HOME=str(tmp_path / 'data')))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert '30 cases PASS' in result.stdout
+    assert 'secret-version-value' not in result.stdout + result.stderr
+
+
+@pytest.mark.parametrize('entrypoint', ['Start-Madar.ps1', 'Setup-Madar.ps1'])
+@pytest.mark.parametrize('success', [True, False])
+def test_entrypoints_return_explicit_status_without_stale_native_exit(tmp_path, entrypoint, success):
+    pwsh = os.getenv('MADAR_PWSH_PATH') or shutil.which('pwsh')
+    if not pwsh:
+        pytest.skip('PowerShell unavailable; entrypoint exit regression not executed')
+    for name in ('Start-Madar.ps1', 'Setup-Madar.ps1'):
+        shutil.copyfile(ROOT / name, tmp_path / name)
+    functions = tmp_path / 'scripts' / 'windows'
+    functions.mkdir(parents=True)
+    (functions / 'Madar.Local.ps1').write_text(
+        'function Start-MadarLocal { param($RepoRoot, [switch]$ReplaceApiKey, [switch]$NoBrowser) '
+        '$global:LASTEXITCODE = 29; return $' + str(success).lower() + ' }\n')
+    result = subprocess.run([pwsh, '-NoProfile', '-File', str(tmp_path / entrypoint)],
+                            capture_output=True, text=True, timeout=15,
+                            env=dict(os.environ, XDG_CACHE_HOME=str(tmp_path / 'cache'),
+                                     XDG_CONFIG_HOME=str(tmp_path / 'config'), XDG_DATA_HOME=str(tmp_path / 'data')))
+    assert result.returncode == (0 if success else 1), 'Entrypoint returned a stale or incorrect status'
+
+
+def test_native_docker_launch_failure_and_nonzero_exit_cannot_reuse_stale_status(tmp_path):
+    pwsh = os.getenv('MADAR_PWSH_PATH') or shutil.which('pwsh')
+    if not pwsh or os.name == 'nt':
+        pytest.skip('Requires PowerShell Core and a Unix executable fixture; Windows native execution not verified')
+    executable = tmp_path / 'fake docker.exe'
+    executable.write_text('''#!/usr/bin/env python3
+import sys
+if 'fail' in sys.argv:
+    print('captured-native-secret')
+    sys.exit(9)
+print('v2.30.0-desktop.1')
+''')
+    executable.chmod(0o700)
+    script = tmp_path / 'native-exits.ps1'
+    script.write_text('''$ErrorActionPreference = 'Stop'
+. (Join-Path $env:MADAR_TEST_ROOT 'scripts/windows/Madar.Local.ps1')
+function Test-ShadowedExit {
+    $LASTEXITCODE = 29
+    $script:MadarDockerExe = $env:MADAR_TEST_EXECUTABLE
+    $global:LASTEXITCODE = 42
+    $ok = Invoke-MadarDocker -DockerArgs @('compose', 'version', '--short')
+    if ($ok.ExitCode -ne 0) { throw 'Real native success was hidden by local LASTEXITCODE.' }
+    if ((Get-MadarComposeVersion $ok.Output) -ne [version]'2.30.0') { throw 'Native version output was misparsed.' }
+    $global:LASTEXITCODE = 0
+    $failure = Invoke-MadarDocker -DockerArgs @('fail')
+    if ($failure.ExitCode -ne 9) { throw 'Real native failure was hidden by stale status.' }
+    try { $null = Assert-MadarDocker -DockerArgs @('fail'); throw 'Assertion unexpectedly accepted failure.' } catch {
+        if ($_.Exception.Data['MadarDockerDiagnostic'] -ne 'DockerCode=command-failed. ExitCode=9.') { throw 'Expected safe native exit diagnostic.' }
+        if ($_.Exception.Message -match 'captured-native-secret') { throw 'Native output leaked into failure.' }
+    }
+    $script:MadarDockerExe = Join-Path (Split-Path $env:MADAR_TEST_EXECUTABLE) 'missing docker.exe'
+    $global:LASTEXITCODE = 0
+    $missing = Invoke-MadarDocker -DockerArgs @('compose', 'version') -InputText 'private-native-launch-test'
+    if ($missing.ExitCode -ne 127) { throw 'Missing executable reused a previous successful exit code.' }
+    if ($ErrorActionPreference -ne 'Stop') { throw 'Error preference was not restored.' }
+}
+Test-ShadowedExit
+'Native process status: PASS (Linux fixture; no Docker calls).'
+''')
+    result = subprocess.run([pwsh, '-NoProfile', '-File', str(script)], capture_output=True, text=True, timeout=15,
+                            env=dict(os.environ, MADAR_TEST_ROOT=str(ROOT), MADAR_TEST_EXECUTABLE=str(executable),
+                                     XDG_CACHE_HOME=str(tmp_path / 'cache'), XDG_CONFIG_HOME=str(tmp_path / 'config'),
+                                     XDG_DATA_HOME=str(tmp_path / 'data')))
+    assert result.returncode == 0, 'Native exit regression failed; captured output omitted'
+    assert 'Native process status: PASS' in result.stdout
+    assert 'captured-native-secret' not in result.stdout + result.stderr
+    assert 'private-native-launch-test' not in result.stdout + result.stderr
