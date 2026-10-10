@@ -44,6 +44,8 @@ PowerShell tests require `pwsh` or `MADAR_PWSH_PATH`; they report a skip if unav
 
 ## Production boundary
 
-This is a functional local operating system and a stronger pilot package, with a luxury interface and production-oriented automation contracts. It still uses one SQLite application process, one provider-tenant binding per deployment and collections capped at 1,000 rows. Distributed durability, per-company encrypted provider credentials, broad pagination, MFA/recovery/SSO, billing, external calendar sync, complete Arabic UI localization, all WhatsApp media/template types, and authorized live-provider acceptance remain work for a wider enterprise SaaS release. The bounded rules assistant is not unrestricted conversational AI.
+This is a functional local operating system and a stronger pilot package, with a luxury interface and production-oriented automation contracts. It still uses one SQLite application process, one provider-tenant binding per deployment and collections capped at 1,000 rows. Distributed durability, per-company encrypted provider credentials, broad pagination, MFA/recovery/SSO, billing, external calendar sync, all WhatsApp media/template types, and authorized live-provider acceptance remain work for a wider enterprise SaaS release. The bounded rules assistant is not unrestricted conversational AI.
 
 The platform supplied no public Web Preview forwarding hostname/tool. Local application/preview routes and generated screenshots can be verified; public forwarding remains NOT VERIFIED. See [screenshots](previews/README.md), [workflow contracts](workflow-architecture.md), [WhatsApp setup](whatsapp-setup.md), [Windows startup](windows.md) and [deployment](deployment.md).
+
+Current bilingual/Windows milestone evidence is recorded in [bilingual verification](bilingual-verification.md). The expanded enterprise brief remains unfinished; see [actual workflow counts and continuation](enterprise-continuation.md).

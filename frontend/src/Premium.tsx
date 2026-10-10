@@ -11,6 +11,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { api, Row, money, date, download } from "./api";
+import { tr, localize, number, errorText } from "./i18n";
 import { workflowCatalog } from "./workflowCatalog";
 
 export function OperatingStrip({
@@ -24,26 +25,23 @@ export function OperatingStrip({
     <div className="operating-strip">
       <span>
         <ShieldCheck size={14} />
-        <strong>{ar ? "مساحة عمل آمنة" : "Private company workspace"}</strong>
+        <strong>{tr("Private company workspace")}</strong>
       </span>
       <span>
         <span className="status-dot" />
-        {ar ? "سجلات حية من CRM" : "Live CRM records"}
+        {tr("Live CRM records")}
       </span>
       <span>
         <UsersRound size={14} />
-        {operations.human_handoffs || 0}{" "}
-        {ar ? "طلبات مستشار" : "adviser handoffs"}
+        {number(operations.human_handoffs || 0)} {tr("adviser handoffs")}
       </span>
       <span>
         <MessageSquare size={14} />
-        {operations.external_send_enabled
-          ? ar
-            ? "الإرسال مفعّل من المشغّل"
-            : "Operator enabled delivery"
-          : ar
-            ? "الإرسال الخارجي معطّل"
-            : "External delivery disabled"}
+        {localize(
+          operations.external_send_enabled
+            ? tr("Operator enabled delivery")
+            : tr("External delivery disabled"),
+        )}
       </span>
     </div>
   );
@@ -65,34 +63,24 @@ export function ActivityTrend({ leads, ar }: { leads: Row[]; ar: boolean }) {
     <section className="card">
       <div className="card-head">
         <div>
-          <h3>
-            {ar ? "إيقاع العملاء الجدد" : "The rhythm of new opportunities"}
-          </h3>
-          <p>
-            {ar
-              ? "استفسارات مسجلة خلال آخر ١٤ يومًا"
-              : "Recorded inquiries over the last 14 days · UTC"}
-          </p>
+          <h3>{tr("The rhythm of new opportunities")}</h3>
+          <p>{tr("Recorded inquiries over the last 14 days · UTC")}</p>
         </div>
         <span className="pill blue">
-          {counts.reduce((a, b) => a + b, 0)} {ar ? "استفسار" : "inquiries"}
+          {number(counts.reduce((a, b) => a + b, 0))} {tr("inquiries")}
         </span>
       </div>
       <div className="trend-chart">
         <svg
           viewBox="0 0 628 172"
           role="img"
-          aria-label={
-            ar
-              ? "العملاء الجدد خلال آخر ١٤ يومًا"
-              : "New inquiries over the last fourteen days"
-          }
+          aria-label={tr("New inquiries over the last fourteen days")}
         >
           {[38, 85, 132].map((y, i) => (
             <g key={y}>
               <line className="grid-line" x1="34" y1={y} x2="598" y2={y} />
               <text x="6" y={y + 4}>
-                {Math.round(max * (1 - i / 2))}
+                {number(Math.round(max * (1 - i / 2)))}
               </text>
             </g>
           ))}
@@ -113,25 +101,33 @@ export function ActivityTrend({ leads, ar }: { leads: Row[]; ar: boolean }) {
               strokeWidth="2"
             >
               <title>
-                {days[i]}: {counts[i]} inquiries
+                {date(days[i], {
+                  timeZone: "UTC",
+                  year: "numeric",
+                  hour: undefined,
+                  minute: undefined,
+                })}
+                : {localize(counts[i])} {tr("inquiries")}
               </title>
             </circle>
           ))}
           {[0, 4, 9, 13].map((i) => (
             <text key={i} x={points[i][0]} y="162" textAnchor="middle">
-              {days[i].slice(5)}
+              {date(days[i], {
+                timeZone: "UTC",
+                month: "short",
+                day: "numeric",
+                hour: undefined,
+                minute: undefined,
+              })}
             </text>
           ))}
         </svg>
         <div className="trend-caption">
           <span>
-            {ar
-              ? "من السجلات المعروضة في مساحة العمل"
-              : "From the workspace records shown · up to 1,000 leads"}
+            {tr("From the workspace records shown · up to 1,000 leads")}
           </span>
-          <span>
-            {ar ? "بلا توقعات مصطنعة" : "Observed activity, no forecast"}
-          </span>
+          <span>{tr("Observed activity, no forecast")}</span>
         </div>
       </div>
     </section>
@@ -162,22 +158,20 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
         <div>
           <h3>
             <Workflow size={18} />
-            {ar ? "هندسة رحلة العميل" : "The customer journey, orchestrated"}
+            {tr("The customer journey, orchestrated")}
           </h3>
           <p>
-            {ar
-              ? "مخططات مولّدة من ملفات n8n الفعلية. جميع الوحدات غير مفعّلة."
-              : "Generated from actual n8n JSON. All ten modules are inactive; runtime requires local verification."}
+            {tr(
+              "Generated from actual n8n JSON. All ten modules are inactive; runtime requires local verification.",
+            )}
           </p>
         </div>
-        <span className="pill orange">
-          {ar ? "تشغيل محلي مطلوب" : "Runtime not verified"}
-        </span>
+        <span className="pill orange">{tr("Runtime not verified")}</span>
       </div>
       <div
         className="workflow-tabs"
         role="tablist"
-        aria-label="Workflow modules"
+        aria-label={tr("Workflow modules")}
       >
         {workflowCatalog.map((w) => (
           <button
@@ -196,9 +190,9 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
                   ? 0
                   : event.key === "End"
                     ? workflowCatalog.length - 1
-                    : event.key === "ArrowRight"
+                    : event.key === (ar ? "ArrowLeft" : "ArrowRight")
                       ? (index + 1) % workflowCatalog.length
-                      : event.key === "ArrowLeft"
+                      : event.key === (ar ? "ArrowRight" : "ArrowLeft")
                         ? (index - 1 + workflowCatalog.length) %
                           workflowCatalog.length
                         : -1;
@@ -213,7 +207,7 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
             key={w.key}
             onClick={() => setKey(w.key)}
           >
-            {w.name.replace("MADAR ", "")}
+            {tr(w.name.replace("MADAR ", ""))}
           </button>
         ))}
       </div>
@@ -226,7 +220,9 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
         <svg
           viewBox={`75 0 ${width} ${height}`}
           role="img"
-          aria-label={flow.name + " actual workflow"}
+          aria-label={tr("{name} actual workflow", {
+            name: "MADAR " + tr(flow.name.replace("MADAR ", "")),
+          })}
         >
           <defs>
             <marker
@@ -255,10 +251,12 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
                 />
                 <text
                   className="group-label"
-                  x={n.position[0] + 16}
+                  x={n.position[0] + (ar ? (n.width || 225) - 16 : 16)}
+                  textAnchor={ar ? "end" : "start"}
+                  direction={ar ? "rtl" : "ltr"}
                   y={n.position[1] + 26}
                 >
-                  {n.note?.split("\n")[0].replace("## ", "")}
+                  {localize(n.note?.split("\n")[0].replace("## ", ""))}
                 </text>
               </g>
             ))}
@@ -282,7 +280,7 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
                     y={y1 + (e.branch === 0 ? -9 : 19)}
                     className="node-type"
                   >
-                    {e.branch === 0 ? "yes" : "no"}
+                    {tr(e.branch === 0 ? "yes" : "no")}
                   </text>
                 )}
               </g>
@@ -290,7 +288,7 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
           })}
           {executable.map((n) => (
             <g key={n.id} data-node-id={n.id}>
-              <title>{n.name + " · " + n.type}</title>
+              <title>{localize(tr(n.name) + " · " + tr(n.type))}</title>
               <rect
                 className="node-box"
                 x={n.position[0]}
@@ -313,27 +311,37 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
                 textAnchor="middle"
                 style={{ fill: "#D8BE83" }}
               >
-                {n.type === "if"
-                  ? "?"
-                  : n.type === "code"
-                    ? "{}"
-                    : n.type === "httpRequest"
-                      ? "↗"
-                      : "◈"}
+                {localize(
+                  n.type === "if"
+                    ? "?"
+                    : n.type === "code"
+                      ? "{}"
+                      : n.type === "httpRequest"
+                        ? "↗"
+                        : "◈",
+                )}
               </text>
               <text
                 className="node-label"
-                x={n.position[0] + 48}
+                x={n.position[0] + (ar ? 203 : 48)}
+                textAnchor={ar ? "end" : "start"}
+                direction={ar ? "rtl" : "ltr"}
                 y={n.position[1] + 29}
               >
-                {n.name.length > 24 ? n.name.slice(0, 24) + "…" : n.name}
+                {localize(
+                  tr(n.name).length > 27
+                    ? tr(n.name).slice(0, 27) + "…"
+                    : tr(n.name),
+                )}
               </text>
               <text
                 className="node-type"
-                x={n.position[0] + 14}
+                x={n.position[0] + (ar ? 203 : 14)}
+                textAnchor={ar ? "end" : "start"}
+                direction={ar ? "rtl" : "ltr"}
                 y={n.position[1] + 62}
               >
-                {n.type}
+                {tr(n.type)}
               </text>
             </g>
           ))}
@@ -341,19 +349,19 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
       </div>
       <div className="workflow-footer">
         <span>
-          <strong>{executable.length} executable nodes</strong> ·{" "}
-          {flow.contracts.length} backend contracts · {flow.edges.length} real
-          connections
+          <strong>
+            {number(executable.length)} {tr("executable nodes")}
+          </strong>{" "}
+          · {number(flow.contracts.length)} {tr("backend contracts ·")}{" "}
+          {number(flow.edges.length)} {tr("real connections")}
           <br />
-          {ar
-            ? "موافقة المالك مطلوبة قبل الإرسال الحقيقي"
-            : "Owner authorization required before real external delivery"}
+          {tr("Owner authorization required before real external delivery")}
         </span>
         <button
           className="text-button"
           onClick={() => download(flow.key + "-architecture.json", flow)}
         >
-          {ar ? "تصدير المخطط" : "Export architecture"}
+          {tr("Export architecture")}
           <ArrowUpRight size={15} />
         </button>
       </div>
@@ -418,7 +426,7 @@ export function WhatsAppStudio({
       await api("/sandbox/whatsapp", "POST", {
         contact_id: contact,
         event_id: crypto.randomUUID(),
-        name: ar ? "عميل تجربة واتساب" : "WhatsApp sandbox customer",
+        name: "WhatsApp sandbox customer",
         text,
         consent,
       });
@@ -450,15 +458,11 @@ export function WhatsAppStudio({
     return (
       <section className="card empty">
         <ShieldCheck size={35} />
-        <h3>
-          {ar
-            ? "تجربة آمنة في مساحة منفصلة"
-            : "Rehearse in an isolated demo workspace"}
-        </h3>
+        <h3>{tr("Rehearse in an isolated demo workspace")}</h3>
         <p>
-          {ar
-            ? "سجّل خروجك وافتح التجربة التفاعلية لاختبار واتساب دون التأثير على بيانات العملاء."
-            : "Sign out and open the interactive demo to test WhatsApp without affecting customer data."}
+          {tr(
+            "Sign out and open the interactive demo to test WhatsApp without affecting customer data.",
+          )}
         </p>
       </section>
     );
@@ -467,14 +471,14 @@ export function WhatsAppStudio({
       <div className="connection-note">
         <ShieldCheck size={19} />
         <p>
-          {ar
-            ? "تجربة محلية آمنة. لا يتم الاتصال بـMeta أو إرسال رسائل أو استخدام نموذج مدفوع."
-            : "Provider-free rehearsal. Messages update the fictional CRM; no Meta request, real delivery, or paid inference occurs."}
+          {tr(
+            "Provider-free rehearsal. Messages update the fictional CRM; no Meta request, real delivery, or paid inference occurs.",
+          )}
         </p>
       </div>
       {error && (
         <div className="alert" role="alert">
-          {error}
+          {errorText(error)}
         </div>
       )}
       <div className="sandbox-grid">
@@ -487,27 +491,21 @@ export function WhatsAppStudio({
               <MessageSquare size={23} />
             </span>
             <div>
-              <h3>{ar ? "استوديو مبيعات واتساب" : "WhatsApp sales studio"}</h3>
-              <p>
-                {ar
-                  ? "من أول استفسار إلى مستشار عقاري"
-                  : "From first inquiry to a personal property adviser"}
-              </p>
+              <h3>{tr("WhatsApp sales studio")}</h3>
+              <p>{tr("From first inquiry to a personal property adviser")}</p>
             </div>
-            <span className="pill green">{ar ? "تجريبي" : "Sandbox"}</span>
+            <span className="pill green">{tr("Sandbox")}</span>
           </div>
           <div className="sandbox-controls">
             <label className="field">
-              {ar ? "العميل التجريبي" : "Sandbox conversation"}
+              {tr("Sandbox conversation")}
               <select
-                aria-label="Sandbox conversation"
+                aria-label={tr("Sandbox conversation")}
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
               >
                 {!lead && (
-                  <option value={contact}>
-                    {ar ? "محادثة جديدة" : "New conversation"}
-                  </option>
+                  <option value={contact}>{tr("New conversation")}</option>
                 )}
                 {contacts.map((c: Row) => (
                   <option value={c.external_id.slice(8)} key={c.id}>
@@ -525,22 +523,18 @@ export function WhatsAppStudio({
               }}
             >
               <Plus size={15} />
-              {ar ? "جديد" : "New conversation"}
+              {tr("New conversation")}
             </button>
           </div>
           <div className="message-list" aria-live="polite">
             {!messages.length && (
               <div className="empty">
                 <Sparkles size={29} />
-                <h3>
-                  {ar
-                    ? "مستشارك العقاري جاهز"
-                    : "A thoughtful adviser. A real inventory."}
-                </h3>
+                <h3>{tr("A thoughtful adviser. A real inventory.")}</h3>
                 <p>
-                  {ar
-                    ? "جرّب: عايز شقة في التجمع، ميزانيتي ٥ مليون و٣ غرف"
-                    : "Try: New Cairo apartment, budget 5 million, 3 bedrooms."}
+                  {tr(
+                    "Try: New Cairo apartment, budget 5 million, 3 bedrooms.",
+                  )}
                 </p>
               </div>
             )}
@@ -548,7 +542,7 @@ export function WhatsAppStudio({
               <div key={m.id} className={"message " + m.direction}>
                 <p dir="auto">{m.body}</p>
                 <small>
-                  {m.direction === "inbound" ? "Customer" : "MADAR"} ·{" "}
+                  {localize(m.direction === "inbound" ? "Customer" : "MADAR")} ·{" "}
                   {date(m.created_at)}
                 </small>
               </div>
@@ -556,9 +550,9 @@ export function WhatsAppStudio({
           </div>
           {human && (
             <div className="sandbox-tip" role="status">
-              {ar
-                ? "المستشار يدير المحادثة الآن. تم إيقاف الردود الآلية."
-                : "An adviser owns this conversation. Automated replies are paused; incoming messages are still recorded."}
+              {tr(
+                "An adviser owns this conversation. Automated replies are paused; incoming messages are still recorded.",
+              )}
             </div>
           )}
           <label className="checkbox-field">
@@ -568,28 +562,22 @@ export function WhatsAppStudio({
               disabled={!!lead}
               onChange={(e) => setConsent(e.target.checked)}
             />
-            {ar
-              ? "موافقة العميل على المتابعة مسجلة"
-              : "Customer follow-up opt-in recorded"}
+            {tr("Customer follow-up opt-in recorded")}
           </label>
           <form className="composer" onSubmit={send}>
             <div>
               <input
-                aria-label="WhatsApp sandbox message"
+                aria-label={tr("WhatsApp sandbox message")}
                 required
                 maxLength={4000}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={
-                  ar
-                    ? "اكتب رسالة بالعربي أو الإنجليزي…"
-                    : "Write in Egyptian Arabic or English…"
-                }
+                placeholder={tr("Write in Egyptian Arabic or English…")}
               />
               <button
                 className="button primary"
                 disabled={busy}
-                aria-label="Send sandbox message"
+                aria-label={tr("Send sandbox message")}
               >
                 <Send size={17} />
               </button>
@@ -597,82 +585,81 @@ export function WhatsAppStudio({
           </form>
         </section>
         <aside className="card sandbox-side">
-          <span className="eyebrow">
-            {ar ? "ذكاء المحادثة" : "CONVERSATION INTELLIGENCE"}
-          </span>
+          <span className="eyebrow">{tr("CONVERSATION INTELLIGENCE")}</span>
           <h3 style={{ marginTop: 12 }}>
-            {ar
-              ? "السياق الصحيح. الخطوة الصحيحة."
-              : "The right context. The right next step."}
+            {tr("The right context. The right next step.")}
           </h3>
           <dl className="intelligence-details">
             <div>
-              <dt>Intent / النية</dt>
-              <dd>{intelligence?.intent || "Awaiting inquiry"}</dd>
+              <dt>{tr("Intent / النية")}</dt>
+              <dd>{localize(intelligence?.intent || "Awaiting inquiry")}</dd>
             </div>
             <div>
-              <dt>Qualification / التأهيل</dt>
-              <dd>{intelligence?.score ?? 0} / 100</dd>
-            </div>
-            <div>
-              <dt>Adviser / المستشار</dt>
+              <dt>{tr("Qualification / التأهيل")}</dt>
               <dd>
-                {state.users.find((u: Row) => u.id === lead?.assigned_to)
-                  ?.name || "Assigned on intake"}
+                {number(intelligence?.score ?? 0)} / {number(100)}
               </dd>
             </div>
             <div>
-              <dt>Next action / التالي</dt>
+              <dt>{tr("Adviser / المستشار")}</dt>
               <dd>
-                {intelligence?.next_action?.replaceAll("_", " ") ||
-                  "Start conversation"}
+                {state.users.find((u: Row) => u.id === lead?.assigned_to)
+                  ?.name || tr("Assigned on intake")}
+              </dd>
+            </div>
+            <div>
+              <dt>{tr("Next action / التالي")}</dt>
+              <dd>
+                {localize(intelligence?.next_action || "Start conversation")}
               </dd>
             </div>
           </dl>
           <div className="policy-row">
-            <span>{ar ? "موافقة المتابعة" : "Follow-up consent"}</span>
+            <span>{tr("Follow-up consent")}</span>
             <span
               className={
                 "pill " +
                 (lead?.consent && !lead?.opted_out ? "green" : "orange")
               }
             >
-              {lead?.opted_out
-                ? "Opted out"
-                : lead?.consent
-                  ? "Recorded"
-                  : "Not recorded"}
+              {localize(
+                lead?.opted_out
+                  ? "Opted out"
+                  : lead?.consent
+                    ? "Recorded"
+                    : "Not recorded",
+              )}
             </span>
           </div>
           <div className="policy-row">
-            <span>{ar ? "نافذة ٢٤ ساعة" : "24-hour service window"}</span>
+            <span>{tr("24-hour service window")}</span>
             <span className="pill blue">
-              {intelligence?.service_window_open ? "Open" : "No recent inbound"}
+              {localize(
+                intelligence?.service_window_open
+                  ? "Open"
+                  : "No recent inbound",
+              )}
             </span>
           </div>
           <div className="policy-row">
-            <span>{ar ? "إرسال حقيقي" : "Real provider delivery"}</span>
-            <span className="pill orange">Disabled</span>
+            <span>{tr("Real provider delivery")}</span>
+            <span className="pill orange">{tr("Disabled")}</span>
           </div>
           <div className="sandbox-tip">
-            {ar
-              ? "اكتب «متبعتش» لإيقاف المتابعة، أو «عايز مستشار» للتحويل البشري."
-              : "Send “stop” / “متبعتش” to opt out, or “human adviser” / “عايز مستشار” for a persistent handoff. Explicit re-opt-in: “I agree to follow-up” / “موافق على المتابعة”."}
+            {tr(
+              "Send “stop” / “متبعتش” to opt out, or “human adviser” / “عايز مستشار” for a persistent handoff. Explicit re-opt-in: “I agree to follow-up” / “موافق على المتابعة”.",
+            )}
           </div>
           {lead && (
             <button className="button" disabled={busy} onClick={handoff}>
               <UsersRound size={16} />
-              {human
-                ? ar
-                  ? "إعادة المساعد"
-                  : "Resume assistant"
-                : ar
-                  ? "تولي المستشار"
-                  : "Take over conversation"}
+              {localize(
+                human ? tr("Resume assistant") : tr("Take over conversation"),
+              )}
             </button>
           )}
           <h3 style={{ marginTop: 27 }}>
-            {ar ? "توصيات من المخزون" : "Matched to your actual inventory"}
+            {tr("Matched to your actual inventory")}
           </h3>
           {intelligence?.recommendations?.map((p: Row) => (
             <div className="mini-property" key={p.id}>
@@ -680,14 +667,14 @@ export function WhatsAppStudio({
                 <Building2 size={12} /> {p.title}
               </strong>
               <small>{money(p.price, state.company.settings.currency)}</small>
-              <span>{p.reasons.join(" · ")}</span>
+              <span>{p.reasons.map(localize).join(" · ")}</span>
               {lead && (
                 <button
                   type="button"
                   className="text-button"
                   onClick={() => onBook(lead, p.id)}
                 >
-                  {ar ? "احجز معاينة" : "Book viewing"}
+                  {tr("Book viewing")}
                   <ArrowUpRight size={14} />
                 </button>
               )}
@@ -695,15 +682,15 @@ export function WhatsAppStudio({
           ))}
           {!intelligence?.recommendations?.length && (
             <p className="fine">
-              {ar
-                ? "يتم عرض العقارات المتاحة المطابقة فقط."
-                : "Only available listings matching recorded preferences are shown."}
+              {tr(
+                "Only available listings matching recorded preferences are shown.",
+              )}
             </p>
           )}
           <p>
-            {ar
-              ? "التأهيل بقواعد واضحة. النموذج المدفوع اختياري."
-              : "Explainable qualification. Paid language-model interpretation is optional and disabled in this rehearsal."}
+            {tr(
+              "Explainable qualification. Paid language-model interpretation is optional and disabled in this rehearsal.",
+            )}
           </p>
         </aside>
       </div>

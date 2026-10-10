@@ -129,3 +129,23 @@ docker compose --project-name madar-ai --env-file .\.madar-local\.env -f .\docke
 The Linux Cloud environment runs the Python/API suite, workflow import recovery mocks, browser journeys, Docker runtime checks, PowerShell parsing, and twenty-six full PowerShell orchestration scenarios using fake Windows/Docker/HTTP operations, plus sixteen simulated OS-ACL cases and thirty Docker helper cases. The actual PowerShell native-process stdin transfer and local HTTP check are also exercised. The Windows Compose app configuration passed all nine browser journeys using an offline-built runtime and isolated dummy settings with n8n disabled. The official PowerShell Core package used for testing was downloaded over verified TLS and checked against its official SHA256 metadata.
 
 **Real Windows PowerShell 5.1 execution, NTFS ACL enforcement, Docker Desktop/WSL routing, your local n8n API permissions and workflow execution remain local checks.** Cloud cannot reach your laptop, and no attempt was made. Existing Cloud build DNS limitations are recorded in [verification](premium-verification.md); the standard multi-stage build must complete on your laptop. Actual external provider accounts/delivery remain unverified and disabled. Real messaging, billable model use and production deployment require separate authorization.
+
+## Double-click launch and safe update
+
+After obtaining this version, double-click **Start-Madar.cmd**. It invokes the existing PowerShell launcher, securely prompts for a missing local key, reuses saved configuration/credentials, imports the ten managed workflows inactive, checks health/safety and opens the dashboard. Keep your existing local n8n running; no duplicate n8n container is created. Use `Start-Madar.cmd -ReplaceApiKey` only when replacing the key. The wrapper keeps the console report open.
+
+Double-click **Update-Madar.cmd** to fetch `codex/self-hosted-n8n` and start the updated application. Git for Windows and local Docker Desktop are needed. The updater accepts only the expected branch/repository and a clean tracked/untracked checkout; ignored private settings are preserved. It refuses divergence, unresolved edits, ambiguous app containers, remote Docker endpoints and concurrent launch/update operations. It never stashes, force-resets, deletes volumes or automatically restores customer data.
+
+Before merging, it creates a private repository bundle under `.madar-local/backups/update-*/`. If the existing MADAR app is running, it retains that image under a recovery tag and requests the existing online SQLite backup/restore-verification helper inside that container. The database backup stays in the existing app volume under `/app/var/backups/`. A private `recovery.json` records only the previous commit and recovery references. Existing `.env` bytes are neither copied into Git nor overwritten by the updater. Startup preserves the existing launcher's strict ACL and safety checks.
+
+The old app continues running during fetch/backup and until the new image builds. If updated startup fails, the updater reports FAIL and leaves recovery references for deliberate local recovery; it does not force Git backwards or restore a database over live customer data. Actual health/import status remains in the startup report. You may need to resolve local edits or GitHub authentication yourself; raw Git, Docker and exception output is suppressed to protect credentials.
+
+Automated update coverage uses real fast-forward/failure operations against isolated local Git repositories with simulated Windows discovery, ACL and Docker responses. It covers success, already-current, wrong branch, tracked/untracked edits, divergence, fetch failure, backup failure, retained recovery artifacts and unchanged dummy `.env` bytes. **Actual double-click execution, Windows PowerShell 5.1, ACLs, Docker Desktop and existing n8n remain NOT VERIFIED here.** Locally, run Start-Madar.cmd, then Update-Madar.cmd on a clean checkout and check their reports.
+
+Minimum PowerShell commands, if you prefer commands to double-clicking:
+
+```powershell
+.\Start-Madar.cmd
+# On subsequent updates:
+.\Update-Madar.cmd
+```

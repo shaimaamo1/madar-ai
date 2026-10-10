@@ -12,15 +12,19 @@ The midnight navy, sapphire, champagne gold, deep teal and warm ivory interface 
 
 ![MADAR dashboard — fictional demonstration workspace](docs/previews/overview.png)
 
+## Arabic and English
+
+Switch instantly between **العربية (AR)** and **English (EN)** across the complete interface. The preference persists locally; forms, selections and unsent messages survive switching. RTL/LTR, Noto Sans Arabic/Manrope, statuses, dates, numbers and currencies follow the locale. [Implementation and tests](docs/localization.md) · [Current milestone verification](docs/bilingual-verification.md) · [Enterprise continuation and actual node counts](docs/enterprise-continuation.md)
+
 ## Run on Windows
 
 With Docker Desktop installed and your existing n8n running at `http://localhost:5678`, run from this folder:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-Madar.ps1 -ReplaceApiKey
+.\Start-Madar.cmd
 ```
 
-Enter the local key at the hidden prompt. The launcher handles setup/startup, imports inactive workflows without duplicate workflow creation, checks every component, and opens the dashboard. Later starts can omit `-ReplaceApiKey`. No host Python, Node or Bash is needed. See [Windows setup, PASS/FAIL reporting and local checks](docs/windows.md).
+Double-click **Start-Madar.cmd**, or use the command above. Enter a missing local key at the hidden prompt; existing keys are reused. Double-click **Update-Madar.cmd** for a protected fast-forward update, recovery preparation and startup. The launcher handles setup/startup, imports inactive workflows without duplicate workflow creation, checks every component, and opens the dashboard. Use `Start-Madar.cmd -ReplaceApiKey` only to replace the saved key. No host Python, Node or Bash is needed. See [Windows setup, PASS/FAIL reporting and local checks](docs/windows.md).
 
 ## Run locally
 

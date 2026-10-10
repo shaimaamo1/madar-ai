@@ -21,6 +21,8 @@ def test_public_booking_history_and_private_branding(client):
     assert client.post('/api/public/history', json={'tenant_slug': slug, 'session': 'forged'}).status_code == 401
     company = client.get('/api/public/company/' + slug).json()
     assert 'tenant_id' not in company and 'id' not in company
+    assert company['timezone'] == state['company']['settings']['timezone']
+    assert set(company) == {'company_name','brand_color','logo_url','currency','assistant_name','language','timezone','demo'}
 
 
 def test_workspace_provisioning_and_password_rotation(client):

@@ -32,3 +32,7 @@ These are Chromium captures of the implemented application using fictional, isol
 The browser suite regenerates application captures in this directory. It requires a local API with demo mode on and external/model flags off. Repeated runs against one long-lived API can hit the deliberate 10-demo-sessions/5-minute rate limit; use a fresh isolated test API/container or wait for the window. The tests do not weaken that protection. All ten module diagrams regenerate using `scripts/generate_architecture.py`.
 
 Typography is self-hosted Manrope and Noto Sans Arabic from the Google Fonts repository, with their SIL Open Font License texts bundled under `frontend/public/fonts/`. No font CDN request is required by the dashboard.
+
+## Bilingual milestone
+
+Actual fictional-data Chromium captures: [Arabic desktop](bilingual-arabic-desktop.png) and [Arabic mobile](bilingual-arabic-mobile.png). The English page previews are refreshed with the working language selector. Customer and listing names intentionally retain their original content.

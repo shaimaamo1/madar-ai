@@ -41,6 +41,17 @@ import {
 } from "lucide-react";
 import { api, Row, money, date, download } from "./api";
 import {
+  tr,
+  localize,
+  number,
+  percent,
+  errorText,
+  auditDetail,
+  useLanguage,
+  setTimezone,
+} from "./i18n";
+import { LanguageSelector } from "./LanguageSelector";
+import {
   ActivityTrend,
   OperatingStrip,
   WhatsAppStudio,
@@ -104,7 +115,7 @@ function Brand({ small = false }: { small?: boolean }) {
       </span>
       <span>
         MADAR<span className="brand-ai">AI</span>
-        <small>REAL ESTATE OPERATING SYSTEM</small>
+        <small>{tr("REAL ESTATE OPERATING SYSTEM")}</small>
       </span>
     </div>
   );
@@ -133,7 +144,7 @@ function Pill({ value }: { value: string }) {
             : "gray"))
       }
     >
-      {value}
+      {localize(value)}
     </span>
   );
 }
@@ -147,7 +158,7 @@ function PropertyArt({ variant = 0 }: { variant?: number }) {
     <svg
       viewBox="0 0 500 240"
       className="property-art"
-      aria-label="Architectural illustration"
+      aria-label={tr("Architectural illustration")}
     >
       <defs>
         <linearGradient id={"sky" + variant} x2="0" y2="1">
@@ -208,10 +219,8 @@ export default function App() {
     [theme, setTheme] = useState(
       localStorage.getItem("madar-theme") || "light",
     );
-  const [lang, setLang] = useState(
-      localStorage.getItem("madar-language") || "en",
-    ),
-    [mobile, setMobile] = useState(false),
+  const { ar } = useLanguage();
+  const [mobile, setMobile] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
   const [modal, setModal] = useState(""),
@@ -230,8 +239,6 @@ export default function App() {
     monthly: 2500,
   });
   const chatBottom = useRef<HTMLDivElement>(null);
-  const ar = lang === "ar";
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
   const refresh = async () => {
     const [s, m, o] = await Promise.all([
       api("/state"),
@@ -255,11 +262,6 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("madar-theme", theme);
   }, [theme]);
-  useEffect(() => {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = ar ? "rtl" : "ltr";
-    localStorage.setItem("madar-language", lang);
-  }, [lang]);
   useEffect(() => {
     let current = true;
     if (selectedLead && state)
@@ -352,10 +354,11 @@ export default function App() {
     setForm((prev) => ({ ...prev, [key]: value }));
   const cfg = state?.company.settings || {},
     currency = cfg.currency || "EGP";
+  setTimezone(cfg.timezone || "Africa/Cairo");
   const findLead = (id: string) => state?.leads.find((l: Row) => l.id === id);
   const findProp = (id: string) =>
     state?.properties.find((p: Row) => p.id === id);
-  const leadName = (id: string) => findLead(id)?.name || "Unknown customer";
+  const leadName = (id: string) => findLead(id)?.name || tr("Unknown customer");
   const filtered = (rows: Row[], keys: string[]) =>
     rows.filter(
       (r) =>
@@ -453,11 +456,11 @@ export default function App() {
     required = false,
   ) => (
     <label className="field" key={key}>
-      {label}
+      {localize(label)}
       <input
         name={key}
         type={type}
-        aria-label={label}
+        aria-label={localize(label)}
         required={required}
         min={type === "number" ? 0 : undefined}
         value={form[key] ?? ""}
@@ -477,19 +480,19 @@ export default function App() {
     required = true,
   ) => (
     <label className="field" key={key}>
-      {label}
+      {localize(label)}
       <select
-        aria-label={label}
+        aria-label={localize(label)}
         name={key}
         value={form[key] ?? ""}
         required={required}
         onChange={(e) => update(key, e.target.value)}
       >
-        <option value="">Choose…</option>
+        <option value="">{tr("Choose…")}</option>
         {options.map((o) =>
           typeof o === "string" ? (
             <option key={o} value={o}>
-              {o}
+              {localize(o)}
             </option>
           ) : (
             <option key={o.id} value={o.id}>
@@ -506,7 +509,7 @@ export default function App() {
     return (
       <div className="loading">
         <Brand />
-        <p>Opening your workspace…</p>
+        <p>{tr("Opening your workspace…")}</p>
       </div>
     );
   if (!state)
@@ -515,22 +518,27 @@ export default function App() {
         <div className="login-story">
           <Brand />
           <div>
-            <span className="eyebrow">THE NEXT CHAPTER OF REAL ESTATE</span>
+            <span className="eyebrow">
+              {tr("THE NEXT CHAPTER OF REAL ESTATE")}
+            </span>
             <h1>
-              Every inquiry.
+              {tr("Every inquiry.")}
               <br />
-              Every opportunity.
+              {tr("Every opportunity.")}
               <br />
-              <em>One intelligent workspace.</em>
+              <em>{tr("One intelligent workspace.")}</em>
             </h1>
-            <p>Your people, properties, and conversations — connected.</p>
+            <p>
+              {tr("Your people, properties, and conversations — connected.")}
+            </p>
           </div>
-          <small>BUILT FOR AMBITION. DESIGNED FOR YOUR TEAM.</small>
+          <small>{tr("BUILT FOR AMBITION. DESIGNED FOR YOUR TEAM.")}</small>
         </div>
         <div className="login-panel">
-          <span className="eyebrow">WELCOME TO MADAR</span>
-          <h2>Good business starts here.</h2>
-          <p>Sign in to your company workspace.</p>
+          <LanguageSelector />
+          <span className="eyebrow">{tr("WELCOME TO MADAR")}</span>
+          <h2>{tr("Good business starts here.")}</h2>
+          <p>{tr("Sign in to your company workspace.")}</p>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -541,12 +549,12 @@ export default function App() {
             {field("Email", "email", "email", true)}
             {field("Password", "password", "password", true)}
             <button className="button primary" disabled={busy}>
-              Sign in <ArrowRight size={17} />
+              {tr("Sign in")} <ArrowRight size={17} />
             </button>
           </form>
           {demoEnabled && (
             <>
-              <div className="divider">or explore the product</div>
+              <div className="divider">{tr("or explore the product")}</div>
               <button
                 className="button demo-button"
                 disabled={busy}
@@ -557,17 +565,19 @@ export default function App() {
                   )
                 }
               >
-                <Sparkles size={18} /> Open interactive demo{" "}
+                <Sparkles size={18} /> {tr("Open interactive demo")}{" "}
                 <ArrowUpRight size={17} />
               </button>
               <p className="fine">
-                Fictional data. Real workflows. Your demo workspace is isolated.
+                {tr(
+                  "Fictional data. Real workflows. Your demo workspace is isolated.",
+                )}
               </p>
             </>
           )}
           {error && (
             <div className="alert" role="alert">
-              {error}
+              {errorText(error)}
             </div>
           )}
         </div>
@@ -584,13 +594,23 @@ export default function App() {
       notes: "",
     });
   return (
-    <div className="shell" style={{'--company-accent': cfg.brand_color?.toLowerCase() === '#b6ee6a' ? '#D8BE83' : cfg.brand_color} as React.CSSProperties}>
+    <div
+      className="shell"
+      style={
+        {
+          "--company-accent":
+            cfg.brand_color?.toLowerCase() === "#b6ee6a"
+              ? "#D8BE83"
+              : cfg.brand_color,
+        } as React.CSSProperties
+      }
+    >
       <a className="skip-link" href="#workspace-content">
-        {t("Skip to workspace", "انتقل إلى المحتوى")}
+        {tr("Skip to workspace")}
       </a>
       <aside
         id="workspace-navigation"
-        aria-label={t("Main navigation", "التنقل الرئيسي")}
+        aria-label={tr("Main navigation")}
         className={"sidebar " + (mobile ? "expanded" : "")}
       >
         {cfg.logo_url ? (
@@ -605,35 +625,43 @@ export default function App() {
           className="workspace-switch"
           onClick={() => navigate("settings")}
         >
-          <span className="workspace-icon">{state.company.name[0]}</span>
+          <span className="workspace-icon">
+            {localize(state.company.name[0])}
+          </span>
           <span>
             {state.company.name}
             <small>
-              {state.company.demo
-                ? "Demonstration workspace"
-                : "Company workspace"}
+              {localize(
+                state.company.demo
+                  ? "Demonstration workspace"
+                  : "Company workspace",
+              )}
             </small>
           </span>
           <ChevronDown size={14} />
         </button>
-        <span className="nav-label">{t("WORKSPACE", "مساحة العمل")}</span>
-        <nav aria-label={t("Workspace pages", "صفحات مساحة العمل")}>
-          {pages.map(([key, label, Icon, arabic]) => (
+        <span className="nav-label">{tr("WORKSPACE")}</span>
+        <nav aria-label={tr("Workspace pages")}>
+          {pages.map(([key, label, Icon]) => (
             <button
               key={key}
-              aria-label={ar ? arabic : label}
+              aria-label={tr(label)}
               aria-current={page === key ? "page" : undefined}
               className={page === key ? "active" : ""}
               onClick={() => navigate(key)}
             >
               <Icon size={19} />
-              <span>{ar ? arabic : label}</span>
+              <span>{tr(label)}</span>
               {key === "inbox" && (
                 <span className="nav-count">
-                  {state.leads.filter((l: Row) => l.stage === "New").length}
+                  {number(
+                    state.leads.filter((l: Row) => l.stage === "New").length,
+                  )}
                 </span>
               )}
-              {key === "assistant" && <small className="new-tag">AI</small>}
+              {key === "assistant" && (
+                <small className="new-tag">{tr("AI")}</small>
+              )}
             </button>
           ))}
         </nav>
@@ -641,13 +669,8 @@ export default function App() {
           <div className="system-health">
             <span className="status-dot" />
             <span>
-              {t("Core system operational", "النظام الأساسي يعمل")}
-              <small>
-                {t(
-                  "External channels need authorization",
-                  "القنوات الخارجية تحتاج تصريحًا",
-                )}
-              </small>
+              {tr("Core system operational")}
+              <small>{tr("External channels need authorization")}</small>
             </span>
           </div>
           <button className="profile-button" onClick={() => navigate("agents")}>
@@ -655,9 +678,11 @@ export default function App() {
             <span>
               {state.user.name}
               <small>
-                {state.user.role === "admin"
-                  ? "Workspace administrator"
-                  : "Sales agent"}
+                {localize(
+                  state.user.role === "admin"
+                    ? "Workspace administrator"
+                    : "Sales agent",
+                )}
               </small>
             </span>
             <ChevronRight size={15} />
@@ -671,7 +696,7 @@ export default function App() {
             }}
           >
             <LogOut size={15} />
-            {t("Sign out", "تسجيل الخروج")}
+            {tr("Sign out")}
           </button>
         </div>
       </aside>
@@ -680,35 +705,29 @@ export default function App() {
           <div className="breadcrumb">
             <button
               className="icon-button mobile-menu"
-              aria-label="Open navigation"
+              aria-label={tr("Open navigation")}
               aria-expanded={mobile}
               aria-controls="workspace-navigation"
               onClick={() => setMobile(!mobile)}
             >
               <Menu size={20} />
             </button>
-            {t("Workspace", "مساحة العمل")}
+            {tr("Workspace")}
             <ChevronRight size={14} />
-            <strong>{ar ? pageInfo[3] : pageInfo[1]}</strong>
+            <strong>{tr(pageInfo[1])}</strong>
           </div>
           <div className="topbar-actions">
-            <button
-              className="language"
-              onClick={() => setLang(ar ? "en" : "ar")}
-            >
-              <Globe2 size={16} />
-              {ar ? "English" : "العربية"}
-            </button>
+            <LanguageSelector />
             <button
               className="icon-button"
-              aria-label="Toggle theme"
+              aria-label={tr("Toggle theme")}
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
             >
               {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             <button
               className="icon-button notification"
-              aria-label="Open pending tasks"
+              aria-label={tr("Open pending tasks")}
               onClick={() => navigate("tasks")}
             >
               <Bell size={19} />
@@ -722,44 +741,38 @@ export default function App() {
             <div className="demo-banner">
               <span>
                 <Sparkles size={14} />
-                {t("DEMO WORKSPACE", "مساحة تجريبية")}
+                {tr("DEMO WORKSPACE")}
                 <b>·</b>
-                {t(
+                {tr(
                   "All properties, customers, and financial records are fictional.",
-                  "جميع العقارات والعملاء والسجلات المالية خيالية.",
                 )}
               </span>
               <button onClick={() => open("reset")}>
-                {t("Reset demo", "إعادة التجربة")}
+                {tr("Reset demo")}
                 <RefreshCw size={12} />
               </button>
             </div>
           )}
           <div className="page-heading">
             <div>
-              <div className="eyebrow">
-                {t("YOUR BUSINESS, CONNECTED", "أعمالك، متصلة")}
-              </div>
+              <div className="eyebrow">{tr("YOUR BUSINESS, CONNECTED")}</div>
               <h1>
-                {page === "overview"
-                  ? t(
-                      "A clearer view. A smarter business.",
-                      "رؤية أوضح. أعمال أذكى.",
-                    )
-                  : ar
-                    ? pageInfo[3]
-                    : pageInfo[1]}
+                {localize(
+                  page === "overview"
+                    ? tr("A clearer view. A smarter business.")
+                    : tr(pageInfo[1]),
+                )}
               </h1>
               <p>
-                {page === "overview"
-                  ? t(
-                      "Turn conversations into relationships. Turn opportunities into growth.",
-                      "حوّل المحادثات إلى علاقات والفرص إلى نمو.",
-                    )
-                  : t(
-                      "One connected workspace. Every action updates your business records.",
-                      "مساحة عمل متصلة. كل إجراء يحدّث سجلات أعمالك.",
-                    )}
+                {localize(
+                  page === "overview"
+                    ? tr(
+                        "Turn conversations into relationships. Turn opportunities into growth.",
+                      )
+                    : tr(
+                        "One connected workspace. Every action updates your business records.",
+                      ),
+                )}
               </p>
             </div>
             <div className="heading-actions">
@@ -778,21 +791,24 @@ export default function App() {
                 }
               >
                 <ArrowDownToLine size={16} />
-                {t("Export report", "تصدير تقرير")}
+                {tr("Export report")}
               </button>
               <button
                 className="button primary"
                 onClick={() => open("lead", emptyLead)}
               >
                 <Plus size={17} />
-                {t("New lead", "عميل جديد")}
+                {tr("New lead")}
               </button>
             </div>
           </div>
           {error && (
             <div className="alert" role="alert">
-              <span>{error}</span>
-              <button aria-label="Dismiss error" onClick={() => setError("")}>
+              <span>{errorText(error)}</span>
+              <button
+                aria-label={tr("Dismiss error")}
+                onClick={() => setError("")}
+              >
                 <X size={15} />
               </button>
             </div>
@@ -822,28 +838,25 @@ export default function App() {
                   <div>
                     <span className="hero-label">
                       <span className="status-dot" />
-                      {t(
-                        "YOUR NEXT OPPORTUNITY STARTS HERE",
-                        "فرصتك القادمة تبدأ هنا",
-                      )}
+                      {tr("YOUR NEXT OPPORTUNITY STARTS HERE")}
                     </span>
                     <h2>
-                      {t("Stay one step ahead.", "ابقَ متقدمًا بخطوة.")}
+                      {tr("Stay one step ahead.")}
                       <br />
-                      <span>
-                        {t("Let every lead count.", "امنح كل عميل اهتمامه.")}
-                      </span>
+                      <span>{tr("Let every lead count.")}</span>
                     </h2>
                     <p>
-                      {metrics.missed_opportunities
-                        ? `${metrics.missed_opportunities} lead needs attention. Your sales intelligence has a plan.`
-                        : "Your sales intelligence is ready. Find the next action for every customer."}
+                      {localize(
+                        metrics.missed_opportunities
+                          ? `${metrics.missed_opportunities} lead needs attention. Your sales intelligence has a plan.`
+                          : "Your sales intelligence is ready. Find the next action for every customer.",
+                      )}
                     </p>
                     <button
                       className="hero-link"
                       onClick={() => navigate("assistant")}
                     >
-                      {t("Explore sales intelligence", "استكشف ذكاء المبيعات")}
+                      {tr("Explore sales intelligence")}
                       <ArrowUpRight size={17} />
                     </button>
                   </div>
@@ -865,35 +878,27 @@ export default function App() {
                     </span>
                     <div className="orbit-caption">
                       <Zap size={13} />
-                      {t("CONNECTED INTELLIGENCE", "ذكاء متصل")}
+                      {tr("CONNECTED INTELLIGENCE")}
                     </div>
                   </div>
                 </section>
                 <section className="card day-card">
                   <div className="card-head">
-                    <h3>{t("On your radar", "على رادارك")}</h3>
+                    <h3>{tr("On your radar")}</h3>
                     <CalendarDays size={19} />
                   </div>
                   <div className="radar-number">
-                    {followups.length}
-                    <span>
-                      {t("open follow-up tasks", "مهام متابعة مفتوحة")}
-                    </span>
+                    {number(followups.length)}
+                    <span>{tr("open follow-up tasks")}</span>
                   </div>
-                  <p>
-                    {t(
-                      "Small actions. Meaningful momentum.",
-                      "خطوات صغيرة، تقدم مستمر.",
-                    )}
-                  </p>
+                  <p>{tr("Small actions. Meaningful momentum.")}</p>
                   <button className="button" onClick={() => navigate("tasks")}>
-                    {t("View your tasks", "عرض المهام")}
+                    {tr("View your tasks")}
                     <ArrowRight size={16} />
                   </button>
                   <div className="radar-footer">
                     <span className="status-dot" />
-                    {metrics.appointments}{" "}
-                    {t("recorded appointments", "مواعيد مسجلة")}
+                    {number(metrics.appointments)} {tr("recorded appointments")}
                   </div>
                 </section>
               </div>
@@ -916,7 +921,7 @@ export default function App() {
                   [
                     TrendingUp,
                     "Lead conversion",
-                    metrics.conversion_rate + "%",
+                    percent(metrics.conversion_rate),
                     "Won customers / total leads",
                     "معدل التحويل",
                   ],
@@ -927,16 +932,16 @@ export default function App() {
                     "From recorded won deals",
                     "إيراد العمولة",
                   ],
-                ].map(([Icon, label, value, note, arabic], i) => {
+                ].map(([Icon, label, value, note], i) => {
                   const MetricIcon = Icon as typeof UsersRound;
                   return (
                     <section className="card stat" key={i}>
                       <div>
-                        <span>{ar ? String(arabic) : String(label)}</span>
+                        <span>{tr(String(label))}</span>
                         <MetricIcon size={18} />
                       </div>
-                      <strong>{String(value ?? 0)}</strong>
-                      <small>{String(note)}</small>
+                      <strong>{localize(String(value ?? 0))}</strong>
+                      <small>{localize(String(note))}</small>
                     </section>
                   );
                 })}
@@ -948,19 +953,14 @@ export default function App() {
                 <section className="card pipeline-card">
                   <div className="card-head">
                     <div>
-                      <h3>{t("Your sales pipeline", "مسار المبيعات")}</h3>
-                      <p>
-                        {t(
-                          "From first hello to the next chapter.",
-                          "من أول تواصل إلى الخطوة القادمة.",
-                        )}
-                      </p>
+                      <h3>{tr("Your sales pipeline")}</h3>
+                      <p>{tr("From first hello to the next chapter.")}</p>
                     </div>
                     <button
                       className="text-button"
                       onClick={() => navigate("leads")}
                     >
-                      {t("View CRM", "عرض العملاء")}
+                      {tr("View CRM")}
                       <ArrowUpRight size={14} />
                     </button>
                   </div>
@@ -992,19 +992,21 @@ export default function App() {
                                   ) + "%",
                               }}
                             >
-                              <b>{String(value)}</b>
+                              <b>{localize(String(value))}</b>
                             </span>
                           </span>
-                          <small>{label}</small>
+                          <small>{localize(label)}</small>
                         </button>
                       ),
                     )}
                   </div>
                   <div className="chart-footer">
-                    <span>{state.leads.length} total customers</span>
+                    <span>
+                      {number(state.leads.length)} {tr("total customers")}
+                    </span>
                     <span>
                       <span className="status-dot" />
-                      Computed from CRM records
+                      {tr("Computed from CRM records")}
                     </span>
                   </div>
                 </section>
@@ -1013,17 +1015,9 @@ export default function App() {
                     <div>
                       <h3>
                         <Sparkles size={17} />
-                        {t(
-                          "A little intelligence goes a long way",
-                          "ذكاء بسيط يصنع فرقًا",
-                        )}
+                        {tr("A little intelligence goes a long way")}
                       </h3>
-                      <p>
-                        {t(
-                          "Actions grounded in your actual CRM data.",
-                          "خطوات مبنية على بيانات العملاء المسجلة.",
-                        )}
-                      </p>
+                      <p>{tr("Actions grounded in your actual CRM data.")}</p>
                     </div>
                   </div>
                   {state.insights.slice(0, 3).map((insight: Row, i: number) => (
@@ -1045,7 +1039,7 @@ export default function App() {
                       </span>
                       <span>
                         <strong>{insight.name}</strong>
-                        <small>{insight.action}</small>
+                        <small>{localize(insight.action)}</small>
                       </span>
                       <ArrowUpRight size={16} />
                     </button>
@@ -1054,7 +1048,7 @@ export default function App() {
                     className="text-button insight-more"
                     onClick={() => navigate("assistant")}
                   >
-                    {t("See all recommendations", "عرض كل التوصيات")}
+                    {tr("See all recommendations")}
                     <ArrowRight size={15} />
                   </button>
                 </section>
@@ -1062,19 +1056,14 @@ export default function App() {
               <section className="card">
                 <div className="card-head">
                   <div>
-                    <h3>{t("Latest opportunities", "أحدث الفرص")}</h3>
-                    <p>
-                      {t(
-                        "Meet the people behind your pipeline.",
-                        "تعرّف على العملاء في مسار المبيعات.",
-                      )}
-                    </p>
+                    <h3>{tr("Latest opportunities")}</h3>
+                    <p>{tr("Meet the people behind your pipeline.")}</p>
                   </div>
                   <button
                     className="text-button"
                     onClick={() => navigate("leads")}
                   >
-                    {t("View all leads", "عرض العملاء")}
+                    {tr("View all leads")}
                     <ArrowUpRight size={14} />
                   </button>
                 </div>
@@ -1093,12 +1082,14 @@ export default function App() {
                       className={stage === s ? "selected" : ""}
                       onClick={() => setStage(s)}
                     >
-                      {s}
+                      {localize(s)}
                       <span>
-                        {s === "All"
-                          ? state.leads.length
-                          : state.leads.filter((l: Row) => l.stage === s)
-                              .length}
+                        {localize(
+                          s === "All"
+                            ? state.leads.length
+                            : state.leads.filter((l: Row) => l.stage === s)
+                                .length,
+                        )}
                       </span>
                     </button>
                   ))}
@@ -1108,7 +1099,7 @@ export default function App() {
                 <label className="search">
                   <Search size={17} />
                   <input
-                    placeholder="Search customers, locations, sources…"
+                    placeholder={tr("Search customers, locations, sources…")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -1127,7 +1118,7 @@ export default function App() {
                   }
                 >
                   <TrendingUp size={16} />
-                  Record deal
+                  {tr("Record deal")}
                 </button>
               </div>
               <section className="card">
@@ -1142,20 +1133,20 @@ export default function App() {
               </section>
               <section className="card section-gap">
                 <div className="card-head">
-                  <h3>Recorded deals</h3>
+                  <h3>{tr("Recorded deals")}</h3>
                   <span className="muted">
-                    Revenue uses won commissions only
+                    {tr("Revenue uses won commissions only")}
                   </span>
                 </div>
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
-                        <th>Customer</th>
-                        <th>Deal value</th>
-                        <th>Commission</th>
-                        <th>Status</th>
-                        <th>Lost reason</th>
+                        <th>{tr("Customer")}</th>
+                        <th>{tr("Deal value")}</th>
+                        <th>{tr("Commission")}</th>
+                        <th>{tr("Status")}</th>
+                        <th>{tr("Lost reason")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1183,7 +1174,7 @@ export default function App() {
                 <label className="search">
                   <Search size={17} />
                   <input
-                    placeholder="Search inventory…"
+                    placeholder={tr("Search inventory…")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -1194,7 +1185,8 @@ export default function App() {
                     disabled={compare.length < 2}
                     onClick={() => open("compare")}
                   >
-                    Compare ({compare.length})
+                    {tr("Compare (")}
+                    {number(compare.length)})
                   </button>
                   {state.user.role === "admin" && (
                     <button
@@ -1202,7 +1194,7 @@ export default function App() {
                       onClick={() => open("property", emptyProperty)}
                     >
                       <Plus size={16} />
-                      Add property
+                      {tr("Add property")}
                     </button>
                   )}
                 </div>
@@ -1224,7 +1216,7 @@ export default function App() {
                       <label className="compare-check">
                         <input
                           type="checkbox"
-                          aria-label={"Compare " + p.title}
+                          aria-label={tr("Compare {name}", { name: p.title })}
                           checked={compare.includes(p.id)}
                           onChange={(e) =>
                             setCompare(
@@ -1239,23 +1231,29 @@ export default function App() {
                     <div className="property-body">
                       <span className="eyebrow">
                         {p.location} ·{" "}
-                        {p.intent === "rent" ? "FOR RENT" : "FOR SALE"}
+                        {localize(
+                          p.intent === "rent" ? "FOR RENT" : "FOR SALE",
+                        )}
                       </span>
                       <h3>{p.title}</h3>
                       <strong>
                         {money(p.price, currency)}
-                        {p.intent === "rent" && <small> / month</small>}
+                        {p.intent === "rent" && <small> {tr("/ month")}</small>}
                       </strong>
                       <p className="property-facts">
-                        <span>{p.bedrooms} beds</span>
+                        <span>
+                          {number(p.bedrooms)} {tr("beds")}
+                        </span>
                         <b>·</b>
-                        <span>{p.size} m²</span>
+                        <span>
+                          {number(p.size)} {tr("m²")}
+                        </span>
                         <b>·</b>
-                        <span>{p.property_type}</span>
+                        <span>{localize(p.property_type)}</span>
                       </p>
                       <div className="amenities">
                         {p.amenities.map((a: string) => (
-                          <span key={a}>{a}</span>
+                          <span key={a}>{localize(a)}</span>
                         ))}
                       </div>
                       <div className="property-actions">
@@ -1264,7 +1262,7 @@ export default function App() {
                             className="text-button"
                             onClick={() => open("property", p)}
                           >
-                            Edit details
+                            {tr("Edit details")}
                             <ArrowUpRight size={14} />
                           </button>
                         )}
@@ -1276,11 +1274,11 @@ export default function App() {
                                 "/copilot/marketing/" + p.id,
                                 "POST",
                               );
-                              open("marketing", result);
+                              open("marketing", { ...result, property: p });
                             }, "Marketing draft prepared")
                           }
                         >
-                          Draft listing
+                          {tr("Draft listing")}
                           <Sparkles size={14} />
                         </button>
                       </div>
@@ -1295,13 +1293,13 @@ export default function App() {
             <section className="card inbox">
               <div className="inbox-list">
                 <div className="inbox-heading">
-                  <h3>Conversations</h3>
-                  <span>{state.leads.length}</span>
+                  <h3>{tr("Conversations")}</h3>
+                  <span>{number(state.leads.length)}</span>
                 </div>
                 <label className="search">
                   <Search size={16} />
                   <input
-                    placeholder="Find a customer…"
+                    placeholder={tr("Find a customer…")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -1319,7 +1317,7 @@ export default function App() {
                     <span>
                       <strong>{l.name}</strong>
                       <small>
-                        {l.source} · {l.stage}
+                        {localize(l.source)} · {localize(l.stage)}
                       </small>
                     </span>
                     <ChevronRight size={13} />
@@ -1334,16 +1332,17 @@ export default function App() {
                       <div>
                         <h3>{selected.name}</h3>
                         <small>
-                          {selected.source} ·{" "}
-                          {selected.location || "Location to qualify"}
+                          {localize(selected.source)} ·{" "}
+                          {selected.location || tr("Location to qualify")}
                         </small>
                       </div>
                       <Pill value={selected.stage} />
                     </div>
                     <div className="assistant-disclosure">
                       <ShieldCheck size={14} />
-                      Rules assistant works now. Live language model needs
-                      authorization.
+                      {tr(
+                        "Rules assistant works now. Live language model needs authorization.",
+                      )}
                     </div>
                     <div className="message-list">
                       {state.messages
@@ -1354,9 +1353,11 @@ export default function App() {
                           <div className={"message " + m.direction} key={m.id}>
                             <p dir="auto">{m.body}</p>
                             <small>
-                              {m.direction === "inbound"
-                                ? "Customer"
-                                : "Workspace"}{" "}
+                              {localize(
+                                m.direction === "inbound"
+                                  ? "Customer"
+                                  : "Workspace",
+                              )}{" "}
                               · {date(m.created_at)}
                             </small>
                           </div>
@@ -1365,27 +1366,29 @@ export default function App() {
                     </div>
                     <form className="composer" onSubmit={sendChat}>
                       <select
-                        aria-label="Conversation mode"
+                        aria-label={tr("Conversation mode")}
                         value={chatMode}
                         onChange={(e) => setChatMode(e.target.value)}
                       >
                         <option value="assistant">
-                          Test customer inquiry → assistant
+                          {tr("Test customer inquiry → assistant")}
                         </option>
-                        <option value="human">Human reply</option>
+                        <option value="human">{tr("Human reply")}</option>
                       </select>
                       <div>
                         <input
-                          aria-label="Message"
+                          aria-label={tr("Message")}
                           value={chatText}
                           onChange={(e) => setChatText(e.target.value)}
-                          placeholder="Type an inquiry in English or Arabic…"
+                          placeholder={tr(
+                            "Type an inquiry in English or Arabic…",
+                          )}
                           required
                           maxLength={4000}
                         />
                         <button
                           className="button primary"
-                          aria-label="Send message"
+                          aria-label={tr("Send message")}
                           disabled={busy}
                         >
                           <Send size={18} />
@@ -1396,29 +1399,30 @@ export default function App() {
                 ) : (
                   <div className="empty">
                     <MessageSquare size={36} />
-                    <h3>Every conversation, in context.</h3>
+                    <h3>{tr("Every conversation, in context.")}</h3>
                     <p>
-                      Select a customer to see their conversation and next
-                      steps.
+                      {tr(
+                        "Select a customer to see their conversation and next steps.",
+                      )}
                     </p>
                   </div>
                 )}
               </div>
               {selected && (
                 <aside className="customer-context">
-                  <span className="eyebrow">CUSTOMER CONTEXT</span>
+                  <span className="eyebrow">{tr("CUSTOMER CONTEXT")}</span>
                   <h3>{selected.name}</h3>
                   <div className="score-circle">
-                    {selected.score}
+                    {localize(selected.score)}
                     <small>/ 100</small>
                   </div>
-                  <p className="muted">Qualification score</p>
+                  <p className="muted">{tr("Qualification score")}</p>
                   <dl>
-                    <dt>Budget</dt>
+                    <dt>{tr("Budget")}</dt>
                     <dd>{money(selected.budget, currency)}</dd>
-                    <dt>Area</dt>
+                    <dt>{tr("Area")}</dt>
                     <dd>{selected.location || "To qualify"}</dd>
-                    <dt>Agent</dt>
+                    <dt>{tr("Agent")}</dt>
                     <dd>
                       {
                         state.users.find(
@@ -1426,13 +1430,15 @@ export default function App() {
                         )?.name
                       }
                     </dd>
-                    <dt>Follow-up consent</dt>
+                    <dt>{tr("Follow-up consent")}</dt>
                     <dd>
-                      {selected.opted_out
-                        ? "Opted out"
-                        : selected.consent
-                          ? "Recorded"
-                          : "Not recorded"}
+                      {localize(
+                        selected.opted_out
+                          ? "Opted out"
+                          : selected.consent
+                            ? "Recorded"
+                            : "Not recorded",
+                      )}
                     </dd>
                   </dl>
                   <button
@@ -1452,11 +1458,13 @@ export default function App() {
                       )
                     }
                   >
-                    {state.conversation_controls?.some(
-                      (c: Row) => c.lead_id === selected.id && c.human_active,
-                    )
-                      ? "Resume assistant"
-                      : "Human takeover"}
+                    {localize(
+                      state.conversation_controls?.some(
+                        (c: Row) => c.lead_id === selected.id && c.human_active,
+                      )
+                        ? "Resume assistant"
+                        : "Human takeover",
+                    )}
                   </button>
                   <div style={{ height: 10 }} />
                   <button
@@ -1471,20 +1479,21 @@ export default function App() {
                       })
                     }
                   >
-                    Edit preferences
+                    {tr("Edit preferences")}
                   </button>
-                  <h4>Matching properties</h4>
+                  <h4>{tr("Matching properties")}</h4>
                   {matches.map((p) => (
                     <div className="mini-property" key={p.id}>
                       <strong>{p.title}</strong>
                       <small>{money(p.price, currency)}</small>
-                      <span>{p.reasons.join(" · ")}</span>
+                      <span>{p.reasons.map(localize).join(" · ")}</span>
                     </div>
                   ))}
                   {!matches.length && (
                     <p className="fine">
-                      No available matches. Confirm preferences or review
-                      inventory.
+                      {tr(
+                        "No available matches. Confirm preferences or review inventory.",
+                      )}
                     </p>
                   )}
                   <button
@@ -1492,7 +1501,7 @@ export default function App() {
                     onClick={() => newBooking(selected)}
                   >
                     <CalendarDays size={16} />
-                    Book viewing
+                    {tr("Book viewing")}
                   </button>
                   {selected.source === "whatsapp" && (
                     <button
@@ -1506,7 +1515,7 @@ export default function App() {
                         })
                       }
                     >
-                      Queue approved template
+                      {tr("Queue approved template")}
                     </button>
                   )}
                 </aside>
@@ -1518,27 +1527,35 @@ export default function App() {
             <>
               <div className="toolbar">
                 <span className="muted">
-                  All times display in your browser timezone. Business hours:{" "}
-                  {cfg.business_start}:00–{cfg.business_end}:00 {cfg.timezone}.
+                  {tr(
+                    "All times display in your company timezone. Business hours:",
+                  )}{" "}
+                  {number(cfg.business_start)}:
+                  {number(0, { minimumIntegerDigits: 2 })}–
+                  {number(cfg.business_end)}:
+                  {number(0, { minimumIntegerDigits: 2 })}{" "}
+                  {localize(cfg.timezone)}.
                 </span>
                 <button className="button primary" onClick={() => newBooking()}>
                   <Plus size={16} />
-                  Book viewing
+                  {tr("Book viewing")}
                 </button>
               </div>
               <div className="appointment-grid">
                 {state.appointments.length === 0 && (
                   <section className="card empty">
                     <CalendarDays size={38} />
-                    <h3>Your next meeting starts here.</h3>
+                    <h3>{tr("Your next meeting starts here.")}</h3>
                     <p>
-                      Book a property viewing with a customer and sales agent.
+                      {tr(
+                        "Book a property viewing with a customer and sales agent.",
+                      )}
                     </p>
                     <button
                       className="button primary"
                       onClick={() => newBooking()}
                     >
-                      Book first viewing
+                      {tr("Book first viewing")}
                     </button>
                   </section>
                 )}
@@ -1555,7 +1572,7 @@ export default function App() {
                       {state.users.find((u: Row) => u.id === a.agent_id)?.name}
                     </p>
                     <p className="fine">
-                      {a.notes || "Property viewing · 60 minutes"}
+                      {a.notes || tr("Property viewing · 60 minutes")}
                     </p>
                     {a.status === "Booked" && (
                       <div className="appointment-actions">
@@ -1572,7 +1589,7 @@ export default function App() {
                             })
                           }
                         >
-                          Reschedule
+                          {tr("Reschedule")}
                         </button>
                         <button
                           className="button"
@@ -1588,7 +1605,7 @@ export default function App() {
                             )
                           }
                         >
-                          Complete
+                          {tr("Complete")}
                         </button>
                         <button
                           className="text-button danger"
@@ -1604,7 +1621,7 @@ export default function App() {
                             )
                           }
                         >
-                          Cancel
+                          {tr("Cancel")}
                         </button>
                       </div>
                     )}
@@ -1617,7 +1634,9 @@ export default function App() {
           {page === "tasks" && (
             <>
               <div className="toolbar">
-                <span>{followups.length} pending tasks</span>
+                <span>
+                  {number(followups.length)} {tr("pending tasks")}
+                </span>
                 <button
                   className="button primary"
                   onClick={() =>
@@ -1625,7 +1644,7 @@ export default function App() {
                   }
                 >
                   <Plus size={16} />
-                  Add follow-up
+                  {tr("Add follow-up")}
                 </button>
               </div>
               <section className="card">
@@ -1633,11 +1652,11 @@ export default function App() {
                   <table>
                     <thead>
                       <tr>
-                        <th>Task</th>
-                        <th>Customer</th>
-                        <th>Due</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th>{tr("Task")}</th>
+                        <th>{tr("Customer")}</th>
+                        <th>{tr("Due")}</th>
+                        <th>{tr("Status")}</th>
+                        <th>{tr("Action")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1646,7 +1665,7 @@ export default function App() {
                           <td>
                             <span className="table-task">
                               <Clock3 size={16} />
-                              {task.title}
+                              {localize(task.title)}
                             </span>
                           </td>
                           <td>{leadName(task.lead_id)}</td>
@@ -1671,7 +1690,7 @@ export default function App() {
                                 }
                               >
                                 <Check size={15} />
-                                Complete
+                                {tr("Complete")}
                               </button>
                             )}
                           </td>
@@ -1699,7 +1718,10 @@ export default function App() {
                     "Open deal value",
                     money(metrics.open_pipeline || 0, currency),
                   ],
-                  ["Viewing completion", metrics.appointment_conversion + "%"],
+                  [
+                    "Viewing completion",
+                    percent(metrics.appointment_conversion),
+                  ],
                   [
                     "Average first reply",
                     metrics.average_response_seconds === null
@@ -1708,23 +1730,23 @@ export default function App() {
                   ],
                 ].map(([label, value]) => (
                   <section className="card stat" key={label}>
-                    <span>{label}</span>
-                    <strong>{value}</strong>
-                    <small>Computed from recorded events</small>
+                    <span>{localize(label)}</span>
+                    <strong>{localize(value)}</strong>
+                    <small>{tr("Computed from recorded events")}</small>
                   </section>
                 ))}
               </div>
               <div className="two-col">
                 <section className="card">
                   <div className="card-head">
-                    <h3>Lead sources</h3>
+                    <h3>{tr("Lead sources")}</h3>
                     <Globe2 size={18} />
                   </div>
                   <div className="source-chart">
                     {Object.entries(metrics.sources || {}).map(
                       ([source, count], i) => (
                         <div key={source}>
-                          <span>{source}</span>
+                          <span>{localize(source)}</span>
                           <div>
                             <i
                               className={"bar-" + i}
@@ -1737,7 +1759,7 @@ export default function App() {
                               }}
                             />
                           </div>
-                          <strong>{String(count)}</strong>
+                          <strong>{number(count)}</strong>
                         </div>
                       ),
                     )}
@@ -1745,16 +1767,16 @@ export default function App() {
                 </section>
                 <section className="card">
                   <div className="card-head">
-                    <h3>Team performance</h3>
+                    <h3>{tr("Team performance")}</h3>
                     <UsersRound size={18} />
                   </div>
                   <div className="table-wrap">
                     <table>
                       <thead>
                         <tr>
-                          <th>Agent</th>
-                          <th>Assigned</th>
-                          <th>Won</th>
+                          <th>{tr("Agent")}</th>
+                          <th>{tr("Assigned")}</th>
+                          <th>{tr("Won")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1773,17 +1795,18 @@ export default function App() {
               <section className="card roi-card section-gap">
                 <div>
                   <span className="eyebrow">
-                    PLAN WITH TRANSPARENT ASSUMPTIONS
+                    {tr("PLAN WITH TRANSPARENT ASSUMPTIONS")}
                   </span>
-                  <h3>What could better follow-up be worth?</h3>
+                  <h3>{tr("What could better follow-up be worth?")}</h3>
                   <p className="muted">
-                    A scenario calculator, not a revenue promise. Edit every
-                    assumption.
+                    {tr(
+                      "A scenario calculator, not a revenue promise. Edit every assumption.",
+                    )}
                   </p>
                   <div className="form-grid">
                     {Object.entries(roi).map(([key, value]) => (
                       <label className="field" key={key}>
-                        {
+                        {localize(
                           (
                             {
                               leads: "Monthly leads",
@@ -1791,8 +1814,8 @@ export default function App() {
                               commission: "Commission per won deal",
                               monthly: "Monthly operating cost",
                             } as Record<string, string>
-                          )[key]
-                        }
+                          )[key],
+                        )}
                         <input
                           type="number"
                           min="0"
@@ -1811,7 +1834,7 @@ export default function App() {
                 </div>
                 <div className="roi-result">
                   <Sparkles size={24} />
-                  <small>ILLUSTRATIVE NET MONTHLY VALUE</small>
+                  <small>{tr("ILLUSTRATIVE NET MONTHLY VALUE")}</small>
                   <strong>
                     {money(
                       ((roi.leads * roi.uplift) / 100) * roi.commission -
@@ -1820,7 +1843,7 @@ export default function App() {
                     )}
                   </strong>
                   <p>
-                    {roi.leads} leads × {roi.uplift}% ×{" "}
+                    {roi.leads} {tr("leads ×")} {roi.uplift}% ×{" "}
                     {money(roi.commission, currency)} −{" "}
                     {money(roi.monthly, currency)}
                   </p>
@@ -1833,8 +1856,9 @@ export default function App() {
             <>
               <div className="toolbar">
                 <p className="muted">
-                  New inquiries are assigned to the active agent with the fewest
-                  open leads.
+                  {tr(
+                    "New inquiries are assigned to the active agent with the fewest open leads.",
+                  )}
                 </p>
                 {state.user.role === "admin" && (
                   <button
@@ -1849,7 +1873,7 @@ export default function App() {
                     }
                   >
                     <Plus size={16} />
-                    Add team member
+                    {tr("Add team member")}
                   </button>
                 )}
               </div>
@@ -1869,7 +1893,7 @@ export default function App() {
                             ).length
                           }
                         </strong>
-                        Assigned leads
+                        {tr("Assigned leads")}
                       </span>
                       <span>
                         <strong>
@@ -1880,7 +1904,7 @@ export default function App() {
                             ).length
                           }
                         </strong>
-                        Won customers
+                        {tr("Won customers")}
                       </span>
                     </div>
                     {state.user.role === "admin" &&
@@ -1897,7 +1921,7 @@ export default function App() {
                             )
                           }
                         >
-                          Deactivate account
+                          {tr("Deactivate account")}
                         </button>
                       )}
                   </section>
@@ -1914,17 +1938,17 @@ export default function App() {
                 </div>
                 <div>
                   <span className="eyebrow">
-                    {cfg.assistant_name.toUpperCase()} SALES COPILOT
+                    {cfg.assistant_name.toUpperCase()} {tr("SALES COPILOT")}
                   </span>
-                  <h3>Know what matters. Act with confidence.</h3>
+                  <h3>{tr("Know what matters. Act with confidence.")}</h3>
                   <p className="muted">
-                    Recommendations use recorded preferences, inventory, and
-                    activity. A language model is optional and requires verified
-                    access.
+                    {tr(
+                      "Recommendations use recorded preferences, inventory, and activity. A language model is optional and requires verified access.",
+                    )}
                   </p>
                 </div>
                 <button className="button" onClick={() => navigate("settings")}>
-                  Configure assistant
+                  {tr("Configure assistant")}
                   <Settings2 size={16} />
                 </button>
               </div>
@@ -1932,12 +1956,14 @@ export default function App() {
                 {state.insights.map((i: Row) => (
                   <section className="card intelligence-card" key={i.lead_id}>
                     <div>
-                      <span className="pill orange">{i.type}</span>
-                      <span className="fine">{i.priority} priority</span>
+                      <span className="pill orange">{localize(i.type)}</span>
+                      <span className="fine">
+                        {localize(i.priority)} {tr("priority")}
+                      </span>
                     </div>
                     <h3>{i.name}</h3>
-                    <p>{i.action}</p>
-                    <small>{i.evidence}</small>
+                    <p>{localize(i.action)}</p>
+                    <small>{localize(i.evidence)}</small>
                     <button
                       className="button"
                       onClick={() => {
@@ -1945,7 +1971,7 @@ export default function App() {
                         navigate("inbox");
                       }}
                     >
-                      Open customer context
+                      {tr("Open customer context")}
                       <ArrowUpRight size={16} />
                     </button>
                   </section>
@@ -1953,7 +1979,7 @@ export default function App() {
               </div>
               <section className="card section-gap">
                 <div className="card-head">
-                  <h3>Inventory intelligence</h3>
+                  <h3>{tr("Inventory intelligence")}</h3>
                   <Building2 size={18} />
                 </div>
                 <div className="inventory-summary">
@@ -1965,7 +1991,7 @@ export default function App() {
                         ).length
                       }
                     </strong>
-                    Available properties
+                    {tr("Available properties")}
                   </span>
                   <span>
                     <strong>
@@ -1975,7 +2001,7 @@ export default function App() {
                         ).length
                       }
                     </strong>
-                    Unmatched customer requirements
+                    {tr("Unmatched customer requirements")}
                   </span>
                   <span>
                     <strong>
@@ -1984,7 +2010,7 @@ export default function App() {
                           .length
                       }
                     </strong>
-                    Leads at risk from inactivity
+                    {tr("Leads at risk from inactivity")}
                   </span>
                 </div>
               </section>
@@ -1997,11 +2023,13 @@ export default function App() {
               <div className="automation-callout">
                 <Workflow size={23} />
                 <div>
-                  <h3>One workflow engine. A connected customer journey.</h3>
+                  <h3>
+                    {tr("One workflow engine. A connected customer journey.")}
+                  </h3>
                   <p>
-                    Consent-aware follow-up, re-engagement, reservations and
-                    reconciliation. Every module remains inactive until locally
-                    enabled.
+                    {tr(
+                      "Consent-aware follow-up, re-engagement, reservations and reconciliation. Every module remains inactive until locally enabled.",
+                    )}
                   </p>
                 </div>
                 <button
@@ -2015,13 +2043,13 @@ export default function App() {
                   }
                 >
                   <Zap size={16} />
-                  Evaluate due follow-ups
+                  {tr("Evaluate due follow-ups")}
                 </button>
               </div>
               <div className="two-col">
                 <section className="card">
                   <div className="card-head">
-                    <h3>Delivery outbox</h3>
+                    <h3>{tr("Delivery outbox")}</h3>
                     <button
                       className="text-button"
                       disabled={busy}
@@ -2037,7 +2065,7 @@ export default function App() {
                         }, "Delivery gate checked")
                       }
                     >
-                      Check delivery gate
+                      {tr("Check delivery gate")}
                       <ShieldCheck size={15} />
                     </button>
                   </div>
@@ -2045,10 +2073,10 @@ export default function App() {
                     <table>
                       <thead>
                         <tr>
-                          <th>Customer</th>
-                          <th>Channel</th>
-                          <th>Status</th>
-                          <th>Attempts</th>
+                          <th>{tr("Customer")}</th>
+                          <th>{tr("Channel")}</th>
+                          <th>{tr("Status")}</th>
+                          <th>{tr("Attempts")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2057,14 +2085,16 @@ export default function App() {
                             <td>
                               {leadName(o.lead_id)}
                               {o.error && (
-                                <small className="row-note">{o.error}</small>
+                                <small className="row-note">
+                                  {localize(o.error)}
+                                </small>
                               )}
                             </td>
-                            <td>{o.channel}</td>
+                            <td>{localize(o.channel)}</td>
                             <td>
                               <Pill value={o.status} />
                             </td>
-                            <td>{o.attempts}</td>
+                            <td>{number(o.attempts)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -2072,8 +2102,9 @@ export default function App() {
                     {!state.outbox.length && (
                       <div className="empty compact">
                         <p>
-                          No queued messages. Evaluate due tasks to populate
-                          this outbox.
+                          {tr(
+                            "No queued messages. Evaluate due tasks to populate this outbox.",
+                          )}
                         </p>
                       </div>
                     )}
@@ -2081,7 +2112,7 @@ export default function App() {
                 </section>
                 <section className="card">
                   <div className="card-head">
-                    <h3>Safeguards</h3>
+                    <h3>{tr("Safeguards")}</h3>
                     <ShieldCheck size={19} />
                   </div>
                   <div className="safeguards">
@@ -2095,7 +2126,7 @@ export default function App() {
                     ].map((text) => (
                       <p key={text}>
                         <CheckCircle2 size={16} />
-                        {text}
+                        {localize(text)}
                       </p>
                     ))}
                   </div>
@@ -2103,25 +2134,25 @@ export default function App() {
               </div>
               <section className="card section-gap">
                 <div className="card-head">
-                  <h3>Operator incident queue</h3>
+                  <h3>{tr("Operator incident queue")}</h3>
                   <span className="pill orange">
-                    {operations.open_incidents || 0} open
+                    {number(operations.open_incidents || 0)} {tr("open")}
                   </span>
                 </div>
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
-                        <th>Category</th>
-                        <th>Workflow / execution</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th>{tr("Category")}</th>
+                        <th>{tr("Workflow / execution")}</th>
+                        <th>{tr("Status")}</th>
+                        <th>{tr("Action")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {state.incidents?.map((i: Row) => (
                         <tr key={i.id}>
-                          <td>{i.category.replaceAll("_", " ")}</td>
+                          <td>{localize(i.category)}</td>
                           <td>
                             {i.workflow_id || "Delivery outbox"} /{" "}
                             {i.execution_id || i.event_id}
@@ -2146,7 +2177,7 @@ export default function App() {
                                     )
                                   }
                                 >
-                                  Mark reviewed
+                                  {tr("Mark reviewed")}
                                 </button>
                               )}
                           </td>
@@ -2157,8 +2188,9 @@ export default function App() {
                   {!state.incidents?.length && (
                     <div className="empty compact">
                       <p>
-                        No incidents recorded. Live provider execution remains
-                        unverified.
+                        {tr(
+                          "No incidents recorded. Live provider execution remains unverified.",
+                        )}
                       </p>
                     </div>
                   )}
@@ -2166,23 +2198,23 @@ export default function App() {
               </section>
               <section className="card section-gap">
                 <div className="card-head">
-                  <h3>Activity & automation log</h3>
+                  <h3>{tr("Activity & automation log")}</h3>
                   <Activity size={18} />
                 </div>
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
-                        <th>Event</th>
-                        <th>Detail</th>
-                        <th>Time</th>
+                        <th>{tr("Event")}</th>
+                        <th>{tr("Detail")}</th>
+                        <th>{tr("Time")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {state.activities.slice(0, 30).map((a: Row) => (
                         <tr key={a.id}>
-                          <td>{a.action}</td>
-                          <td>{a.detail || "Recorded"}</td>
+                          <td>{localize(a.action)}</td>
+                          <td>{auditDetail(a.action, a.detail)}</td>
                           <td>{date(a.created_at)}</td>
                         </tr>
                       ))}
@@ -2198,16 +2230,10 @@ export default function App() {
               <div className="automation-callout">
                 <MessageSquare size={23} />
                 <div>
-                  <h3>
-                    {t(
-                      "WhatsApp-first. Adviser-led.",
-                      "واتساب أولاً. بإشراف مستشارك.",
-                    )}
-                  </h3>
+                  <h3>{tr("WhatsApp-first. Adviser-led.")}</h3>
                   <p>
-                    {t(
+                    {tr(
                       "Rehearse qualification, opt-out, real inventory matching and human handoff in a private sandbox.",
-                      "جرّب التأهيل وإيقاف المتابعة ومطابقة العقارات والتحويل للمستشار في تجربة آمنة.",
                     )}
                   </p>
                 </div>
@@ -2215,16 +2241,16 @@ export default function App() {
                   className="button primary"
                   onClick={() => navigate("whatsapp")}
                 >
-                  {t("Open WhatsApp sandbox", "افتح تجربة واتساب")}
+                  {tr("Open WhatsApp sandbox")}
                   <ArrowUpRight size={16} />
                 </button>
               </div>
               <div className="connection-note">
                 <ShieldCheck size={19} />
                 <p>
-                  Connection status reflects configuration, not verified access.
-                  Credentials belong in secure environment settings. No real
-                  messages are sent without owner approval.
+                  {tr(
+                    "Connection status reflects configuration, not verified access. Credentials belong in secure environment settings. No real messages are sent without owner approval.",
+                  )}
                 </p>
               </div>
               <div className="integration-grid">
@@ -2242,7 +2268,7 @@ export default function App() {
                       )}
                     </span>
                     <h3>
-                      {
+                      {localize(
                         (
                           {
                             website: "Website chat & forms",
@@ -2255,19 +2281,21 @@ export default function App() {
                             crm: "Connected CRM",
                             language_model: "Language model",
                           } as Record<string, string>
-                        )[i.name]
-                      }
+                        )[i.name],
+                      )}
                     </h3>
                     <Pill value={i.status} />
-                    <p className="muted">{i.detail}</p>
+                    <p className="muted">{localize(i.detail)}</p>
                     <div className="integration-actions">
                       <button
                         className="button"
                         onClick={() => open("integration", i)}
                       >
-                        {i.name === "website"
-                          ? "Open website chat"
-                          : "Setup requirements"}
+                        {localize(
+                          i.name === "website"
+                            ? "Open website chat"
+                            : "Setup requirements",
+                        )}
                         <ArrowUpRight size={15} />
                       </button>
                       {[
@@ -2293,7 +2321,7 @@ export default function App() {
                             }, "Provider access verified in this request")
                           }
                         >
-                          Verify access
+                          {tr("Verify access")}
                         </button>
                       )}
                     </div>
@@ -2307,11 +2335,12 @@ export default function App() {
             <>
               <section className="card onboarding">
                 <div>
-                  <span className="eyebrow">CLIENT ONBOARDING</span>
-                  <h3>Your company. Your way of working.</h3>
+                  <span className="eyebrow">{tr("CLIENT ONBOARDING")}</span>
+                  <h3>{tr("Your company. Your way of working.")}</h3>
                   <p>
-                    Set your identity, add inventory, build your team, then
-                    authorize the channels you need.
+                    {tr(
+                      "Set your identity, add inventory, build your team, then authorize the channels you need.",
+                    )}
                   </p>
                 </div>
                 <div className="onboarding-steps">
@@ -2332,9 +2361,9 @@ export default function App() {
                       }
                     >
                       <span className={done ? "done" : ""}>
-                        {done ? <Check size={15} /> : i + 1}
+                        {done ? <Check size={15} /> : number(i + 1)}
                       </span>
-                      {String(label)}
+                      {localize(String(label))}
                     </button>
                   ))}
                 </div>
@@ -2351,7 +2380,7 @@ export default function App() {
               />
               <section className="card section-gap">
                 <div className="card-head">
-                  <h3>Workspace identifiers</h3>
+                  <h3>{tr("Workspace identifiers")}</h3>
                   <div className="heading-actions">
                     {!state.company.demo && (
                       <button
@@ -2363,7 +2392,7 @@ export default function App() {
                           })
                         }
                       >
-                        Change password
+                        {tr("Change password")}
                       </button>
                     )}
                     {state.user.role === "admin" && (
@@ -2379,21 +2408,22 @@ export default function App() {
                           })
                         }
                       >
-                        Provision client workspace
+                        {tr("Provision client workspace")}
                       </button>
                     )}
                   </div>
                 </div>
                 <div className="identifiers">
                   <p>
-                    Sign-in workspace: <code>{state.company.slug}</code>
+                    {tr("Sign-in workspace:")} <code>{state.company.slug}</code>
                   </p>
                   <p>
-                    Integration tenant: <code>{state.company.id}</code>
+                    {tr("Integration tenant:")} <code>{state.company.id}</code>
                   </p>
                   <p className="fine">
-                    Only bind external provider credentials to the tenant that
-                    owns those channels.
+                    {tr(
+                      "Only bind external provider credentials to the tenant that owns those channels.",
+                    )}
                   </p>
                 </div>
               </section>
@@ -2402,13 +2432,13 @@ export default function App() {
 
           <footer className="footer">
             <span>
-              MADAR AI <b>·</b>{" "}
-              {t("Built for the way you grow.", "مصمم لنمو أعمالك.")}
+              MADAR AI <b>·</b> {tr("Built for the way you grow.")}
             </span>
             <span>
               <ShieldCheck size={13} />
-              Tenant-scoped workspace<span className="footer-separator">·</span>
-              v1.1
+              {tr("Tenant-scoped workspace")}
+              <span className="footer-separator">·</span>
+              {"v1.1"}
             </span>
           </footer>
         </div>
@@ -2416,7 +2446,7 @@ export default function App() {
       {notice && (
         <div className="toast" role="status">
           <CheckCircle2 size={19} />
-          {notice}
+          {localize(notice)}
         </div>
       )}
       {modal && (
@@ -2430,7 +2460,7 @@ export default function App() {
           >
             <div className="modal-header">
               <h2 id="modal-title">
-                {
+                {localize(
                   (
                     {
                       lead: "Add a new lead",
@@ -2450,18 +2480,19 @@ export default function App() {
                       workspace: "Provision a client workspace",
                       password: "Change your password",
                     } as Record<string, string>
-                  )[modal]
-                }
+                  )[modal],
+                )}
               </h2>
               <button
                 className="icon-button"
-                aria-label="Close dialog"
+                aria-label={tr("Close dialog")}
                 onClick={() => setModal("")}
               >
                 <X size={21} />
               </button>
+              <LanguageSelector />
             </div>
-            {error && <div className="alert">{error}</div>}
+            {error && <div className="alert">{errorText(error)}</div>}
             {[
               "lead",
               "property",
@@ -2506,7 +2537,7 @@ export default function App() {
                           checked={form.consent}
                           onChange={(e) => update("consent", e.target.checked)}
                         />
-                        Follow-up consent recorded
+                        {tr("Follow-up consent recorded")}
                       </label>
                     </>
                   )}
@@ -2536,7 +2567,7 @@ export default function App() {
                         "Rented",
                       ])}
                       <label className="field">
-                        Amenities (comma separated)
+                        {tr("Amenities (comma separated)")}
                         <input
                           value={form.amenities.join(",")}
                           onChange={(e) =>
@@ -2546,7 +2577,7 @@ export default function App() {
                       </label>
                       {field("Image HTTPS URL (optional)", "image", "url")}
                       <label className="field full">
-                        Verified description
+                        {tr("Verified description")}
                         <textarea
                           value={form.description}
                           onChange={(e) =>
@@ -2618,9 +2649,9 @@ export default function App() {
                       )}
                       {select("Role", "role", ["agent", "admin"])}
                       <p className="fine full">
-                        This creates a real account. It does not send an
-                        invitation email. Share access privately and rotate the
-                        initial password before use.
+                        {tr(
+                          "This creates a real account. It does not send an invitation email. Share access privately and rotate the initial password before use.",
+                        )}
                       </p>
                     </>
                   )}
@@ -2635,7 +2666,7 @@ export default function App() {
                           checked={form.consent}
                           onChange={(e) => update("consent", e.target.checked)}
                         />
-                        Follow-up consent
+                        {tr("Follow-up consent")}
                       </label>
                       <label className="checkbox-field">
                         <input
@@ -2645,7 +2676,7 @@ export default function App() {
                             update("opted_out", e.target.checked)
                           }
                         />
-                        Opted out
+                        {tr("Opted out")}
                       </label>
                     </>
                   )}
@@ -2662,8 +2693,9 @@ export default function App() {
                         true,
                       )}
                       <p className="fine full">
-                        Creates a separate empty company with isolated data.
-                        Sign in using the workspace slug and its owner account.
+                        {tr(
+                          "Creates a separate empty company with isolated data. Sign in using the workspace slug and its owner account.",
+                        )}
                       </p>
                     </>
                   )}
@@ -2702,10 +2734,9 @@ export default function App() {
                         "parameter_values",
                       )}
                       <p className="fine full">
-                        Supports approved text body parameters in the exact
-                        Meta-approved order; header/media/button parameters
-                        require another adapter. Requires recorded consent and
-                        owner-approved external delivery.
+                        {tr(
+                          "Supports approved text body parameters in the exact Meta-approved order; header/media/button parameters require another adapter. Requires recorded consent and owner-approved external delivery.",
+                        )}
                       </p>
                     </>
                   )}
@@ -2716,10 +2747,10 @@ export default function App() {
                     className="button"
                     onClick={() => setModal("")}
                   >
-                    Cancel
+                    {tr("Cancel")}
                   </button>
                   <button className="button primary" disabled={busy}>
-                    {busy ? "Saving…" : "Save"}
+                    {localize(busy ? "Saving…" : "Save")}
                     <Check size={16} />
                   </button>
                 </div>
@@ -2728,12 +2759,13 @@ export default function App() {
             {modal === "reset" && (
               <>
                 <p>
-                  This resets only this isolated workspace’s fictional
-                  customers, properties, conversations, and appointments.
+                  {tr(
+                    "This resets only this isolated workspace’s fictional customers, properties, conversations, and appointments.",
+                  )}
                 </p>
                 <div className="modal-footer">
                   <button className="button" onClick={() => setModal("")}>
-                    Keep demo
+                    {tr("Keep demo")}
                   </button>
                   <button
                     className="button primary"
@@ -2747,7 +2779,7 @@ export default function App() {
                       }, "Fictional demo reset")
                     }
                   >
-                    Reset fictional demo
+                    {tr("Reset fictional demo")}
                   </button>
                 </div>
               </>
@@ -2761,20 +2793,22 @@ export default function App() {
                       <h3>{p.title}</h3>
                       <PropertyArt />
                       <dl>
-                        <dt>Price</dt>
+                        <dt>{tr("Price")}</dt>
                         <dd>{money(p.price, currency)}</dd>
-                        <dt>Location</dt>
+                        <dt>{tr("Location")}</dt>
                         <dd>{p.location}</dd>
-                        <dt>Area</dt>
-                        <dd>{p.size} m²</dd>
-                        <dt>Bedrooms</dt>
-                        <dd>{p.bedrooms}</dd>
-                        <dt>Price / m²</dt>
+                        <dt>{tr("Area")}</dt>
+                        <dd>
+                          {number(p.size)} {tr("m²")}
+                        </dd>
+                        <dt>{tr("Bedrooms")}</dt>
+                        <dd>{number(p.bedrooms)}</dd>
+                        <dt>{tr("Price / m²")}</dt>
                         <dd>{money(p.price / p.size, currency)}</dd>
-                        <dt>Amenities</dt>
-                        <dd>{p.amenities.join(", ")}</dd>
-                        <dt>Availability</dt>
-                        <dd>{p.status}</dd>
+                        <dt>{tr("Amenities")}</dt>
+                        <dd>{p.amenities.map(localize).join(tr(", "))}</dd>
+                        <dt>{tr("Availability")}</dt>
+                        <dd>{localize(p.status)}</dd>
                       </dl>
                     </div>
                   ))}
@@ -2783,13 +2817,31 @@ export default function App() {
             {modal === "marketing" && (
               <>
                 <p className="fine">
-                  Generated from verified listing fields. Review before
-                  publishing. No content has been published.
+                  {tr(
+                    "Generated from verified listing fields. Review before publishing. No content has been published.",
+                  )}
                 </p>
                 <textarea
                   className="marketing-output"
                   readOnly
-                  value={form.draft}
+                  value={
+                    form.property
+                      ? tr(
+                          "Discover {title} in {location}. {area} m², {bedrooms} bedrooms. Listed at {price}. Features: {amenities}. Contact {company} to ask about current availability.",
+                          {
+                            title: form.property.title,
+                            location: form.property.location,
+                            area: number(form.property.size),
+                            bedrooms: number(form.property.bedrooms),
+                            price: money(form.property.price, currency),
+                            amenities: form.property.amenities
+                              .map(localize)
+                              .join(tr(", ")),
+                            company: state.company.name,
+                          },
+                        )
+                      : form.draft
+                  }
                 />
                 <button
                   className="button"
@@ -2798,7 +2850,7 @@ export default function App() {
                   }
                 >
                   <ArrowDownToLine size={16} />
-                  Download draft
+                  {tr("Download draft")}
                 </button>
               </>
             )}
@@ -2808,21 +2860,22 @@ export default function App() {
               ) : (
                 <>
                   <p>
-                    Securely configure the following variable names for this
-                    tenant, then verify access. Never put credentials in source
-                    code or chat.
+                    {tr(
+                      "Securely configure the following variable names for this tenant, then verify access. Never put credentials in source code or chat.",
+                    )}
                   </p>
                   <div className="requirement-list">
                     {form.missing?.map((name: string) => (
                       <code key={name}>{name}</code>
                     ))}
                   </div>
-                  <p className="fine">Your tenant ID: {state.company.id}</p>
+                  <p className="fine">
+                    {tr("Your tenant ID:")} {state.company.id}
+                  </p>
                   <p>
-                    n8n workflows and provider-specific setup instructions are
-                    included in the repository’s workflows and documentation
-                    folders. Production webhooks need a public HTTPS deployment
-                    approved by the owner.
+                    {tr(
+                      "n8n workflows and provider-specific setup instructions are included in the repository’s workflows and documentation folders. Production webhooks need a public HTTPS deployment approved by the owner.",
+                    )}
                   </p>
                 </>
               ))}
@@ -2838,12 +2891,12 @@ export default function App() {
         <table>
           <thead>
             <tr>
-              <th>{t("Customer", "العميل")}</th>
-              <th>{t("Source", "المصدر")}</th>
-              <th>{t("Budget", "الميزانية")}</th>
-              <th>{t("Stage", "المرحلة")}</th>
-              <th>{t("Score", "التقييم")}</th>
-              <th>{t("Assigned to", "المستشار")}</th>
+              <th>{tr("Customer")}</th>
+              <th>{tr("Source")}</th>
+              <th>{tr("Budget")}</th>
+              <th>{tr("Stage")}</th>
+              <th>{tr("Score")}</th>
+              <th>{tr("Assigned to")}</th>
               <th />
             </tr>
           </thead>
@@ -2861,21 +2914,21 @@ export default function App() {
                     <Avatar name={l.name} index={i} />
                     <span>
                       <strong>{l.name}</strong>
-                      <small>{l.location || "Location to qualify"}</small>
+                      <small>{l.location || tr("Location to qualify")}</small>
                     </span>
                   </button>
                 </td>
                 <td>
                   <span className="source-label">
                     <span className={"source-dot " + l.source} />
-                    {l.source}
+                    {localize(l.source)}
                   </span>
                 </td>
                 <td>{money(l.budget, currency)}</td>
                 <td>
                   <select
                     className={"stage-select " + stageColors[l.stage]}
-                    aria-label={"Stage for " + l.name}
+                    aria-label={tr("Stage for {name}", { name: l.name })}
                     value={l.stage}
                     disabled={busy}
                     onChange={(e) =>
@@ -2889,13 +2942,15 @@ export default function App() {
                     }
                   >
                     {cfg.stages.map((s: string) => (
-                      <option key={s}>{s}</option>
+                      <option key={s} value={s}>
+                        {localize(s)}
+                      </option>
                     ))}
                   </select>
                 </td>
                 <td>
                   <div className="lead-score">
-                    <span>{l.score}</span>
+                    <span>{number(l.score)}</span>
                     <i>
                       <b style={{ width: l.score + "%" }} />
                     </i>
@@ -2904,7 +2959,7 @@ export default function App() {
                 <td>
                   <select
                     className="agent-select"
-                    aria-label={"Agent for " + l.name}
+                    aria-label={tr("Agent for {name}", { name: l.name })}
                     value={l.assigned_to}
                     disabled={busy}
                     onChange={(e) =>
@@ -2929,7 +2984,7 @@ export default function App() {
                 <td>
                   <button
                     className="icon-button"
-                    aria-label={"Open " + l.name}
+                    aria-label={tr("Open {name}", { name: l.name })}
                     onClick={() => {
                       setSelectedLead(l.id);
                       navigate("inbox");
@@ -2944,7 +2999,7 @@ export default function App() {
         </table>
         {!leads.length && (
           <div className="empty compact">
-            <p>No customers match this view.</p>
+            <p>{tr("No customers match this view.")}</p>
           </div>
         )}
       </div>
@@ -2973,7 +3028,7 @@ function SettingsForm({
       }}
     >
       <div className="card-head">
-        <h3>Brand, business & assistant</h3>
+        <h3>{tr("Brand, business & assistant")}</h3>
         <Settings2 size={18} />
       </div>
       <fieldset disabled={disabled}>
@@ -2985,7 +3040,7 @@ function SettingsForm({
             ["Assistant name", "assistant_name"],
           ].map(([label, key]) => (
             <label className="field" key={key}>
-              {label}
+              {localize(label)}
               <input
                 value={values[key]}
                 onChange={(e) => update(key, e.target.value)}
@@ -2993,7 +3048,7 @@ function SettingsForm({
             </label>
           ))}
           <label className="field">
-            Brand accent
+            {tr("Brand accent")}
             <input
               type="color"
               value={values.brand_color}
@@ -3001,34 +3056,41 @@ function SettingsForm({
             />
           </label>
           <label className="field">
-            Currency
+            {tr("Currency")}
             <select
+              aria-label={tr("Currency")}
               value={values.currency}
               onChange={(e) => update("currency", e.target.value)}
             >
               {["EGP", "AED", "SAR", "USD"].map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} value={c}>
+                  {localize(c)}
+                </option>
               ))}
             </select>
           </label>
           <label className="field">
-            Default customer language
+            {tr("Default customer language")}
             <select
+              aria-label={tr("Default customer language")}
               value={values.language}
               onChange={(e) => update("language", e.target.value)}
             >
-              <option value="en">English</option>
-              <option value="ar">Arabic</option>
+              <option value="en">{tr("English")}</option>
+              <option value="ar">{tr("Arabic")}</option>
             </select>
           </label>
           <label className="field">
-            Business timezone
+            {tr("Business timezone")}
             <select
+              aria-label={tr("Business timezone")}
               value={values.timezone}
               onChange={(e) => update("timezone", e.target.value)}
             >
               {["Africa/Cairo", "Asia/Dubai", "Asia/Riyadh", "UTC"].map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} value={c}>
+                  {localize(c)}
+                </option>
               ))}
             </select>
           </label>
@@ -3038,7 +3100,7 @@ function SettingsForm({
             ["New lead follow-up delay (hours)", "followup_hours"],
           ].map(([label, key]) => (
             <label className="field" key={key}>
-              {label}
+              {localize(label)}
               <input
                 type="number"
                 value={values[key]}
@@ -3047,7 +3109,7 @@ function SettingsForm({
             </label>
           ))}
           <label className="field">
-            Pipeline stages (core stages retained)
+            {tr("Pipeline stages (core stages retained)")}
             <input
               value={values.stages.join(", ")}
               onChange={(e) =>
@@ -3062,7 +3124,7 @@ function SettingsForm({
             />
           </label>
           <label className="field full">
-            Assistant personality
+            {tr("Assistant personality")}
             <textarea
               value={values.personality}
               onChange={(e) => update("personality", e.target.value)}
@@ -3071,7 +3133,7 @@ function SettingsForm({
         </div>
         <div className="modal-footer">
           <button className="button primary">
-            Save company settings
+            {tr("Save company settings")}
             <Check size={16} />
           </button>
         </div>
@@ -3093,7 +3155,10 @@ function WebsiteChat({
     [suggestions, setSuggestions] = useState<Row[]>([]),
     [slots, setSlots] = useState<Row[]>([]),
     [bookingProperty, setBookingProperty] = useState(""),
-    [bookingNotice, setBookingNotice] = useState(""),
+    [bookingNotice, setBookingNotice] = useState<{
+      key: string;
+      time?: string;
+    } | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [consent, setConsent] = useState(false);
@@ -3134,7 +3199,9 @@ function WebsiteChat({
       ]);
       setText("");
       if (r.mode === "human-handoff")
-        setBookingNotice("Your message is recorded for your human adviser.");
+        setBookingNotice({
+          key: "Your message is recorded for your human adviser.",
+        });
       await onChange();
     } catch (e) {
       setError((e as Error).message);
@@ -3145,16 +3212,18 @@ function WebsiteChat({
   return (
     <div className="website-chat">
       <p className="fine">
-        This is the working public website chat. Inquiries create customers in
-        this company’s CRM.
+        {tr(
+          "This is the working public website chat. Inquiries create customers in this company’s CRM.",
+        )}
       </p>
       <div className="message-list">
         {messages.length === 0 && (
           <div className="empty compact">
             <Sparkles size={27} />
             <p>
-              Try: “I want an apartment in New Cairo, budget 5 million, 3
-              bedrooms.”
+              {tr(
+                "Try: “I want an apartment in New Cairo, budget 5 million, 3 bedrooms.”",
+              )}
             </p>
           </div>
         )}
@@ -3193,11 +3262,11 @@ function WebsiteChat({
               <span>
                 <strong>{p.title}</strong>
                 <small>
-                  {p.location} · {p.size} m²
+                  {p.location} · {number(p.size)} {tr("m²")}
                 </small>
               </span>
               <span>
-                View times
+                {tr("View times")}
                 <ArrowUpRight size={14} />
               </span>
             </button>
@@ -3206,7 +3275,7 @@ function WebsiteChat({
       )}
       {bookingProperty && (
         <div className="slot-picker">
-          <h4>Choose an available viewing time</h4>
+          <h4>{tr("Choose an available viewing time")}</h4>
           {slots.map((slot) => (
             <button
               className="button"
@@ -3222,9 +3291,10 @@ function WebsiteChat({
                     property_id: bookingProperty,
                     start_at: slot.start_at,
                   });
-                  setBookingNotice(
-                    "Viewing confirmed: " + date(result.start_at),
-                  );
+                  setBookingNotice({
+                    key: "Viewing confirmed: {time}",
+                    time: result.start_at,
+                  });
                   setSlots([]);
                   setBookingProperty("");
                   await onChange();
@@ -3243,7 +3313,9 @@ function WebsiteChat({
       {bookingNotice && (
         <p className="booking-notice">
           <CheckCircle2 size={16} />
-          {bookingNotice}
+          {tr(bookingNotice.key, {
+            time: bookingNotice.time ? date(bookingNotice.time) : "",
+          })}
         </p>
       )}
       <form onSubmit={send}>
@@ -3254,25 +3326,25 @@ function WebsiteChat({
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
           />
-          I agree to follow-up about my property inquiry
+          {tr("I agree to follow-up about my property inquiry")}
         </label>
         <div className="composer">
           <div>
             <input
-              aria-label="Website inquiry"
-              placeholder="Ask about a property…"
+              aria-label={tr("Website inquiry")}
+              placeholder={tr("Ask about a property…")}
               required
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
             <button className="button primary" disabled={busy}>
               <Send size={17} />
-              Send inquiry
+              {tr("Send inquiry")}
             </button>
           </div>
         </div>
       </form>
-      {error && <div className="alert">{error}</div>}
+      {error && <div className="alert">{errorText(error)}</div>}
     </div>
   );
 }
@@ -3287,35 +3359,44 @@ function PublicChatPage() {
       .then(setCompany)
       .catch((e) => setError(e.message));
   }, [slug]);
+  setTimezone(company?.timezone || "Africa/Cairo");
   return (
     <div className="public-portal">
       <div
         className="public-portal-card"
         style={
-          { "--company-accent": company?.brand_color?.toLowerCase() === '#b6ee6a' ? '#D8BE83' : company?.brand_color } as React.CSSProperties
+          {
+            "--company-accent":
+              company?.brand_color?.toLowerCase() === "#b6ee6a"
+                ? "#D8BE83"
+                : company?.brand_color,
+          } as React.CSSProperties
         }
       >
         <header>
+          <LanguageSelector />
           <span className="brand-mark">
             <Building2 size={24} />
           </span>
           <div>
-            <h1>{company?.company_name || "Property adviser"}</h1>
+            <h1>{company?.company_name || tr("Property adviser")}</h1>
             <small>
-              {company?.assistant_name || "Madar"} · Verified inventory
-              assistant
+              {company?.assistant_name || "Madar"}{" "}
+              {tr("· Verified inventory assistant")}
             </small>
           </div>
         </header>
         {company?.demo && (
-          <p className="public-demo">Fictional demonstration inventory</p>
+          <p className="public-demo">
+            {tr("Fictional demonstration inventory")}
+          </p>
         )}
         {error ? (
-          <div className="alert">{error}</div>
+          <div className="alert">{errorText(error)}</div>
         ) : company ? (
           <WebsiteChat slug={slug} onChange={async () => {}} />
         ) : (
-          <p>Opening chat…</p>
+          <p>{tr("Opening chat…")}</p>
         )}
       </div>
     </div>

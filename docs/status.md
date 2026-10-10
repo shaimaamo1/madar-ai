@@ -45,10 +45,12 @@ The actual Windows Compose app configuration also starts successfully on Linux w
 
 ## Known scope limits
 
-This is a working local product and a deployment preparation package, not a finished commercial production launch. It currently uses one SQLite-backed application process and one external-integration tenant binding per deployment. The dashboard returns at most 1,000 records per collection. MFA, password recovery, SSO, billing, distributed limits, encrypted per-client channel credential storage, comprehensive Arabic localization, large-client pagination, external calendar sync, WhatsApp media/parameterized templates, and authorized live-provider validation remain work for the next release. No provider workflow is claimed active.
+This is a working local product and a deployment preparation package, not a finished commercial production launch. It currently uses one SQLite-backed application process and one external-integration tenant binding per deployment. The dashboard returns at most 1,000 records per collection. MFA, password recovery, SSO, billing, distributed limits, encrypted per-client channel credential storage, large-client pagination, external calendar sync, WhatsApp media/parameterized templates, and authorized live-provider validation remain work for the next release. No provider workflow is claimed active.
 
 The rules assistant is useful without a model account, but is not a substitute for broad generative-language comprehension. Lead leakage/risk and next-action recommendations are explainable rules; marketing drafts and reports use actual records. Customers must review real listing data and messaging compliance before any production use.
 
 ## Next owner action
 
 On your Windows laptop, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-Madar.ps1 -ReplaceApiKey` alongside your existing local n8n and enter the local key at its hidden prompt. Native-process instructions and manual JSON import are in [local development](local-development.md). Execute MADAR Test Evaluation manually in your local n8n to verify actual workflow runtime. No key needs to be sent to Codex Cloud. The optional model provider key is unnecessary for the working rules assistant.
+
+Current bilingual/Windows milestone evidence is recorded in [bilingual verification](bilingual-verification.md). The expanded enterprise brief remains unfinished; see [actual workflow counts and continuation](enterprise-continuation.md).

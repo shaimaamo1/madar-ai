@@ -1,0 +1,2 @@
+# Windows double-click wrappers must be checked out with native batch line endings.
+*.cmd text eol=crlf

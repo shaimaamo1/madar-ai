@@ -80,8 +80,11 @@ test("WhatsApp sandbox qualifies Arabic inquiries, remembers context, respects o
   await input.fill("stop");
   await page.getByRole("button", { name: "Send sandbox message" }).click();
   await expect(page.getByText("Opted out", { exact: true })).toBeVisible();
-  await expect(page.locator('.toast')).not.toBeVisible({timeout:7000});
-  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); window.scrollTo(0,0); });
+  await expect(page.locator(".toast")).not.toBeVisible({ timeout: 7000 });
+  await page.evaluate(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+    window.scrollTo(0, 0);
+  });
   mkdirSync(previews, { recursive: true });
   await page.screenshot({
     path: previews + "/whatsapp-conversation.png",
@@ -128,12 +131,17 @@ test("all dashboard pages pass automated accessibility checks and produce real p
   mkdirSync(previews, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1024 });
   await page.goto("/");
-  for (const name of ['manrope.ttf', 'noto-sans-arabic.ttf']) {
-    const font = await page.request.get('/fonts/' + name);
+  for (const name of ["manrope.ttf", "noto-sans-arabic.ttf"]) {
+    const font = await page.request.get("/fonts/" + name);
     expect(font.status()).toBe(200);
     expect((await font.body()).length).toBeGreaterThan(100000);
   }
-  await page.evaluate(() => Promise.all([document.fonts.load('600 14px Manrope'), document.fonts.load('400 14px "Noto Sans Arabic"')]));
+  await page.evaluate(() =>
+    Promise.all([
+      document.fonts.load("600 14px Manrope"),
+      document.fonts.load('400 14px "Noto Sans Arabic"'),
+    ]),
+  );
   await expect(
     page.getByRole("heading", { name: "Good business starts here." }),
   ).toBeVisible();
@@ -161,7 +169,7 @@ test("all dashboard pages pass automated accessibility checks and produce real p
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBeTruthy();
-    await page.evaluate(() => window.scrollTo(0,0));
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
       path:
         previews +
@@ -221,7 +229,9 @@ test("dark and Arabic mobile layouts remain accessible and within the viewport",
     expect(scan.violations, name + " dark accessibility").toEqual([]);
   }
   await page.getByRole("button", { name: "Overview", exact: true }).click();
-  await page.getByRole("button", { name: "العربية", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Language", exact: true })
+    .selectOption("ar");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
@@ -233,7 +243,7 @@ test("dark and Arabic mobile layouts remain accessible and within the viewport",
     path: previews + "/arabic-mobile.png",
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page.getByRole("button", { name: "فتح القائمة" }).click();
   await page
     .getByRole("button", { name: "استوديو واتساب", exact: true })
     .click();

@@ -19,7 +19,7 @@ def public_company(slug: str):
         if not row:
             raise HTTPException(404, 'Company not found')
         cfg = db.settings(c, row['id'])
-    return {k: cfg[k] for k in ('company_name', 'brand_color', 'logo_url', 'currency', 'assistant_name', 'language')} | {'demo': bool(row['demo'])}
+    return {k: cfg[k] for k in ('company_name', 'brand_color', 'logo_url', 'currency', 'assistant_name', 'language', 'timezone')} | {'demo': bool(row['demo'])}
 
 
 def chat_identity(c, slug, session):
