@@ -1,0 +1,9 @@
+# Native n8n on Linux Docker Engine: share host loopback, keep MADAR loopback-only.
+# Used automatically by local-dev.sh when n8n is not a Docker container on Linux.
+services:
+  app:
+    network_mode: host
+    ports: !reset []
+    environment:
+      N8N_BASE_URL: http://localhost:5678
+    command: ["python", "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", "8000", "--no-access-log"]

@@ -47,6 +47,33 @@ def test_env_file_takes_precedence_over_stale_shell_configuration(tmp_path, monk
     assert settings['N8N_BASE_URL'] == 'http://localhost:5678'
 
 
+def test_replacing_api_key_preserves_other_secrets_and_ignores_stale_shell(tmp_path, monkeypatch, capsys):
+    path = tmp_path / '.env'
+    path.write_text('N8N_API_KEY=old-test-key\nMADAR_BRIDGE_TOKEN=keep-bridge\nMADAR_INGEST_TOKEN=keep-ingest\nMADAR_ADMIN_PASSWORD=keep-test-password\nN8N_ENCRYPTION_KEY=keep-encryption\n')
+    monkeypatch.setenv('N8N_API_KEY', 'stale-shell-test-key')
+    monkeypatch.setattr('scripts.local_n8n.getpass.getpass', lambda prompt: 'replacement-test-key')
+    initialize(path, replace_api_key=True)
+    settings = dotenv_values(path)
+    assert settings['N8N_API_KEY'] == 'replacement-test-key'
+    assert settings['MADAR_BRIDGE_TOKEN'] == 'keep-bridge'
+    assert settings['MADAR_INGEST_TOKEN'] == 'keep-ingest'
+    assert settings['MADAR_ADMIN_PASSWORD'] == 'keep-test-password'
+    assert settings['N8N_ENCRYPTION_KEY'] == 'keep-encryption'
+    assert 'old-test-key' not in path.read_text()
+    assert 'replacement-test-key' not in capsys.readouterr().out
+    assert stat.S_IMODE(path.stat().st_mode) == 0o600
+
+
+def test_invalid_replacement_does_not_change_private_configuration(tmp_path, monkeypatch):
+    path = tmp_path / '.env'
+    content = 'N8N_API_KEY=existing-test-key\nMADAR_BRIDGE_TOKEN=keep-bridge\n'
+    path.write_text(content)
+    monkeypatch.setattr('scripts.local_n8n.getpass.getpass', lambda prompt: 'invalid\nkey')
+    with pytest.raises(ValueError, match='single-line'):
+        initialize(path, replace_api_key=True)
+    assert path.read_text() == content
+
+
 def test_local_checks_use_credentials_in_headers_and_never_dispatch(capsys):
     calls = []
     def handler(request):

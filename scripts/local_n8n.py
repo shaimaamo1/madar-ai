@@ -3,6 +3,7 @@ import argparse
 import getpass
 import json
 import os
+import re
 import secrets
 import sys
 from pathlib import Path
@@ -20,7 +21,7 @@ def load_settings(path):
     return {**os.environ, **{k: v for k, v in dotenv_values(path, interpolate=False).items() if v is not None}}
 
 
-def initialize(path, n8n_url=None, callback_url=None, container_url=None):
+def initialize(path, n8n_url=None, callback_url=None, container_url=None, replace_api_key=False):
     current = dotenv_values(path, interpolate=False) if path.exists() else {}
     if current.get('MADAR_ENV', 'development') != 'development':
         raise ValueError('Local setup refuses to change a production configuration')
@@ -46,17 +47,19 @@ def initialize(path, n8n_url=None, callback_url=None, container_url=None):
     if current.get('N8N_ENABLED') != 'true':
         additions['N8N_ENABLED'] = 'true'
     additions = {name: value for name, value in additions.items() if current.get(name) != value}
-    api_key = current.get('N8N_API_KEY') or os.getenv('N8N_API_KEY')
+    api_key = None if replace_api_key else current.get('N8N_API_KEY') or os.getenv('N8N_API_KEY')
     if not api_key:
         api_key = getpass.getpass('Local n8n API key (hidden; stored only in ignored .env): ').strip()
     if not api_key or any(ch in api_key for ch in '\r\n'):
         raise ValueError('Supply a nonempty single-line n8n API key')
-    if not current.get('N8N_API_KEY'):
+    if replace_api_key or not current.get('N8N_API_KEY'):
         additions['N8N_API_KEY'] = api_key
     for name in ('MADAR_ADMIN_PASSWORD', 'MADAR_BRIDGE_TOKEN', 'MADAR_INGEST_TOKEN', 'N8N_ENCRYPTION_KEY'):
         if not current.get(name):
             additions[name] = secrets.token_urlsafe(32)
     existing = path.read_text() if path.exists() else '# Private local MADAR settings. Never commit this file.\n'
+    if replace_api_key:
+        existing = re.sub(r'^\s*(?:export\s+)?N8N_API_KEY\s*=.*\n?', '', existing, flags=re.MULTILINE)
     text = existing.rstrip() + '\n' + ''.join(f'{k}={json.dumps(v)}\n' for k, v in additions.items())
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + '.tmp-' + secrets.token_hex(4))
@@ -69,7 +72,7 @@ def initialize(path, n8n_url=None, callback_url=None, container_url=None):
     finally:
         if temporary.exists():
             temporary.unlink()
-    print('Private .env saved (0600). Existing secrets preserved; local tokens generated. No key values printed.')
+    print('Private .env saved (0600). Local tokens generated only when missing. No key values printed.')
 
 
 def check(settings, transport=None, smoke=False):
@@ -122,10 +125,11 @@ def main():
     parser.add_argument('--n8n-url', help='Non-secret local base URL; never supply keys as arguments')
     parser.add_argument('--callback-url', help='Address reachable from n8n, e.g. http://app:8000')
     parser.add_argument('--container-url', help='Address reachable from the MADAR Docker container')
+    parser.add_argument('--replace-api-key', action='store_true', help='Prompt securely for a replacement key; preserve other secrets')
     parser.add_argument('--output', type=Path, default=ROOT / 'var' / 'n8n-import')
     args = parser.parse_args()
     if args.command == 'init':
-        initialize(args.env_file, args.n8n_url, args.callback_url, args.container_url)
+        initialize(args.env_file, args.n8n_url, args.callback_url, args.container_url, args.replace_api_key)
         return
     settings = load_settings(args.env_file)
     if args.n8n_url:

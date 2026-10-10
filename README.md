@@ -9,7 +9,7 @@ The working local journey is **website inquiry → bilingual qualification → v
 For your existing local n8n and Docker development, run **on your computer**:
 
 ```bash
-bash scripts/local-dev.sh
+bash scripts/local-dev.sh --replace-api-key
 ```
 
 The hidden API-key prompt writes private ignored settings; four workflows deploy inactive. Open **http://localhost:8000**. See [the local setup guide](docs/local-development.md) for native n8n, networking, JSON import and key explanations. `MADAR_AI_API_KEY` is optional and unnecessary for the rules assistant or n8n.
