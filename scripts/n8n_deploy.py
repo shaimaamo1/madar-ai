@@ -37,7 +37,41 @@ def deploy(settings, transport=None, state_path=None):
             if response.is_error or response.is_redirect:
                 raise ValueError(f'n8n operation failed (HTTP {response.status_code}); response body omitted')
             return response.json()
-        request('GET', 'workflows', params={'limit': 1})
+        # Preflight every template before mutations. Recover workflows after a lost
+        # manifest or a manual import, while refusing ambiguous names and takeovers.
+        templates = [json.loads(path.read_text()) for path in sorted((ROOT / 'workflows').glob('*.json'), key=lambda p: 'error-monitor' not in p.name)]
+        catalog, cursors, cursor = [], set(), None
+        while True:
+            page = request('GET', 'workflows', params={'limit': 100, **({'cursor': cursor} if cursor else {})})
+            if not isinstance(page.get('data'), list):
+                raise ValueError('n8n returned an unexpected workflow list')
+            catalog.extend(page['data'])
+            cursor = page.get('nextCursor')
+            if not cursor:
+                break
+            if cursor in cursors:
+                raise ValueError('n8n workflow pagination repeated a cursor')
+            cursors.add(cursor)
+        for definition in templates:
+            matches = [w for w in catalog if w.get('name') == definition['name']]
+            if len(matches) > 1:
+                raise ValueError('Multiple same-name workflows exist; resolve ambiguity locally before import')
+            previous = saved['workflows'].get(definition['name'])
+            if previous and matches and str(matches[0]['id']) != str(previous):
+                raise ValueError('Manifest ID and same-name workflow disagree; resolve the conflict locally')
+            if previous:
+                current = request('GET', 'workflows/' + str(previous))
+            elif matches:
+                current = request('GET', 'workflows/' + str(matches[0]['id']))
+                expected = {(n['id'], n['type']) for n in definition['nodes']}
+                actual = {(n.get('id'), n.get('type')) for n in current.get('nodes', [])}
+                if actual != expected:
+                    raise ValueError('An unrelated same-name workflow exists; refusing to overwrite or duplicate it')
+                saved['workflows'][definition['name']] = current['id']
+            else:
+                continue
+            if current.get('active'):
+                raise ValueError('Refusing to update an active workflow; deactivate the managed test workflow first')
         for name, value in [('MADAR bridge', bridge), ('MADAR ingestion', ingest)]:
             payload = {'name': name, 'type': 'httpHeaderAuth', 'data': {'name': 'Authorization', 'value': 'Bearer ' + value}}
             if name not in saved['credentials']:
@@ -45,14 +79,14 @@ def deploy(settings, transport=None, state_path=None):
                 saved['credentials'][name] = result['id']
                 persist()
         error_id = None
-        for path in sorted((ROOT / 'workflows').glob('*.json'), key=lambda p: 'error-monitor' not in p.name):
-            definition = json.loads(path.read_text())
+        for definition in templates:
+            is_error = definition['name'] == 'MADAR Error Monitor'
             for node in definition['nodes']:
                 if 'url' in node['parameters']:
                     node['parameters']['url'] = node['parameters']['url'].replace('http://app:8000', callback)
                 for credential in node.get('credentials', {}).values():
                     credential['id'] = saved['credentials'][credential['name']]
-            if error_id and 'error-monitor' not in path.name:
+            if error_id and not is_error:
                 definition['settings']['errorWorkflow'] = error_id
             body = {k: definition[k] for k in ('name', 'nodes', 'connections', 'settings')}
             previous = saved['workflows'].get(definition['name'])
@@ -65,7 +99,7 @@ def deploy(settings, transport=None, state_path=None):
                 result = request('POST', 'workflows', json=body)
             saved['workflows'][definition['name']] = result['id']
             persist()
-            if 'error-monitor' in path.name:
+            if is_error:
                 error_id = str(result['id'])
             print('Saved inactive workflow:', definition['name'])
     print('No workflows activated. No customer messages sent.')

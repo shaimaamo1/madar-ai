@@ -21,7 +21,7 @@ def load_settings(path):
     return {**os.environ, **{k: v for k, v in dotenv_values(path, interpolate=False).items() if v is not None}}
 
 
-def initialize(path, n8n_url=None, callback_url=None, container_url=None, replace_api_key=False):
+def initialize(path, n8n_url=None, callback_url=None, container_url=None, replace_api_key=False, api_key_input=None, public_url=None, disable_external=False):
     current = dotenv_values(path, interpolate=False) if path.exists() else {}
     if current.get('MADAR_ENV', 'development') != 'development':
         raise ValueError('Local setup refuses to change a production configuration')
@@ -44,21 +44,28 @@ def initialize(path, n8n_url=None, callback_url=None, container_url=None, replac
         additions['MADAR_N8N_APP_URL'] = service_url(callback_url, 'MADAR callback')
     if container_url is not None:
         additions['N8N_CONTAINER_URL'] = service_url(container_url, 'Container n8n')
+    if public_url is not None:
+        additions['MADAR_PUBLIC_URL'] = service_url(public_url, 'Dashboard')
+        from urllib.parse import urlsplit
+        additions['MADAR_PORT'] = str(urlsplit(public_url).port or 8000)
     if current.get('N8N_ENABLED') != 'true':
         additions['N8N_ENABLED'] = 'true'
+    if disable_external:
+        additions['MADAR_ALLOW_EXTERNAL_SEND'] = 'false'
+        additions['MADAR_ALLOW_MODEL_USAGE'] = 'false'
     additions = {name: value for name, value in additions.items() if current.get(name) != value}
-    api_key = None if replace_api_key else current.get('N8N_API_KEY') or os.getenv('N8N_API_KEY')
-    if not api_key:
+    api_key = api_key_input if api_key_input is not None else (None if replace_api_key else current.get('N8N_API_KEY') or os.getenv('N8N_API_KEY'))
+    if not api_key and api_key_input is None:
         api_key = getpass.getpass('Local n8n API key (hidden; stored only in ignored .env): ').strip()
     if not api_key or any(ch in api_key for ch in '\r\n'):
         raise ValueError('Supply a nonempty single-line n8n API key')
-    if replace_api_key or not current.get('N8N_API_KEY'):
+    if api_key_input is not None or replace_api_key or not current.get('N8N_API_KEY'):
         additions['N8N_API_KEY'] = api_key
     for name in ('MADAR_ADMIN_PASSWORD', 'MADAR_BRIDGE_TOKEN', 'MADAR_INGEST_TOKEN', 'N8N_ENCRYPTION_KEY'):
         if not current.get(name):
             additions[name] = secrets.token_urlsafe(32)
     existing = path.read_text() if path.exists() else '# Private local MADAR settings. Never commit this file.\n'
-    if replace_api_key:
+    if api_key_input is not None or replace_api_key:
         existing = re.sub(r'^\s*(?:export\s+)?N8N_API_KEY\s*=.*\n?', '', existing, flags=re.MULTILINE)
     text = existing.rstrip() + '\n' + ''.join(f'{k}={json.dumps(v)}\n' for k, v in additions.items())
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,10 +133,14 @@ def main():
     parser.add_argument('--callback-url', help='Address reachable from n8n, e.g. http://app:8000')
     parser.add_argument('--container-url', help='Address reachable from the MADAR Docker container')
     parser.add_argument('--replace-api-key', action='store_true', help='Prompt securely for a replacement key; preserve other secrets')
+    parser.add_argument('--api-key-stdin', action='store_true', help='Read a key from private stdin instead of arguments or environment')
+    parser.add_argument('--public-url', help='Local dashboard URL, including the selected host port')
+    parser.add_argument('--disable-external', action='store_true', help='Keep local external messaging and model usage disabled')
     parser.add_argument('--output', type=Path, default=ROOT / 'var' / 'n8n-import')
     args = parser.parse_args()
     if args.command == 'init':
-        initialize(args.env_file, args.n8n_url, args.callback_url, args.container_url, args.replace_api_key)
+        key = sys.stdin.read().strip() if args.api_key_stdin else None
+        initialize(args.env_file, args.n8n_url, args.callback_url, args.container_url, args.replace_api_key, key, args.public_url, args.disable_external)
         return
     settings = load_settings(args.env_file)
     if args.n8n_url:

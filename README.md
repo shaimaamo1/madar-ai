@@ -4,6 +4,16 @@ A real estate operations workspace for Egypt and the Gulf, with a React/TypeScri
 
 The working local journey is **website inquiry → bilingual qualification → verified property matching → CRM → viewing booking → follow-up → analytics**. All seeded demo data is fictional. The rules assistant operates without external services; a real language model is optional and not yet authorized here.
 
+## Run on Windows
+
+With Docker Desktop installed and your existing n8n running at `http://localhost:5678`, run from this folder:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Start-Madar.ps1 -ReplaceApiKey
+```
+
+Enter the local key at the hidden prompt. The launcher handles setup/startup, imports inactive workflows without duplicate workflow creation, checks every component, and opens the dashboard. Later starts can omit `-ReplaceApiKey`. No host Python, Node or Bash is needed. See [Windows setup, PASS/FAIL reporting and local checks](docs/windows.md).
+
 ## Run locally
 
 For your existing local n8n and Docker development, run **on your computer**:
@@ -54,6 +64,7 @@ This release uses one process and SQLite with persistent storage; it is suitable
 
 ## Documentation
 
+- [Windows one-command deployment](docs/windows.md)
 - [Local Docker, n8n, secrets and preview](docs/local-development.md)
 - [Architecture](docs/architecture.md)
 - [Integration access and official providers](docs/integrations.md)

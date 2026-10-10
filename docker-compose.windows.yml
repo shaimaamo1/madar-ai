@@ -1,0 +1,25 @@
+# Windows launcher uses only your existing n8n. This file has no n8n service.
+services:
+  app:
+    build: .
+    image: madar-ai:local
+    ports: ["127.0.0.1:${MADAR_PORT:-8000}:8000"]
+    volumes: ["madar-data:/app/var"]
+    env_file: .madar-local/.env
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    environment:
+      MADAR_ENV: development
+      MADAR_DEMO_MODE: "true"
+      MADAR_PUBLIC_URL: http://localhost:${MADAR_PORT:-8000}
+      MADAR_DB_PATH: /app/var/madar.sqlite3
+      MADAR_INTEGRATION_WORKSPACE: madar
+      N8N_ENABLED: "true"
+      N8N_BASE_URL: ${N8N_CONTAINER_URL:-http://host.docker.internal:5678}
+      MADAR_ALLOW_EXTERNAL_SEND: "false"
+      MADAR_ALLOW_MODEL_USAGE: "false"
+    restart: unless-stopped
+networks:
+  default:
+    name: madar-local
+volumes:
+  madar-data:

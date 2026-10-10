@@ -2,6 +2,8 @@
 
 Run these commands **on your computer**, alongside your existing n8n. Codex Cloud cannot reach your localhost and does not need your local API key. Docker Desktop (or Docker Engine) with Compose v2.24.4+ and Bash are required.
 
+For a Windows laptop, use the [PowerShell launcher](windows.md); Bash is unnecessary there.
+
 ## One-command setup for your existing local n8n
 
 ```bash
@@ -52,7 +54,7 @@ docker compose -f docker-compose.yml -f docker-compose.host.yml up -d --build ap
 
 The wizard also writes callback-adjusted importable JSON into ignored `var/n8n-import/` before deployment. Original portable exports remain in `workflows/`.
 
-The deployment manifest in ignored `var/n8n-deployments/` stores only instance URLs and managed IDs. Keep it to update the same inactive workflows on subsequent runs. Active managed workflows cannot be overwritten. Deleting this manifest can create duplicates; it does not remove workflows or credentials. If tokens change, update the corresponding n8n header credentials securely; deployment preserves existing credentials.
+The deployment manifest in ignored `var/n8n-deployments/` stores only instance URLs and managed IDs. Keep it to update the same inactive workflows on subsequent runs. Active managed workflows cannot be overwritten. If the manifest is missing, import now preflights existing names and node identities to reuse managed workflows. Ambiguous, unrelated or active matches are refused. It does not remove workflows or credentials; losing the manifest may create replacement credentials. If tokens change, update the corresponding n8n header credentials securely; deployment preserves existing credentials.
 
 ## Import JSON without API deployment
 
