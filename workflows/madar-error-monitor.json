@@ -1,0 +1,49 @@
+{
+  "name": "MADAR Error Monitor",
+  "nodes": [
+    {
+      "id": "error",
+      "name": "Workflow failure",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "summary",
+      "name": "Redacted incident summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        200
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({json: {workflowId: item.json.workflow?.id, executionId: item.json.execution?.id, timestamp: new Date().toISOString(), incident: 'Workflow failed; inspect restricted n8n execution logs'}}));"
+      }
+    }
+  ],
+  "connections": {
+    "Workflow failure": {
+      "main": [
+        [
+          {
+            "node": "Redacted incident summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all"
+  },
+  "active": false,
+  "tags": []
+}

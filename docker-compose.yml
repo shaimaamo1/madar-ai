@@ -1,0 +1,47 @@
+services:
+  app:
+    build: .
+    image: madar-ai:local
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["madar-data:/app/var"]
+    env_file:
+      - path: .env
+        required: false
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    environment:
+      MADAR_ENV: ${MADAR_ENV:-development}
+      MADAR_DEMO_MODE: ${MADAR_DEMO_MODE:-true}
+      MADAR_PUBLIC_URL: ${MADAR_PUBLIC_URL:-http://localhost:8000}
+      MADAR_ADMIN_PASSWORD: ${MADAR_ADMIN_PASSWORD:-}
+      MADAR_ADMIN_EMAIL: ${MADAR_ADMIN_EMAIL:-admin@madar.local}
+      MADAR_AI_API_KEY: ${MADAR_AI_API_KEY:-}
+      MADAR_ALLOW_MODEL_USAGE: "false"
+      MADAR_INTEGRATION_TENANT_ID: ${MADAR_INTEGRATION_TENANT_ID:-}
+      MADAR_INTEGRATION_WORKSPACE: ${MADAR_INTEGRATION_WORKSPACE:-madar}
+      MADAR_DB_PATH: /app/var/madar.sqlite3
+      N8N_ENABLED: ${N8N_ENABLED:-false}
+      N8N_BASE_URL: ${N8N_CONTAINER_URL:-http://n8n:5678}
+      N8N_API_KEY: ${N8N_API_KEY:-}
+      MADAR_BRIDGE_TOKEN: ${MADAR_BRIDGE_TOKEN:-}
+      MADAR_INGEST_TOKEN: ${MADAR_INGEST_TOKEN:-}
+      MADAR_ALLOW_EXTERNAL_SEND: "false"
+    restart: unless-stopped
+  # Optional new instance. Leave this profile off to keep your existing n8n data.
+  n8n:
+    profiles: ["automation"]
+    image: ${N8N_IMAGE:-docker.n8n.io/n8nio/n8n:2.42.6}
+    ports: ["127.0.0.1:5678:5678"]
+    volumes: ["n8n-data:/home/node/.n8n"]
+    environment:
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-}
+      N8N_SECURE_COOKIE: "false"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      GENERIC_TIMEZONE: Africa/Cairo
+    restart: unless-stopped
+networks:
+  default:
+    name: madar-local
+volumes:
+  madar-data:
+  n8n-data:

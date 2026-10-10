@@ -1,0 +1,12 @@
+{
+  "name": "Madar Sales Adviser",
+  "languages": ["English", "Arabic", "Egyptian Arabic"],
+  "offline_mode": "Explicitly labeled deterministic qualification and inventory matching",
+  "optional_model": "gpt-4.1-mini",
+  "source_of_truth": "Tenant-scoped available property records; customer-stated preferences",
+  "constraints": ["Never invent property facts", "Never promise a discount or return", "Never claim a booking without a committed appointment", "Escalate complaints and legal questions", "Honor opt-outs", "No external delivery without owner approval"],
+  "qualification": ["budget", "location", "intent", "property_type", "bedrooms", "min_size", "amenities"],
+  "matching": "Hard filters for budget, availability, intent, location, bedrooms, size, amenities; rank explicit matches",
+  "booking": "Verified business hours and transactional overlap checks",
+  "evaluation": "tests/test_product.py and frontend/e2e/journey.spec.ts"
+}

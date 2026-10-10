@@ -147,3 +147,14 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# MADAR local state
+var/
+.venv/
+__pycache__/
+.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+*.pyc
+frontend/test-results*/
+frontend/playwright-report/

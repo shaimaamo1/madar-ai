@@ -1,0 +1,63 @@
+{
+  "name": "MADAR Test Evaluation",
+  "nodes": [
+    {
+      "id": "manual",
+      "name": "Safe manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "evaluate-due-follow-ups",
+      "name": "Evaluate due follow-ups",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        200
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/tick",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Safe manual test": {
+      "main": [
+        [
+          {
+            "node": "Evaluate due follow-ups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all"
+  },
+  "active": false,
+  "tags": []
+}
