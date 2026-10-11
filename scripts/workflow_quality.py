@@ -21,6 +21,8 @@ def inspect_graph(flow):
     executable = {n['name'] for n in nodes if n['type'] != 'n8n-nodes-base.stickyNote'}
     for n in nodes:
         kind = n['type'].removeprefix('n8n-nodes-base.')
+        if kind == 'stickyNote':
+            errors.append('Decorative canvas nodes are forbidden')
         if not n['type'].startswith('n8n-nodes-base.') or VERSIONS.get(kind) != n.get('typeVersion'):
             errors.append('Node type/version differs from the repository compatibility matrix')
         if len(n.get('position', [])) != 2:

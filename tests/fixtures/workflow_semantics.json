@@ -1,0 +1,58 @@
+{
+  "MADAR Delivery Reconciliation": {
+    "count": 5,
+    "sha256": "7842268f56e8f483056a6b852a504b4ecbb04b021e41832ece50b0fc98d0b2e6"
+  },
+  "MADAR Error Monitor": {
+    "count": 3,
+    "sha256": "3bc6d06ca63c607a0ce54ef86871199bccd50ad9bb0ae27ed54b1a0d015b9f50"
+  },
+  "MADAR Follow-up Scheduler": {
+    "count": 38,
+    "sha256": "1de404f838721f4951724a16bf811133391c3ee202421d80f46c53514fe5e5a5"
+  },
+  "MADAR Full Demo": {
+    "count": 11,
+    "sha256": "b8f84e2d72e3f78324fd3bc27837218030c0492ca1feda92bdf7bfa610e3202a"
+  },
+  "MADAR Human Handoff & Escalation": {
+    "count": 36,
+    "sha256": "d0ceaa28d709de987e5d9060922ebee28827498a9eeea7dfda56c1518c450374"
+  },
+  "MADAR Ingestion Subworkflow": {
+    "count": 3,
+    "sha256": "f85bd79a22d55fb8a5af8cd60068d2422dfd52b84834fb6ec0e99996fab086f9"
+  },
+  "MADAR Lead Intelligence": {
+    "count": 36,
+    "sha256": "0910ccf0c0df1c2d35aa3053b0d6e52e79bdcf308a95304a7d01270e78c7cab7"
+  },
+  "MADAR Omnichannel Intake": {
+    "count": 41,
+    "sha256": "9208ddc48e693ef66c92db7d5955866134a89499eb06b55883dc2bbd5feda3ee"
+  },
+  "MADAR Property Matching Engine": {
+    "count": 36,
+    "sha256": "96f17d3dd58e9ed45a95a1716338abf03e852f818756837003998edc2b231d70"
+  },
+  "MADAR Sales Reporting": {
+    "count": 38,
+    "sha256": "56c7f761fde4ed84b45152f2a5092a3b819dea7012f5ac3aaeda3b55f8444df5"
+  },
+  "MADAR Test Evaluation": {
+    "count": 3,
+    "sha256": "3e288c897e97831f7d20e56304d4da250a30919d9d4aa106f8a03b8f619c2f8c"
+  },
+  "MADAR Viewing Reservations": {
+    "count": 36,
+    "sha256": "4a6c13247e4a6a94f115f1a1d324186686ad7f67c1147389fa631e02b69ef9ac"
+  },
+  "MADAR WhatsApp Conversation": {
+    "count": 36,
+    "sha256": "7459a559d9bbf99c6f7634f35e8df861f9f9921472cd10fe8740a7eb155a1e2b"
+  },
+  "MADAR WhatsApp Delivery": {
+    "count": 5,
+    "sha256": "55e11070280202b68be985be1516467e9e907a420375f6604683ee3c8e6732ab"
+  }
+}

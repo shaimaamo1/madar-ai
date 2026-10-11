@@ -18,7 +18,7 @@ export const workflowCatalog = [
         "name": "Escalate uncertain and failed delivery",
         "type": "httpRequest",
         "position": [
-          460,
+          480,
           220
         ]
       },
@@ -27,7 +27,7 @@ export const workflowCatalog = [
         "name": "Incidents need operator review",
         "type": "if",
         "position": [
-          780,
+          800,
           220
         ]
       },
@@ -36,8 +36,8 @@ export const workflowCatalog = [
         "name": "Return reconciliation queue",
         "type": "code",
         "position": [
-          1070,
-          110
+          1120,
+          220
         ]
       },
       {
@@ -45,33 +45,9 @@ export const workflowCatalog = [
         "name": "Return clean delivery review",
         "type": "code",
         "position": [
-          1070,
-          330
+          1120,
+          480
         ]
-      },
-      {
-        "id": "reliability-and-audit",
-        "name": "RELIABILITY AND AUDIT",
-        "type": "stickyNote",
-        "position": [
-          110,
-          75
-        ],
-        "note": "## RELIABILITY AND AUDIT\nRetries: transient provider rejections only, exponential backoff, five attempts. Uncertain network outcomes create one operator incident per message; no blind replay.",
-        "width": 900,
-        "height": 300
-      },
-      {
-        "id": "operator-escalation",
-        "name": "OPERATOR ESCALATION",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          35
-        ],
-        "note": "## OPERATOR ESCALATION\nDashboard-only incident queue. Customer text and provider errors are not copied to workflow logs or external notification accounts.",
-        "width": 360,
-        "height": 430
       }
     ],
     "edges": [
@@ -119,7 +95,7 @@ export const workflowCatalog = [
         "name": "Redacted incident summary",
         "type": "code",
         "position": [
-          430,
+          480,
           220
         ]
       },
@@ -128,21 +104,9 @@ export const workflowCatalog = [
         "name": "Record operator incident",
         "type": "httpRequest",
         "position": [
-          700,
+          800,
           220
         ]
-      },
-      {
-        "id": "restricted-incident-escalation",
-        "name": "RESTRICTED INCIDENT ESCALATION",
-        "type": "stickyNote",
-        "position": [
-          110,
-          100
-        ],
-        "note": "## RESTRICTED INCIDENT ESCALATION\nIdentifiers only. Opens an auditable dashboard incident. No customer payloads, tokens, email or Slack notifications.",
-        "width": 850,
-        "height": 250
       }
     ],
     "edges": [
@@ -180,7 +144,7 @@ export const workflowCatalog = [
         "name": "Validate orchestration envelope",
         "type": "code",
         "position": [
-          420,
+          800,
           220
         ]
       },
@@ -189,8 +153,8 @@ export const workflowCatalog = [
         "name": "Every five minutes",
         "type": "scheduleTrigger",
         "position": [
-          140,
-          430
+          160,
+          480
         ]
       },
       {
@@ -198,8 +162,8 @@ export const workflowCatalog = [
         "name": "Generate scheduled receipt identity",
         "type": "code",
         "position": [
-          140,
-          650
+          480,
+          220
         ]
       },
       {
@@ -207,7 +171,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          1120,
           220
         ]
       },
@@ -216,7 +180,7 @@ export const workflowCatalog = [
         "name": "Validate follow-up interval",
         "type": "code",
         "position": [
-          1060,
+          1440,
           220
         ]
       },
@@ -225,7 +189,7 @@ export const workflowCatalog = [
         "name": "Validate follow-up interval accepted",
         "type": "if",
         "position": [
-          1330,
+          1760,
           220
         ]
       },
@@ -234,8 +198,8 @@ export const workflowCatalog = [
         "name": "Validate follow-up interval review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          2080,
+          480
         ]
       },
       {
@@ -243,7 +207,7 @@ export const workflowCatalog = [
         "name": "Validate company timezone configuration",
         "type": "code",
         "position": [
-          1710,
+          2080,
           220
         ]
       },
@@ -252,7 +216,7 @@ export const workflowCatalog = [
         "name": "Validate company timezone configuration accepted",
         "type": "if",
         "position": [
-          1980,
+          2400,
           220
         ]
       },
@@ -261,8 +225,8 @@ export const workflowCatalog = [
         "name": "Validate company timezone configuration review required",
         "type": "code",
         "position": [
-          1980,
-          410
+          2720,
+          480
         ]
       },
       {
@@ -270,7 +234,7 @@ export const workflowCatalog = [
         "name": "Collect due pending tasks",
         "type": "code",
         "position": [
-          2360,
+          2720,
           220
         ]
       },
@@ -279,7 +243,7 @@ export const workflowCatalog = [
         "name": "Exclude missing customer references",
         "type": "code",
         "position": [
-          3010,
+          3040,
           220
         ]
       },
@@ -288,7 +252,7 @@ export const workflowCatalog = [
         "name": "Exclude missing customer references accepted",
         "type": "if",
         "position": [
-          3280,
+          3360,
           220
         ]
       },
@@ -297,8 +261,8 @@ export const workflowCatalog = [
         "name": "Exclude missing customer references review required",
         "type": "code",
         "position": [
-          3280,
-          410
+          3680,
+          480
         ]
       },
       {
@@ -306,8 +270,8 @@ export const workflowCatalog = [
         "name": "Apply customer follow-up consent",
         "type": "code",
         "position": [
-          1060,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -315,8 +279,8 @@ export const workflowCatalog = [
         "name": "Exclude human-owned conversations",
         "type": "code",
         "position": [
-          1710,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -324,8 +288,8 @@ export const workflowCatalog = [
         "name": "Identify availability follow-ups",
         "type": "code",
         "position": [
-          2360,
-          770
+          4320,
+          220
         ]
       },
       {
@@ -333,8 +297,8 @@ export const workflowCatalog = [
         "name": "Identify ordinary follow-ups",
         "type": "code",
         "position": [
-          3010,
-          770
+          4640,
+          220
         ]
       },
       {
@@ -342,8 +306,8 @@ export const workflowCatalog = [
         "name": "Collect upcoming viewing reminders",
         "type": "code",
         "position": [
-          1060,
-          1320
+          4960,
+          220
         ]
       },
       {
@@ -351,8 +315,8 @@ export const workflowCatalog = [
         "name": "Identify dormant customer re-engagement",
         "type": "code",
         "position": [
-          1710,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -360,8 +324,8 @@ export const workflowCatalog = [
         "name": "Identify consented customer retention",
         "type": "code",
         "position": [
-          2360,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -369,8 +333,8 @@ export const workflowCatalog = [
         "name": "Validate opt-out suppression",
         "type": "code",
         "position": [
-          3010,
-          1320
+          5920,
+          220
         ]
       },
       {
@@ -378,8 +342,8 @@ export const workflowCatalog = [
         "name": "Validate opt-out suppression accepted",
         "type": "if",
         "position": [
-          3280,
-          1320
+          6240,
+          220
         ]
       },
       {
@@ -387,8 +351,8 @@ export const workflowCatalog = [
         "name": "Validate opt-out suppression review required",
         "type": "code",
         "position": [
-          3280,
-          1510
+          6560,
+          480
         ]
       },
       {
@@ -396,8 +360,8 @@ export const workflowCatalog = [
         "name": "Validate human ownership suppression",
         "type": "code",
         "position": [
-          1060,
-          1870
+          6560,
+          220
         ]
       },
       {
@@ -405,8 +369,8 @@ export const workflowCatalog = [
         "name": "Validate human ownership suppression accepted",
         "type": "if",
         "position": [
-          1330,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -414,8 +378,8 @@ export const workflowCatalog = [
         "name": "Validate human ownership suppression review required",
         "type": "code",
         "position": [
-          1330,
-          2060
+          7200,
+          480
         ]
       },
       {
@@ -423,8 +387,8 @@ export const workflowCatalog = [
         "name": "Validate delivery authorization type",
         "type": "code",
         "position": [
-          1710,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -432,8 +396,8 @@ export const workflowCatalog = [
         "name": "Validate delivery authorization type accepted",
         "type": "if",
         "position": [
-          1980,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -441,8 +405,8 @@ export const workflowCatalog = [
         "name": "Validate delivery authorization type review required",
         "type": "code",
         "position": [
-          1980,
-          2060
+          7840,
+          480
         ]
       },
       {
@@ -450,8 +414,8 @@ export const workflowCatalog = [
         "name": "Prepare stable task receipt keys",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -459,8 +423,8 @@ export const workflowCatalog = [
         "name": "Build queue-only follow-up policy",
         "type": "code",
         "position": [
-          3010,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -468,8 +432,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative followup",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8480,
+          220
         ]
       },
       {
@@ -477,8 +441,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8800,
+          480
         ]
       },
       {
@@ -486,8 +450,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -495,8 +459,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9440,
+          480
         ]
       },
       {
@@ -504,57 +468,9 @@ export const workflowCatalog = [
         "name": "Return minimal orchestration receipt",
         "type": "code",
         "position": [
-          4100,
-          1870
+          8800,
+          220
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -795,8 +711,8 @@ export const workflowCatalog = [
         "name": "Run queued fictional demo",
         "type": "manualTrigger",
         "position": [
-          120,
-          260
+          160,
+          220
         ]
       },
       {
@@ -804,8 +720,8 @@ export const workflowCatalog = [
         "name": "Claim isolated demo capability",
         "type": "httpRequest",
         "position": [
-          400,
-          260
+          480,
+          220
         ]
       },
       {
@@ -813,8 +729,8 @@ export const workflowCatalog = [
         "name": "Run intake module",
         "type": "executeWorkflow",
         "position": [
-          750,
-          260
+          800,
+          220
         ]
       },
       {
@@ -822,8 +738,8 @@ export const workflowCatalog = [
         "name": "Run qualification module",
         "type": "executeWorkflow",
         "position": [
-          1040,
-          260
+          1120,
+          220
         ]
       },
       {
@@ -831,8 +747,8 @@ export const workflowCatalog = [
         "name": "Run matching module",
         "type": "executeWorkflow",
         "position": [
-          1330,
-          260
+          1440,
+          220
         ]
       },
       {
@@ -840,8 +756,8 @@ export const workflowCatalog = [
         "name": "Run appointment module",
         "type": "executeWorkflow",
         "position": [
-          1620,
-          260
+          1760,
+          220
         ]
       },
       {
@@ -849,8 +765,8 @@ export const workflowCatalog = [
         "name": "Run followup module",
         "type": "executeWorkflow",
         "position": [
-          1910,
-          260
+          2080,
+          220
         ]
       },
       {
@@ -858,8 +774,8 @@ export const workflowCatalog = [
         "name": "Run conversation module",
         "type": "executeWorkflow",
         "position": [
-          2200,
-          260
+          2400,
+          220
         ]
       },
       {
@@ -867,8 +783,8 @@ export const workflowCatalog = [
         "name": "Run handoff module",
         "type": "executeWorkflow",
         "position": [
-          2490,
-          260
+          2720,
+          220
         ]
       },
       {
@@ -876,8 +792,8 @@ export const workflowCatalog = [
         "name": "Run reporting module",
         "type": "executeWorkflow",
         "position": [
-          2780,
-          260
+          3040,
+          220
         ]
       },
       {
@@ -885,21 +801,9 @@ export const workflowCatalog = [
         "name": "Record actual execution reference",
         "type": "httpRequest",
         "position": [
-          3180,
-          260
+          3360,
+          220
         ]
-      },
-      {
-        "id": "isolated-demo-/-real-n8n-execution",
-        "name": "ISOLATED DEMO / REAL N8N EXECUTION",
-        "type": "stickyNote",
-        "position": [
-          80,
-          100
-        ],
-        "note": "## ISOLATED DEMO / REAL N8N EXECUTION\nClaim one queued fictional workspace. Eight real business modules, scoped capability, ordered replay-safe artifacts. Backend never marks execution verified until n8n reports success. No provider dispatch or paid model calls.",
-        "width": 3370,
-        "height": 400
       }
     ],
     "edges": [
@@ -978,7 +882,7 @@ export const workflowCatalog = [
         "name": "Validate orchestration envelope",
         "type": "code",
         "position": [
-          420,
+          480,
           220
         ]
       },
@@ -987,7 +891,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          800,
           220
         ]
       },
@@ -996,7 +900,7 @@ export const workflowCatalog = [
         "name": "Require customer escalation reference",
         "type": "code",
         "position": [
-          1060,
+          1120,
           220
         ]
       },
@@ -1005,7 +909,7 @@ export const workflowCatalog = [
         "name": "Require customer escalation reference accepted",
         "type": "if",
         "position": [
-          1330,
+          1440,
           220
         ]
       },
@@ -1014,8 +918,8 @@ export const workflowCatalog = [
         "name": "Require customer escalation reference review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          1760,
+          480
         ]
       },
       {
@@ -1023,7 +927,7 @@ export const workflowCatalog = [
         "name": "Validate escalation score",
         "type": "code",
         "position": [
-          1710,
+          1760,
           220
         ]
       },
@@ -1032,7 +936,7 @@ export const workflowCatalog = [
         "name": "Validate escalation score accepted",
         "type": "if",
         "position": [
-          1980,
+          2080,
           220
         ]
       },
@@ -1041,8 +945,8 @@ export const workflowCatalog = [
         "name": "Validate escalation score review required",
         "type": "code",
         "position": [
-          1980,
-          410
+          2400,
+          480
         ]
       },
       {
@@ -1050,7 +954,7 @@ export const workflowCatalog = [
         "name": "Determine escalation priority",
         "type": "code",
         "position": [
-          2360,
+          2400,
           220
         ]
       },
@@ -1059,7 +963,7 @@ export const workflowCatalog = [
         "name": "Determine response SLA duration",
         "type": "code",
         "position": [
-          3010,
+          2720,
           220
         ]
       },
@@ -1068,8 +972,8 @@ export const workflowCatalog = [
         "name": "Calculate SLA due timestamp",
         "type": "code",
         "position": [
-          1060,
-          770
+          3040,
+          220
         ]
       },
       {
@@ -1077,8 +981,8 @@ export const workflowCatalog = [
         "name": "Collect active advisers",
         "type": "code",
         "position": [
-          1710,
-          770
+          3360,
+          220
         ]
       },
       {
@@ -1086,8 +990,8 @@ export const workflowCatalog = [
         "name": "Require available escalation adviser",
         "type": "code",
         "position": [
-          2360,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -1095,8 +999,8 @@ export const workflowCatalog = [
         "name": "Require available escalation adviser accepted",
         "type": "if",
         "position": [
-          2630,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -1104,8 +1008,8 @@ export const workflowCatalog = [
         "name": "Require available escalation adviser review required",
         "type": "code",
         "position": [
-          2630,
-          960
+          4320,
+          480
         ]
       },
       {
@@ -1113,8 +1017,8 @@ export const workflowCatalog = [
         "name": "Measure adviser open pipeline",
         "type": "code",
         "position": [
-          3010,
-          770
+          4320,
+          220
         ]
       },
       {
@@ -1122,8 +1026,8 @@ export const workflowCatalog = [
         "name": "Resolve existing assigned adviser",
         "type": "code",
         "position": [
-          1060,
-          1320
+          4640,
+          220
         ]
       },
       {
@@ -1131,8 +1035,8 @@ export const workflowCatalog = [
         "name": "Require active assigned owner",
         "type": "code",
         "position": [
-          1710,
-          1320
+          4960,
+          220
         ]
       },
       {
@@ -1140,8 +1044,8 @@ export const workflowCatalog = [
         "name": "Require active assigned owner accepted",
         "type": "if",
         "position": [
-          1980,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -1149,8 +1053,8 @@ export const workflowCatalog = [
         "name": "Require active assigned owner review required",
         "type": "code",
         "position": [
-          1980,
-          1510
+          5600,
+          480
         ]
       },
       {
@@ -1158,8 +1062,8 @@ export const workflowCatalog = [
         "name": "Find existing handoff task",
         "type": "code",
         "position": [
-          2360,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -1167,8 +1071,8 @@ export const workflowCatalog = [
         "name": "Validate handoff task uniqueness",
         "type": "code",
         "position": [
-          3010,
-          1320
+          5920,
+          220
         ]
       },
       {
@@ -1176,8 +1080,8 @@ export const workflowCatalog = [
         "name": "Validate handoff task uniqueness accepted",
         "type": "if",
         "position": [
-          3280,
-          1320
+          6240,
+          220
         ]
       },
       {
@@ -1185,8 +1089,8 @@ export const workflowCatalog = [
         "name": "Validate handoff task uniqueness review required",
         "type": "code",
         "position": [
-          3280,
-          1510
+          6560,
+          480
         ]
       },
       {
@@ -1194,8 +1098,8 @@ export const workflowCatalog = [
         "name": "Collect confirmed viewing context",
         "type": "code",
         "position": [
-          1060,
-          1870
+          6560,
+          220
         ]
       },
       {
@@ -1203,8 +1107,8 @@ export const workflowCatalog = [
         "name": "Summarize recorded customer requirements",
         "type": "code",
         "position": [
-          1710,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -1212,8 +1116,8 @@ export const workflowCatalog = [
         "name": "Validate supported ownership state",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -1221,8 +1125,8 @@ export const workflowCatalog = [
         "name": "Validate supported ownership state accepted",
         "type": "if",
         "position": [
-          2630,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -1230,8 +1134,8 @@ export const workflowCatalog = [
         "name": "Validate supported ownership state review required",
         "type": "code",
         "position": [
-          2630,
-          2060
+          7840,
+          480
         ]
       },
       {
@@ -1239,8 +1143,8 @@ export const workflowCatalog = [
         "name": "Prepare acknowledgement and resolution policy",
         "type": "code",
         "position": [
-          3010,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -1248,8 +1152,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative handoff",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -1257,8 +1161,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8480,
+          480
         ]
       },
       {
@@ -1266,8 +1170,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          8800,
+          480
         ]
       },
       {
@@ -1275,8 +1179,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -1284,57 +1188,9 @@ export const workflowCatalog = [
         "name": "Return minimal orchestration receipt",
         "type": "code",
         "position": [
-          4100,
-          1870
+          8480,
+          220
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -1574,7 +1430,7 @@ export const workflowCatalog = [
         "name": "Validate normalized inquiry",
         "type": "code",
         "position": [
-          400,
+          480,
           220
         ]
       },
@@ -1583,21 +1439,9 @@ export const workflowCatalog = [
         "name": "Normalize inquiry",
         "type": "httpRequest",
         "position": [
-          650,
+          800,
           220
         ]
-      },
-      {
-        "id": "atomic-crm-transaction",
-        "name": "ATOMIC CRM TRANSACTION",
-        "type": "stickyNote",
-        "position": [
-          110,
-          100
-        ],
-        "note": "## ATOMIC CRM TRANSACTION\nReceipt deduplication, contact resolution, qualification, scoring, inventory matching, assignment, history and gated outbox commit together.",
-        "width": 810,
-        "height": 250
       }
     ],
     "edges": [
@@ -1635,7 +1479,7 @@ export const workflowCatalog = [
         "name": "Validate orchestration envelope",
         "type": "code",
         "position": [
-          420,
+          480,
           220
         ]
       },
@@ -1644,7 +1488,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          800,
           220
         ]
       },
@@ -1653,7 +1497,7 @@ export const workflowCatalog = [
         "name": "Resolve recorded customer",
         "type": "code",
         "position": [
-          1060,
+          1120,
           220
         ]
       },
@@ -1662,7 +1506,7 @@ export const workflowCatalog = [
         "name": "Resolve recorded customer accepted",
         "type": "if",
         "position": [
-          1330,
+          1440,
           220
         ]
       },
@@ -1671,8 +1515,8 @@ export const workflowCatalog = [
         "name": "Resolve recorded customer review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          1760,
+          480
         ]
       },
       {
@@ -1680,7 +1524,7 @@ export const workflowCatalog = [
         "name": "Validate persisted preference bounds",
         "type": "code",
         "position": [
-          1710,
+          1760,
           220
         ]
       },
@@ -1689,7 +1533,7 @@ export const workflowCatalog = [
         "name": "Validate persisted preference bounds accepted",
         "type": "if",
         "position": [
-          1980,
+          2080,
           220
         ]
       },
@@ -1698,8 +1542,8 @@ export const workflowCatalog = [
         "name": "Validate persisted preference bounds review required",
         "type": "code",
         "position": [
-          1980,
-          410
+          2400,
+          480
         ]
       },
       {
@@ -1707,7 +1551,7 @@ export const workflowCatalog = [
         "name": "Detect preferred conversation language",
         "type": "code",
         "position": [
-          2360,
+          2400,
           220
         ]
       },
@@ -1716,7 +1560,7 @@ export const workflowCatalog = [
         "name": "Identify missing qualification fields",
         "type": "code",
         "position": [
-          3010,
+          2720,
           220
         ]
       },
@@ -1725,8 +1569,8 @@ export const workflowCatalog = [
         "name": "Audit budget contribution",
         "type": "code",
         "position": [
-          1060,
-          770
+          3040,
+          220
         ]
       },
       {
@@ -1734,8 +1578,8 @@ export const workflowCatalog = [
         "name": "Audit location contribution",
         "type": "code",
         "position": [
-          1710,
-          770
+          3360,
+          220
         ]
       },
       {
@@ -1743,8 +1587,8 @@ export const workflowCatalog = [
         "name": "Audit specification contribution",
         "type": "code",
         "position": [
-          2360,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -1752,8 +1596,8 @@ export const workflowCatalog = [
         "name": "Audit contact and consent contribution",
         "type": "code",
         "position": [
-          3010,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -1761,8 +1605,8 @@ export const workflowCatalog = [
         "name": "Reconcile persisted qualification score",
         "type": "code",
         "position": [
-          1060,
-          1320
+          4320,
+          220
         ]
       },
       {
@@ -1770,8 +1614,8 @@ export const workflowCatalog = [
         "name": "Reconcile persisted qualification score accepted",
         "type": "if",
         "position": [
-          1330,
-          1320
+          4640,
+          220
         ]
       },
       {
@@ -1779,8 +1623,8 @@ export const workflowCatalog = [
         "name": "Reconcile persisted qualification score review required",
         "type": "code",
         "position": [
-          1330,
-          1510
+          4960,
+          480
         ]
       },
       {
@@ -1788,8 +1632,8 @@ export const workflowCatalog = [
         "name": "Detect viewing intent evidence",
         "type": "code",
         "position": [
-          1710,
-          1320
+          4960,
+          220
         ]
       },
       {
@@ -1797,8 +1641,8 @@ export const workflowCatalog = [
         "name": "Detect urgency evidence",
         "type": "code",
         "position": [
-          2360,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -1806,8 +1650,8 @@ export const workflowCatalog = [
         "name": "Determine authoritative ownership",
         "type": "code",
         "position": [
-          3010,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -1815,8 +1659,8 @@ export const workflowCatalog = [
         "name": "Validate assigned adviser membership",
         "type": "code",
         "position": [
-          1060,
-          1870
+          5920,
+          220
         ]
       },
       {
@@ -1824,8 +1668,8 @@ export const workflowCatalog = [
         "name": "Validate assigned adviser membership accepted",
         "type": "if",
         "position": [
-          1330,
-          1870
+          6240,
+          220
         ]
       },
       {
@@ -1833,8 +1677,8 @@ export const workflowCatalog = [
         "name": "Validate assigned adviser membership review required",
         "type": "code",
         "position": [
-          1330,
-          2060
+          6560,
+          480
         ]
       },
       {
@@ -1842,8 +1686,8 @@ export const workflowCatalog = [
         "name": "Validate qualification enum values",
         "type": "code",
         "position": [
-          1710,
-          1870
+          6560,
+          220
         ]
       },
       {
@@ -1851,8 +1695,8 @@ export const workflowCatalog = [
         "name": "Validate qualification enum values accepted",
         "type": "if",
         "position": [
-          1980,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -1860,8 +1704,8 @@ export const workflowCatalog = [
         "name": "Validate qualification enum values review required",
         "type": "code",
         "position": [
-          1980,
-          2060
+          7200,
+          480
         ]
       },
       {
@@ -1869,8 +1713,8 @@ export const workflowCatalog = [
         "name": "Require available qualification evidence",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -1878,8 +1722,8 @@ export const workflowCatalog = [
         "name": "Require available qualification evidence accepted",
         "type": "if",
         "position": [
-          2630,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -1887,8 +1731,8 @@ export const workflowCatalog = [
         "name": "Require available qualification evidence review required",
         "type": "code",
         "position": [
-          2630,
-          2060
+          7840,
+          480
         ]
       },
       {
@@ -1896,8 +1740,8 @@ export const workflowCatalog = [
         "name": "Choose safe sales readiness",
         "type": "code",
         "position": [
-          3010,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -1905,8 +1749,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative qualification",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -1914,8 +1758,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8480,
+          480
         ]
       },
       {
@@ -1923,8 +1767,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          8800,
+          480
         ]
       },
       {
@@ -1932,8 +1776,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -1941,57 +1785,9 @@ export const workflowCatalog = [
         "name": "Return minimal orchestration receipt",
         "type": "code",
         "position": [
-          4100,
-          1870
+          8480,
+          220
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -2223,7 +2019,7 @@ export const workflowCatalog = [
         "type": "executeWorkflowTrigger",
         "position": [
           160,
-          220
+          480
         ]
       },
       {
@@ -2231,7 +2027,7 @@ export const workflowCatalog = [
         "name": "Normalize trusted envelope",
         "type": "code",
         "position": [
-          420,
+          480,
           220
         ]
       },
@@ -2240,8 +2036,8 @@ export const workflowCatalog = [
         "name": "Authenticated normalized events",
         "type": "webhook",
         "position": [
-          140,
-          430
+          160,
+          220
         ]
       },
       {
@@ -2249,7 +2045,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          800,
           220
         ]
       },
@@ -2258,7 +2054,7 @@ export const workflowCatalog = [
         "name": "Validate event identity",
         "type": "code",
         "position": [
-          1060,
+          1120,
           220
         ]
       },
@@ -2267,7 +2063,7 @@ export const workflowCatalog = [
         "name": "Validate event identity accepted",
         "type": "if",
         "position": [
-          1330,
+          1440,
           220
         ]
       },
@@ -2276,8 +2072,8 @@ export const workflowCatalog = [
         "name": "Validate event identity review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          1760,
+          480
         ]
       },
       {
@@ -2285,7 +2081,7 @@ export const workflowCatalog = [
         "name": "Validate customer name",
         "type": "code",
         "position": [
-          1710,
+          1760,
           220
         ]
       },
@@ -2294,7 +2090,7 @@ export const workflowCatalog = [
         "name": "Validate customer name accepted",
         "type": "if",
         "position": [
-          1980,
+          2080,
           220
         ]
       },
@@ -2303,8 +2099,8 @@ export const workflowCatalog = [
         "name": "Validate customer name review required",
         "type": "code",
         "position": [
-          1980,
-          410
+          2400,
+          480
         ]
       },
       {
@@ -2312,7 +2108,7 @@ export const workflowCatalog = [
         "name": "Validate message size",
         "type": "code",
         "position": [
-          2360,
+          2400,
           220
         ]
       },
@@ -2321,7 +2117,7 @@ export const workflowCatalog = [
         "name": "Validate message size accepted",
         "type": "if",
         "position": [
-          2630,
+          2720,
           220
         ]
       },
@@ -2330,8 +2126,8 @@ export const workflowCatalog = [
         "name": "Validate message size review required",
         "type": "code",
         "position": [
-          2630,
-          410
+          3040,
+          480
         ]
       },
       {
@@ -2339,7 +2135,7 @@ export const workflowCatalog = [
         "name": "Authorize supported source",
         "type": "code",
         "position": [
-          3010,
+          3040,
           220
         ]
       },
@@ -2348,7 +2144,7 @@ export const workflowCatalog = [
         "name": "Authorize supported source accepted",
         "type": "if",
         "position": [
-          3280,
+          3360,
           220
         ]
       },
@@ -2357,8 +2153,8 @@ export const workflowCatalog = [
         "name": "Authorize supported source review required",
         "type": "code",
         "position": [
-          3280,
-          410
+          3680,
+          480
         ]
       },
       {
@@ -2366,8 +2162,8 @@ export const workflowCatalog = [
         "name": "Normalize contact phone",
         "type": "code",
         "position": [
-          1060,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -2375,8 +2171,8 @@ export const workflowCatalog = [
         "name": "Normalize contact email",
         "type": "code",
         "position": [
-          1710,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -2384,8 +2180,8 @@ export const workflowCatalog = [
         "name": "Resolve contact identity collisions",
         "type": "code",
         "position": [
-          2360,
-          770
+          4320,
+          220
         ]
       },
       {
@@ -2393,8 +2189,8 @@ export const workflowCatalog = [
         "name": "Resolve contact identity collisions accepted",
         "type": "if",
         "position": [
-          2630,
-          770
+          4640,
+          220
         ]
       },
       {
@@ -2402,8 +2198,8 @@ export const workflowCatalog = [
         "name": "Resolve contact identity collisions review required",
         "type": "code",
         "position": [
-          2630,
-          960
+          4960,
+          480
         ]
       },
       {
@@ -2411,8 +2207,8 @@ export const workflowCatalog = [
         "name": "Detect explicit Arabic or English",
         "type": "code",
         "position": [
-          3010,
-          770
+          4960,
+          220
         ]
       },
       {
@@ -2420,8 +2216,8 @@ export const workflowCatalog = [
         "name": "Detect customer opt-out",
         "type": "code",
         "position": [
-          1060,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -2429,8 +2225,8 @@ export const workflowCatalog = [
         "name": "Verify literal consent flag",
         "type": "code",
         "position": [
-          1710,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -2438,8 +2234,8 @@ export const workflowCatalog = [
         "name": "Identify injection review signals",
         "type": "code",
         "position": [
-          2360,
-          1320
+          5920,
+          220
         ]
       },
       {
@@ -2447,8 +2243,8 @@ export const workflowCatalog = [
         "name": "Calculate preference completeness",
         "type": "code",
         "position": [
-          3010,
-          1320
+          6240,
+          220
         ]
       },
       {
@@ -2456,8 +2252,8 @@ export const workflowCatalog = [
         "name": "Measure active adviser workload",
         "type": "code",
         "position": [
-          1060,
-          1870
+          6560,
+          220
         ]
       },
       {
@@ -2465,8 +2261,8 @@ export const workflowCatalog = [
         "name": "Require an available adviser",
         "type": "code",
         "position": [
-          1710,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -2474,8 +2270,8 @@ export const workflowCatalog = [
         "name": "Require an available adviser accepted",
         "type": "if",
         "position": [
-          1980,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -2483,8 +2279,8 @@ export const workflowCatalog = [
         "name": "Require an available adviser review required",
         "type": "code",
         "position": [
-          1980,
-          2060
+          7520,
+          480
         ]
       },
       {
@@ -2492,8 +2288,8 @@ export const workflowCatalog = [
         "name": "Plan consent-aware intake follow-up",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -2501,8 +2297,8 @@ export const workflowCatalog = [
         "name": "Prepare atomic CRM disposition",
         "type": "code",
         "position": [
-          3010,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -2510,8 +2306,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative intake",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -2519,8 +2315,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8480,
+          480
         ]
       },
       {
@@ -2528,8 +2324,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          8800,
+          480
         ]
       },
       {
@@ -2537,8 +2333,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -2546,8 +2342,8 @@ export const workflowCatalog = [
         "name": "New event requires intelligence",
         "type": "if",
         "position": [
-          4050,
-          1700
+          8480,
+          220
         ]
       },
       {
@@ -2555,8 +2351,8 @@ export const workflowCatalog = [
         "name": "Resolve sales intelligence",
         "type": "executeWorkflow",
         "position": [
-          4100,
-          1870
+          8800,
+          220
         ]
       },
       {
@@ -2564,8 +2360,8 @@ export const workflowCatalog = [
         "name": "HTTP request requires acknowledgement",
         "type": "if",
         "position": [
-          4380,
-          1870
+          9120,
+          220
         ]
       },
       {
@@ -2573,8 +2369,8 @@ export const workflowCatalog = [
         "name": "Acknowledge accepted event",
         "type": "respondToWebhook",
         "position": [
-          4670,
-          1780
+          9440,
+          220
         ]
       },
       {
@@ -2582,57 +2378,9 @@ export const workflowCatalog = [
         "name": "Return scoped module result",
         "type": "code",
         "position": [
-          4670,
-          1990
+          9440,
+          480
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -2902,7 +2650,7 @@ export const workflowCatalog = [
         "name": "Validate orchestration envelope",
         "type": "code",
         "position": [
-          420,
+          480,
           220
         ]
       },
@@ -2911,7 +2659,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          800,
           220
         ]
       },
@@ -2920,7 +2668,7 @@ export const workflowCatalog = [
         "name": "Require customer inventory context",
         "type": "code",
         "position": [
-          1060,
+          1120,
           220
         ]
       },
@@ -2929,7 +2677,7 @@ export const workflowCatalog = [
         "name": "Require customer inventory context accepted",
         "type": "if",
         "position": [
-          1330,
+          1440,
           220
         ]
       },
@@ -2938,8 +2686,8 @@ export const workflowCatalog = [
         "name": "Require customer inventory context review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          1760,
+          480
         ]
       },
       {
@@ -2947,7 +2695,7 @@ export const workflowCatalog = [
         "name": "Validate inventory prices",
         "type": "code",
         "position": [
-          1710,
+          1760,
           220
         ]
       },
@@ -2956,7 +2704,7 @@ export const workflowCatalog = [
         "name": "Validate inventory prices accepted",
         "type": "if",
         "position": [
-          1980,
+          2080,
           220
         ]
       },
@@ -2965,8 +2713,8 @@ export const workflowCatalog = [
         "name": "Validate inventory prices review required",
         "type": "code",
         "position": [
-          1980,
-          410
+          2400,
+          480
         ]
       },
       {
@@ -2974,7 +2722,7 @@ export const workflowCatalog = [
         "name": "Filter currently available inventory",
         "type": "code",
         "position": [
-          2360,
+          2400,
           220
         ]
       },
@@ -2983,7 +2731,7 @@ export const workflowCatalog = [
         "name": "Filter transaction intent",
         "type": "code",
         "position": [
-          3010,
+          2720,
           220
         ]
       },
@@ -2992,8 +2740,8 @@ export const workflowCatalog = [
         "name": "Apply hard budget constraint",
         "type": "code",
         "position": [
-          1060,
-          770
+          3040,
+          220
         ]
       },
       {
@@ -3001,8 +2749,8 @@ export const workflowCatalog = [
         "name": "Apply hard area constraint",
         "type": "code",
         "position": [
-          1710,
-          770
+          3360,
+          220
         ]
       },
       {
@@ -3010,8 +2758,8 @@ export const workflowCatalog = [
         "name": "Apply hard property category",
         "type": "code",
         "position": [
-          2360,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -3019,8 +2767,8 @@ export const workflowCatalog = [
         "name": "Apply minimum bedrooms",
         "type": "code",
         "position": [
-          3010,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -3028,8 +2776,8 @@ export const workflowCatalog = [
         "name": "Apply minimum floor area",
         "type": "code",
         "position": [
-          1060,
-          1320
+          4320,
+          220
         ]
       },
       {
@@ -3037,8 +2785,8 @@ export const workflowCatalog = [
         "name": "Evaluate requested amenities",
         "type": "code",
         "position": [
-          1710,
-          1320
+          4640,
+          220
         ]
       },
       {
@@ -3046,8 +2794,8 @@ export const workflowCatalog = [
         "name": "Verify recommendation ownership",
         "type": "code",
         "position": [
-          2360,
-          1320
+          4960,
+          220
         ]
       },
       {
@@ -3055,8 +2803,8 @@ export const workflowCatalog = [
         "name": "Verify recommendation ownership accepted",
         "type": "if",
         "position": [
-          2630,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -3064,8 +2812,8 @@ export const workflowCatalog = [
         "name": "Verify recommendation ownership review required",
         "type": "code",
         "position": [
-          2630,
-          1510
+          5600,
+          480
         ]
       },
       {
@@ -3073,8 +2821,8 @@ export const workflowCatalog = [
         "name": "Verify recommendation availability",
         "type": "code",
         "position": [
-          3010,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -3082,8 +2830,8 @@ export const workflowCatalog = [
         "name": "Verify recommendation availability accepted",
         "type": "if",
         "position": [
-          3280,
-          1320
+          5920,
+          220
         ]
       },
       {
@@ -3091,8 +2839,8 @@ export const workflowCatalog = [
         "name": "Verify recommendation availability review required",
         "type": "code",
         "position": [
-          3280,
-          1510
+          6240,
+          480
         ]
       },
       {
@@ -3100,8 +2848,8 @@ export const workflowCatalog = [
         "name": "Verify recommendations respect budget",
         "type": "code",
         "position": [
-          1060,
-          1870
+          6240,
+          220
         ]
       },
       {
@@ -3109,8 +2857,8 @@ export const workflowCatalog = [
         "name": "Verify recommendations respect budget accepted",
         "type": "if",
         "position": [
-          1330,
-          1870
+          6560,
+          220
         ]
       },
       {
@@ -3118,8 +2866,8 @@ export const workflowCatalog = [
         "name": "Verify recommendations respect budget review required",
         "type": "code",
         "position": [
-          1330,
-          2060
+          6880,
+          480
         ]
       },
       {
@@ -3127,8 +2875,8 @@ export const workflowCatalog = [
         "name": "Verify recommendations respect transaction",
         "type": "code",
         "position": [
-          1710,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -3136,8 +2884,8 @@ export const workflowCatalog = [
         "name": "Verify recommendations respect transaction accepted",
         "type": "if",
         "position": [
-          1980,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -3145,8 +2893,8 @@ export const workflowCatalog = [
         "name": "Verify recommendations respect transaction review required",
         "type": "code",
         "position": [
-          1980,
-          2060
+          7520,
+          480
         ]
       },
       {
@@ -3154,8 +2902,8 @@ export const workflowCatalog = [
         "name": "Explain inventory rejection funnel",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -3163,8 +2911,8 @@ export const workflowCatalog = [
         "name": "Prepare honest no-match alternatives",
         "type": "code",
         "position": [
-          3010,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -3172,8 +2920,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative matching",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -3181,8 +2929,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8480,
+          480
         ]
       },
       {
@@ -3190,8 +2938,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          8800,
+          480
         ]
       },
       {
@@ -3199,8 +2947,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -3208,57 +2956,9 @@ export const workflowCatalog = [
         "name": "Return minimal orchestration receipt",
         "type": "code",
         "position": [
-          4100,
-          1870
+          8480,
+          220
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -3498,7 +3198,7 @@ export const workflowCatalog = [
         "name": "Validate orchestration envelope",
         "type": "code",
         "position": [
-          420,
+          800,
           220
         ]
       },
@@ -3507,8 +3207,8 @@ export const workflowCatalog = [
         "name": "Daily company reporting",
         "type": "scheduleTrigger",
         "position": [
-          140,
-          430
+          160,
+          480
         ]
       },
       {
@@ -3516,8 +3216,8 @@ export const workflowCatalog = [
         "name": "Generate scheduled receipt identity",
         "type": "code",
         "position": [
-          140,
-          650
+          480,
+          220
         ]
       },
       {
@@ -3525,7 +3225,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          1120,
           220
         ]
       },
@@ -3534,7 +3234,7 @@ export const workflowCatalog = [
         "name": "Validate CRM stage values",
         "type": "code",
         "position": [
-          1060,
+          1440,
           220
         ]
       },
@@ -3543,7 +3243,7 @@ export const workflowCatalog = [
         "name": "Validate CRM stage values accepted",
         "type": "if",
         "position": [
-          1330,
+          1760,
           220
         ]
       },
@@ -3552,8 +3252,8 @@ export const workflowCatalog = [
         "name": "Validate CRM stage values review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          2080,
+          480
         ]
       },
       {
@@ -3561,7 +3261,7 @@ export const workflowCatalog = [
         "name": "Validate recorded commission amounts",
         "type": "code",
         "position": [
-          1710,
+          2080,
           220
         ]
       },
@@ -3570,7 +3270,7 @@ export const workflowCatalog = [
         "name": "Validate recorded commission amounts accepted",
         "type": "if",
         "position": [
-          1980,
+          2400,
           220
         ]
       },
@@ -3579,8 +3279,8 @@ export const workflowCatalog = [
         "name": "Validate recorded commission amounts review required",
         "type": "code",
         "position": [
-          1980,
-          410
+          2720,
+          480
         ]
       },
       {
@@ -3588,7 +3288,7 @@ export const workflowCatalog = [
         "name": "Count recorded customer pipeline",
         "type": "code",
         "position": [
-          2360,
+          2720,
           220
         ]
       },
@@ -3597,7 +3297,7 @@ export const workflowCatalog = [
         "name": "Measure channel acquisition",
         "type": "code",
         "position": [
-          3010,
+          3040,
           220
         ]
       },
@@ -3606,8 +3306,8 @@ export const workflowCatalog = [
         "name": "Measure qualified opportunity count",
         "type": "code",
         "position": [
-          1060,
-          770
+          3360,
+          220
         ]
       },
       {
@@ -3615,8 +3315,8 @@ export const workflowCatalog = [
         "name": "Measure closed-won conversion",
         "type": "code",
         "position": [
-          1710,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -3624,8 +3324,8 @@ export const workflowCatalog = [
         "name": "Separate earned commission revenue",
         "type": "code",
         "position": [
-          2360,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -3633,8 +3333,8 @@ export const workflowCatalog = [
         "name": "Measure recorded sales volume",
         "type": "code",
         "position": [
-          3010,
-          770
+          4320,
+          220
         ]
       },
       {
@@ -3642,8 +3342,8 @@ export const workflowCatalog = [
         "name": "Separate open pipeline from earnings",
         "type": "code",
         "position": [
-          1060,
-          1320
+          4640,
+          220
         ]
       },
       {
@@ -3651,8 +3351,8 @@ export const workflowCatalog = [
         "name": "Measure viewing completion",
         "type": "code",
         "position": [
-          1710,
-          1320
+          4960,
+          220
         ]
       },
       {
@@ -3660,8 +3360,8 @@ export const workflowCatalog = [
         "name": "Measure adviser conversion",
         "type": "code",
         "position": [
-          2360,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -3669,8 +3369,8 @@ export const workflowCatalog = [
         "name": "Validate tenant customer references",
         "type": "code",
         "position": [
-          3010,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -3678,8 +3378,8 @@ export const workflowCatalog = [
         "name": "Validate tenant customer references accepted",
         "type": "if",
         "position": [
-          3280,
-          1320
+          5920,
+          220
         ]
       },
       {
@@ -3687,8 +3387,8 @@ export const workflowCatalog = [
         "name": "Validate tenant customer references review required",
         "type": "code",
         "position": [
-          3280,
-          1510
+          6240,
+          480
         ]
       },
       {
@@ -3696,8 +3396,8 @@ export const workflowCatalog = [
         "name": "Measure unresolved follow-up backlog",
         "type": "code",
         "position": [
-          1060,
-          1870
+          6240,
+          220
         ]
       },
       {
@@ -3705,8 +3405,8 @@ export const workflowCatalog = [
         "name": "Validate report currency representation",
         "type": "code",
         "position": [
-          1710,
-          1870
+          6560,
+          220
         ]
       },
       {
@@ -3714,8 +3414,8 @@ export const workflowCatalog = [
         "name": "Validate report currency representation accepted",
         "type": "if",
         "position": [
-          1980,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -3723,8 +3423,8 @@ export const workflowCatalog = [
         "name": "Validate report currency representation review required",
         "type": "code",
         "position": [
-          1980,
-          2060
+          7200,
+          480
         ]
       },
       {
@@ -3732,8 +3432,8 @@ export const workflowCatalog = [
         "name": "Validate report percentage bounds",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -3741,8 +3441,8 @@ export const workflowCatalog = [
         "name": "Validate report percentage bounds accepted",
         "type": "if",
         "position": [
-          2630,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -3750,8 +3450,8 @@ export const workflowCatalog = [
         "name": "Validate report percentage bounds review required",
         "type": "code",
         "position": [
-          2630,
-          2060
+          7840,
+          480
         ]
       },
       {
@@ -3759,8 +3459,8 @@ export const workflowCatalog = [
         "name": "Require timestamped measurement evidence",
         "type": "code",
         "position": [
-          3010,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -3768,8 +3468,8 @@ export const workflowCatalog = [
         "name": "Require timestamped measurement evidence accepted",
         "type": "if",
         "position": [
-          3280,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -3777,8 +3477,8 @@ export const workflowCatalog = [
         "name": "Require timestamped measurement evidence review required",
         "type": "code",
         "position": [
-          3280,
-          2060
+          8480,
+          480
         ]
       },
       {
@@ -3786,8 +3486,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative reporting",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8480,
+          220
         ]
       },
       {
@@ -3795,8 +3495,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8800,
+          480
         ]
       },
       {
@@ -3804,8 +3504,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -3813,8 +3513,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9440,
+          480
         ]
       },
       {
@@ -3822,57 +3522,9 @@ export const workflowCatalog = [
         "name": "Return minimal orchestration receipt",
         "type": "code",
         "position": [
-          4100,
-          1870
+          8800,
+          220
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -4122,7 +3774,7 @@ export const workflowCatalog = [
         "name": "Evaluate due follow-ups",
         "type": "httpRequest",
         "position": [
-          410,
+          480,
           220
         ]
       },
@@ -4131,21 +3783,9 @@ export const workflowCatalog = [
         "name": "Read operational safeguards",
         "type": "httpRequest",
         "position": [
-          670,
+          800,
           220
         ]
-      },
-      {
-        "id": "local-acceptance",
-        "name": "LOCAL ACCEPTANCE",
-        "type": "stickyNote",
-        "position": [
-          110,
-          100
-        ],
-        "note": "## LOCAL ACCEPTANCE\nQueues eligible records only. No dispatch, no activation, no paid inference.",
-        "width": 800,
-        "height": 250
       }
     ],
     "edges": [
@@ -4184,7 +3824,7 @@ export const workflowCatalog = [
         "name": "Validate orchestration envelope",
         "type": "code",
         "position": [
-          420,
+          480,
           220
         ]
       },
@@ -4193,7 +3833,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          800,
           220
         ]
       },
@@ -4202,7 +3842,7 @@ export const workflowCatalog = [
         "name": "Require explicit customer reference",
         "type": "code",
         "position": [
-          1060,
+          1120,
           220
         ]
       },
@@ -4211,7 +3851,7 @@ export const workflowCatalog = [
         "name": "Require explicit customer reference accepted",
         "type": "if",
         "position": [
-          1330,
+          1440,
           220
         ]
       },
@@ -4220,8 +3860,8 @@ export const workflowCatalog = [
         "name": "Require explicit customer reference review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          1760,
+          480
         ]
       },
       {
@@ -4229,7 +3869,7 @@ export const workflowCatalog = [
         "name": "Resolve requested viewing details",
         "type": "code",
         "position": [
-          1710,
+          1760,
           220
         ]
       },
@@ -4238,7 +3878,7 @@ export const workflowCatalog = [
         "name": "Require explicit booking authorization",
         "type": "code",
         "position": [
-          2360,
+          2080,
           220
         ]
       },
@@ -4247,7 +3887,7 @@ export const workflowCatalog = [
         "name": "Require explicit booking authorization accepted",
         "type": "if",
         "position": [
-          2630,
+          2400,
           220
         ]
       },
@@ -4256,8 +3896,8 @@ export const workflowCatalog = [
         "name": "Require explicit booking authorization review required",
         "type": "code",
         "position": [
-          2630,
-          410
+          2720,
+          480
         ]
       },
       {
@@ -4265,7 +3905,7 @@ export const workflowCatalog = [
         "name": "Resolve real property",
         "type": "code",
         "position": [
-          3010,
+          2720,
           220
         ]
       },
@@ -4274,8 +3914,8 @@ export const workflowCatalog = [
         "name": "Require currently available property",
         "type": "code",
         "position": [
-          1060,
-          770
+          3040,
+          220
         ]
       },
       {
@@ -4283,8 +3923,8 @@ export const workflowCatalog = [
         "name": "Require currently available property accepted",
         "type": "if",
         "position": [
-          1330,
-          770
+          3360,
+          220
         ]
       },
       {
@@ -4292,8 +3932,8 @@ export const workflowCatalog = [
         "name": "Require currently available property review required",
         "type": "code",
         "position": [
-          1330,
-          960
+          3680,
+          480
         ]
       },
       {
@@ -4301,8 +3941,8 @@ export const workflowCatalog = [
         "name": "Resolve nominated adviser",
         "type": "code",
         "position": [
-          1710,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -4310,8 +3950,8 @@ export const workflowCatalog = [
         "name": "Require active adviser",
         "type": "code",
         "position": [
-          2360,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -4319,8 +3959,8 @@ export const workflowCatalog = [
         "name": "Require active adviser accepted",
         "type": "if",
         "position": [
-          2630,
-          770
+          4320,
+          220
         ]
       },
       {
@@ -4328,8 +3968,8 @@ export const workflowCatalog = [
         "name": "Require active adviser review required",
         "type": "code",
         "position": [
-          2630,
-          960
+          4640,
+          480
         ]
       },
       {
@@ -4337,8 +3977,8 @@ export const workflowCatalog = [
         "name": "Validate customer booking binding",
         "type": "code",
         "position": [
-          3010,
-          770
+          4640,
+          220
         ]
       },
       {
@@ -4346,8 +3986,8 @@ export const workflowCatalog = [
         "name": "Validate customer booking binding accepted",
         "type": "if",
         "position": [
-          3280,
-          770
+          4960,
+          220
         ]
       },
       {
@@ -4355,8 +3995,8 @@ export const workflowCatalog = [
         "name": "Validate customer booking binding review required",
         "type": "code",
         "position": [
-          3280,
-          960
+          5280,
+          480
         ]
       },
       {
@@ -4364,8 +4004,8 @@ export const workflowCatalog = [
         "name": "Normalize timezone-aware start",
         "type": "code",
         "position": [
-          1060,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -4373,8 +4013,8 @@ export const workflowCatalog = [
         "name": "Require future timezone-aware slot",
         "type": "code",
         "position": [
-          1710,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -4382,8 +4022,8 @@ export const workflowCatalog = [
         "name": "Require future timezone-aware slot accepted",
         "type": "if",
         "position": [
-          1980,
-          1320
+          5920,
+          220
         ]
       },
       {
@@ -4391,8 +4031,8 @@ export const workflowCatalog = [
         "name": "Require future timezone-aware slot review required",
         "type": "code",
         "position": [
-          1980,
-          1510
+          6240,
+          480
         ]
       },
       {
@@ -4400,8 +4040,8 @@ export const workflowCatalog = [
         "name": "Calculate reservation duration",
         "type": "code",
         "position": [
-          2360,
-          1320
+          6240,
+          220
         ]
       },
       {
@@ -4409,8 +4049,8 @@ export const workflowCatalog = [
         "name": "Find customer schedule conflicts",
         "type": "code",
         "position": [
-          3010,
-          1320
+          6560,
+          220
         ]
       },
       {
@@ -4418,8 +4058,8 @@ export const workflowCatalog = [
         "name": "Find adviser schedule conflicts",
         "type": "code",
         "position": [
-          1060,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -4427,8 +4067,8 @@ export const workflowCatalog = [
         "name": "Find property schedule conflicts",
         "type": "code",
         "position": [
-          1710,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -4436,8 +4076,8 @@ export const workflowCatalog = [
         "name": "Prepare company-hours verification",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -4445,8 +4085,8 @@ export const workflowCatalog = [
         "name": "Prepare consent-aware reminder plan",
         "type": "code",
         "position": [
-          3010,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -4454,8 +4094,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative appointment",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -4463,8 +4103,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8480,
+          480
         ]
       },
       {
@@ -4472,8 +4112,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          8800,
+          480
         ]
       },
       {
@@ -4481,8 +4121,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -4490,57 +4130,9 @@ export const workflowCatalog = [
         "name": "Return minimal orchestration receipt",
         "type": "code",
         "position": [
-          4100,
-          1870
+          8480,
+          220
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -4780,7 +4372,7 @@ export const workflowCatalog = [
         "name": "Validate orchestration envelope",
         "type": "code",
         "position": [
-          420,
+          480,
           220
         ]
       },
@@ -4789,7 +4381,7 @@ export const workflowCatalog = [
         "name": "Read tenant-scoped business context",
         "type": "httpRequest",
         "position": [
-          710,
+          800,
           220
         ]
       },
@@ -4798,7 +4390,7 @@ export const workflowCatalog = [
         "name": "Require customer conversation",
         "type": "code",
         "position": [
-          1060,
+          1120,
           220
         ]
       },
@@ -4807,7 +4399,7 @@ export const workflowCatalog = [
         "name": "Require customer conversation accepted",
         "type": "if",
         "position": [
-          1330,
+          1440,
           220
         ]
       },
@@ -4816,8 +4408,8 @@ export const workflowCatalog = [
         "name": "Require customer conversation review required",
         "type": "code",
         "position": [
-          1330,
-          410
+          1760,
+          480
         ]
       },
       {
@@ -4825,7 +4417,7 @@ export const workflowCatalog = [
         "name": "Validate conversation history envelope",
         "type": "code",
         "position": [
-          1710,
+          1760,
           220
         ]
       },
@@ -4834,7 +4426,7 @@ export const workflowCatalog = [
         "name": "Validate conversation history envelope accepted",
         "type": "if",
         "position": [
-          1980,
+          2080,
           220
         ]
       },
@@ -4843,8 +4435,8 @@ export const workflowCatalog = [
         "name": "Validate conversation history envelope review required",
         "type": "code",
         "position": [
-          1980,
-          410
+          2400,
+          480
         ]
       },
       {
@@ -4852,7 +4444,7 @@ export const workflowCatalog = [
         "name": "Resolve recent inbound context",
         "type": "code",
         "position": [
-          2360,
+          2400,
           220
         ]
       },
@@ -4861,7 +4453,7 @@ export const workflowCatalog = [
         "name": "Detect customer conversation language",
         "type": "code",
         "position": [
-          3010,
+          2720,
           220
         ]
       },
@@ -4870,8 +4462,8 @@ export const workflowCatalog = [
         "name": "Locate latest inbound timestamp",
         "type": "code",
         "position": [
-          1060,
-          770
+          3040,
+          220
         ]
       },
       {
@@ -4879,8 +4471,8 @@ export const workflowCatalog = [
         "name": "Evaluate Meta service window",
         "type": "code",
         "position": [
-          1710,
-          770
+          3360,
+          220
         ]
       },
       {
@@ -4888,8 +4480,8 @@ export const workflowCatalog = [
         "name": "Identify customer opt-out boundary",
         "type": "code",
         "position": [
-          2360,
-          770
+          3680,
+          220
         ]
       },
       {
@@ -4897,8 +4489,8 @@ export const workflowCatalog = [
         "name": "Identify proactive consent boundary",
         "type": "code",
         "position": [
-          3010,
-          770
+          4000,
+          220
         ]
       },
       {
@@ -4906,8 +4498,8 @@ export const workflowCatalog = [
         "name": "Identify human ownership boundary",
         "type": "code",
         "position": [
-          1060,
-          1320
+          4320,
+          220
         ]
       },
       {
@@ -4915,8 +4507,8 @@ export const workflowCatalog = [
         "name": "Select permitted response class",
         "type": "code",
         "position": [
-          1710,
-          1320
+          4640,
+          220
         ]
       },
       {
@@ -4924,8 +4516,8 @@ export const workflowCatalog = [
         "name": "Validate listing grounding",
         "type": "code",
         "position": [
-          2360,
-          1320
+          4960,
+          220
         ]
       },
       {
@@ -4933,8 +4525,8 @@ export const workflowCatalog = [
         "name": "Validate listing grounding accepted",
         "type": "if",
         "position": [
-          2630,
-          1320
+          5280,
+          220
         ]
       },
       {
@@ -4942,8 +4534,8 @@ export const workflowCatalog = [
         "name": "Validate listing grounding review required",
         "type": "code",
         "position": [
-          2630,
-          1510
+          5600,
+          480
         ]
       },
       {
@@ -4951,8 +4543,8 @@ export const workflowCatalog = [
         "name": "Validate message length boundary",
         "type": "code",
         "position": [
-          3010,
-          1320
+          5600,
+          220
         ]
       },
       {
@@ -4960,8 +4552,8 @@ export const workflowCatalog = [
         "name": "Validate message length boundary accepted",
         "type": "if",
         "position": [
-          3280,
-          1320
+          5920,
+          220
         ]
       },
       {
@@ -4969,8 +4561,8 @@ export const workflowCatalog = [
         "name": "Validate message length boundary review required",
         "type": "code",
         "position": [
-          3280,
-          1510
+          6240,
+          480
         ]
       },
       {
@@ -4978,8 +4570,8 @@ export const workflowCatalog = [
         "name": "Validate source channel policy",
         "type": "code",
         "position": [
-          1060,
-          1870
+          6240,
+          220
         ]
       },
       {
@@ -4987,8 +4579,8 @@ export const workflowCatalog = [
         "name": "Validate source channel policy accepted",
         "type": "if",
         "position": [
-          1330,
-          1870
+          6560,
+          220
         ]
       },
       {
@@ -4996,8 +4588,8 @@ export const workflowCatalog = [
         "name": "Validate source channel policy review required",
         "type": "code",
         "position": [
-          1330,
-          2060
+          6880,
+          480
         ]
       },
       {
@@ -5005,8 +4597,8 @@ export const workflowCatalog = [
         "name": "Require recorded consent representation",
         "type": "code",
         "position": [
-          1710,
-          1870
+          6880,
+          220
         ]
       },
       {
@@ -5014,8 +4606,8 @@ export const workflowCatalog = [
         "name": "Require recorded consent representation accepted",
         "type": "if",
         "position": [
-          1980,
-          1870
+          7200,
+          220
         ]
       },
       {
@@ -5023,8 +4615,8 @@ export const workflowCatalog = [
         "name": "Require recorded consent representation review required",
         "type": "code",
         "position": [
-          1980,
-          2060
+          7520,
+          480
         ]
       },
       {
@@ -5032,8 +4624,8 @@ export const workflowCatalog = [
         "name": "Prepare agent review context",
         "type": "code",
         "position": [
-          2360,
-          1870
+          7520,
+          220
         ]
       },
       {
@@ -5041,8 +4633,8 @@ export const workflowCatalog = [
         "name": "Prepare approval-only draft contract",
         "type": "code",
         "position": [
-          3010,
-          1870
+          7840,
+          220
         ]
       },
       {
@@ -5050,8 +4642,8 @@ export const workflowCatalog = [
         "name": "Commit authoritative conversation",
         "type": "httpRequest",
         "position": [
-          3820,
-          1870
+          8160,
+          220
         ]
       },
       {
@@ -5059,8 +4651,8 @@ export const workflowCatalog = [
         "name": "Redact backend rejection",
         "type": "code",
         "position": [
-          3820,
-          2170
+          8480,
+          480
         ]
       },
       {
@@ -5068,8 +4660,8 @@ export const workflowCatalog = [
         "name": "Record scoped failure incident",
         "type": "httpRequest",
         "position": [
-          4130,
-          2350
+          8800,
+          480
         ]
       },
       {
@@ -5077,8 +4669,8 @@ export const workflowCatalog = [
         "name": "Stop rejected business execution",
         "type": "code",
         "position": [
-          4440,
-          2350
+          9120,
+          480
         ]
       },
       {
@@ -5086,57 +4678,9 @@ export const workflowCatalog = [
         "name": "Return minimal orchestration receipt",
         "type": "code",
         "position": [
-          4100,
-          1870
+          8480,
+          220
         ]
-      },
-      {
-        "id": "input-and-authority",
-        "name": "INPUT AND AUTHORITY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          130
-        ],
-        "note": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "qualification-and-policy",
-        "name": "QUALIFICATION AND POLICY",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          680
-        ],
-        "note": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "business-decisions",
-        "name": "BUSINESS DECISIONS",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1230
-        ],
-        "note": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
-      },
-      {
-        "id": "evidence-and-commit",
-        "name": "EVIDENCE AND COMMIT",
-        "type": "stickyNote",
-        "position": [
-          1010,
-          1780
-        ],
-        "note": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
-        "width": 2600,
-        "height": 450
       }
     ],
     "edges": [
@@ -5376,7 +4920,7 @@ export const workflowCatalog = [
         "name": "Read owner delivery authorization",
         "type": "httpRequest",
         "position": [
-          430,
+          480,
           220
         ]
       },
@@ -5385,7 +4929,7 @@ export const workflowCatalog = [
         "name": "Real delivery explicitly enabled",
         "type": "if",
         "position": [
-          710,
+          800,
           220
         ]
       },
@@ -5394,8 +4938,8 @@ export const workflowCatalog = [
         "name": "Dispatch eligible WhatsApp outbox",
         "type": "httpRequest",
         "position": [
-          1010,
-          110
+          1120,
+          220
         ]
       },
       {
@@ -5403,33 +4947,9 @@ export const workflowCatalog = [
         "name": "Return sandbox boundary",
         "type": "code",
         "position": [
-          1010,
-          330
+          1120,
+          480
         ]
-      },
-      {
-        "id": "official-meta-adapter",
-        "name": "OFFICIAL META ADAPTER",
-        "type": "stickyNote",
-        "position": [
-          110,
-          70
-        ],
-        "note": "## OFFICIAL META ADAPTER\nCredentials stay in MADAR server settings. No Graph tokens in n8n exports. This workflow is inactive and starts only on operator evaluation.",
-        "width": 770,
-        "height": 300
-      },
-      {
-        "id": "per-message-policy",
-        "name": "PER-MESSAGE POLICY",
-        "type": "stickyNote",
-        "position": [
-          910,
-          30
-        ],
-        "note": "## PER-MESSAGE POLICY\nBackend enforces opt-out, proactive consent, 24-hour service window, template shape and sandbox contact blocking. Uncertain requests are never auto-retried.",
-        "width": 360,
-        "height": 460
       }
     ],
     "edges": [

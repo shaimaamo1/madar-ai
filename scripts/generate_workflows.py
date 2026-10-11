@@ -1,6 +1,6 @@
 """Generate eight substantive business canvases and inactive reusable support modules."""
 import json
-from scripts.generate_support_workflows import DEST, node, code, http_node, condition, group, connections, write, trigger, main as support
+from scripts.generate_support_workflows import DEST, node, code, http_node, condition, connections, write, trigger, main as support
 from scripts.enterprise_stages import STAGES, NAMES
 
 
@@ -28,7 +28,7 @@ def main():
         context=http_node('Read tenant-scoped business context','/api/bridge/enterprise/context',(710,220),'={{ JSON.stringify($json) }}')
         context['onError']='continueErrorOutput'
         nodes.append(context);paths.append((entry['name'],context['name']));previous=context['name']
-        # Four readable horizontal phases. Branches stop with actionable, redacted errors.
+        # Business stages retain their validated parameters and error branches.
         for index,stage in enumerate(stages):
             name,key,expression,*gate=stage
             col=index%4;row=index//4
@@ -62,8 +62,6 @@ def main():
             ishook['parameters']['conditions']['conditions'][0]['leftValue']="={{ $('Authenticated normalized events').isExecuted }}"
             nodes.extend([ishook,response,returned]);paths.extend([(intelligence['name'],ishook['name']),(ishook['name'],response['name']),(ishook['name'],returned['name'],1)])
             paths.append((fresh['name'],ishook['name'],1))
-        for row,title in enumerate(('INPUT AND AUTHORITY','QUALIFICATION AND POLICY','BUSINESS DECISIONS','EVIDENCE AND COMMIT')):
-            note=group(title,(1010,130+row*550),2600,450,'Distinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.');note['parameters']['color']=row+2;nodes.append(note)
         write(NAMES[kind],nodes,connections(*paths))
     manual=node('Run queued fictional demo','manualTrigger',(120,260),identifier='manual')
     claim=http_node('Claim isolated demo capability','/api/bridge/demo/claim',(400,260))
@@ -71,7 +69,7 @@ def main():
     for index,kind in enumerate(STAGES):
         step=call('Run '+kind+' module',NAMES[kind],(750+index*290,260));nodes.append(step);paths.append((previous,step['name']));previous=step['name']
     finish=http_node('Record actual execution reference','/api/bridge/demo/complete',(3180,260),'={{ JSON.stringify({run_id:$json.run_id,run_token:$json.run_token,execution_id:String($execution.id)}) }}')
-    nodes.extend([finish,group('ISOLATED DEMO / REAL N8N EXECUTION',(80,100),3370,400,'Claim one queued fictional workspace. Eight real business modules, scoped capability, ordered replay-safe artifacts. Backend never marks execution verified until n8n reports success. No provider dispatch or paid model calls.')]);paths.append((previous,finish['name']))
+    nodes.append(finish);paths.append((previous,finish['name']))
     write('MADAR Full Demo',nodes,connections(*paths))
     # n8n deletes execution metadata together with payloads under "none".
     # Keep success evidence ONLY for the server-controlled fictional demo;

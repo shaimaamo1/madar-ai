@@ -7,8 +7,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        120,
-        260
+        160,
+        220
       ],
       "parameters": {}
     },
@@ -18,8 +18,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        400,
-        260
+        480,
+        220
       ],
       "parameters": {
         "method": "POST",
@@ -45,8 +45,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        750,
-        260
+        800,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -66,8 +66,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1040,
-        260
+        1120,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -87,8 +87,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1330,
-        260
+        1440,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -108,8 +108,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1620,
-        260
+        1760,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -129,8 +129,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1910,
-        260
+        2080,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -150,8 +150,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        2200,
-        260
+        2400,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -171,8 +171,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        2490,
-        260
+        2720,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -192,8 +192,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        2780,
-        260
+        3040,
+        220
       ],
       "parameters": {
         "workflowId": {
@@ -213,8 +213,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3180,
-        260
+        3360,
+        220
       ],
       "parameters": {
         "method": "POST",
@@ -235,22 +235,6 @@
         "httpHeaderAuth": {
           "name": "MADAR bridge"
         }
-      }
-    },
-    {
-      "id": "isolated-demo-/-real-n8n-execution",
-      "name": "ISOLATED DEMO / REAL N8N EXECUTION",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        80,
-        100
-      ],
-      "parameters": {
-        "content": "## ISOLATED DEMO / REAL N8N EXECUTION\nClaim one queued fictional workspace. Eight real business modules, scoped capability, ordered replay-safe artifacts. Backend never marks execution verified until n8n reports success. No provider dispatch or paid model calls.",
-        "width": 3370,
-        "height": 400,
-        "color": 5
       }
     }
   ],

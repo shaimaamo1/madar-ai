@@ -27,7 +27,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        460,
+        480,
         220
       ],
       "parameters": {
@@ -54,7 +54,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        780,
+        800,
         220
       ],
       "parameters": {
@@ -88,8 +88,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1070,
-        110
+        1120,
+        220
       ],
       "parameters": {
         "jsCode": "return [{json:{open_incidents:$json.open_incidents,new_incidents:$json.incidents_created,next_action:'Review dashboard incidents; reconcile provider outcome before retry'}}];"
@@ -101,43 +101,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1070,
-        330
+        1120,
+        480
       ],
       "parameters": {
         "jsCode": "return [{json:{open_incidents:0,next_action:'No reconciliation required'}}];"
-      }
-    },
-    {
-      "id": "reliability-and-audit",
-      "name": "RELIABILITY AND AUDIT",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        110,
-        75
-      ],
-      "parameters": {
-        "content": "## RELIABILITY AND AUDIT\nRetries: transient provider rejections only, exponential backoff, five attempts. Uncertain network outcomes create one operator incident per message; no blind replay.",
-        "width": 900,
-        "height": 300,
-        "color": 5
-      }
-    },
-    {
-      "id": "operator-escalation",
-      "name": "OPERATOR ESCALATION",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1010,
-        35
-      ],
-      "parameters": {
-        "content": "## OPERATOR ESCALATION\nDashboard-only incident queue. Customer text and provider errors are not copied to workflow logs or external notification accounts.",
-        "width": 360,
-        "height": 430,
-        "color": 5
       }
     }
   ],

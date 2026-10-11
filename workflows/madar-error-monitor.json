@@ -18,7 +18,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        430,
+        480,
         220
       ],
       "parameters": {
@@ -31,7 +31,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        700,
+        800,
         220
       ],
       "parameters": {
@@ -53,22 +53,6 @@
         "httpHeaderAuth": {
           "name": "MADAR bridge"
         }
-      }
-    },
-    {
-      "id": "restricted-incident-escalation",
-      "name": "RESTRICTED INCIDENT ESCALATION",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        110,
-        100
-      ],
-      "parameters": {
-        "content": "## RESTRICTED INCIDENT ESCALATION\nIdentifiers only. Opens an auditable dashboard incident. No customer payloads, tokens, email or Slack notifications.",
-        "width": 850,
-        "height": 250,
-        "color": 5
       }
     }
   ],

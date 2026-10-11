@@ -18,7 +18,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        410,
+        480,
         220
       ],
       "parameters": {
@@ -45,7 +45,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        670,
+        800,
         220
       ],
       "parameters": {
@@ -64,22 +64,6 @@
         "httpHeaderAuth": {
           "name": "MADAR bridge"
         }
-      }
-    },
-    {
-      "id": "local-acceptance",
-      "name": "LOCAL ACCEPTANCE",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        110,
-        100
-      ],
-      "parameters": {
-        "content": "## LOCAL ACCEPTANCE\nQueues eligible records only. No dispatch, no activation, no paid inference.",
-        "width": 800,
-        "height": 250,
-        "color": 5
       }
     }
   ],

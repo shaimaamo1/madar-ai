@@ -20,7 +20,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        400,
+        480,
         220
       ],
       "parameters": {
@@ -33,7 +33,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        650,
+        800,
         220
       ],
       "parameters": {
@@ -55,22 +55,6 @@
         "httpHeaderAuth": {
           "name": "MADAR ingestion"
         }
-      }
-    },
-    {
-      "id": "atomic-crm-transaction",
-      "name": "ATOMIC CRM TRANSACTION",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        110,
-        100
-      ],
-      "parameters": {
-        "content": "## ATOMIC CRM TRANSACTION\nReceipt deduplication, contact resolution, qualification, scoring, inventory matching, assignment, history and gated outbox commit together.",
-        "width": 810,
-        "height": 250,
-        "color": 5
       }
     }
   ],

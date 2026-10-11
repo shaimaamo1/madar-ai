@@ -18,7 +18,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        430,
+        480,
         220
       ],
       "parameters": {
@@ -45,7 +45,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        710,
+        800,
         220
       ],
       "parameters": {
@@ -79,8 +79,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1010,
-        110
+        1120,
+        220
       ],
       "parameters": {
         "method": "POST",
@@ -106,43 +106,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1010,
-        330
+        1120,
+        480
       ],
       "parameters": {
         "jsCode": "return [{json:{delivery:'disabled',provider_called:false,note:'Official Meta credentials and owner authorization required'}}];"
-      }
-    },
-    {
-      "id": "official-meta-adapter",
-      "name": "OFFICIAL META ADAPTER",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        110,
-        70
-      ],
-      "parameters": {
-        "content": "## OFFICIAL META ADAPTER\nCredentials stay in MADAR server settings. No Graph tokens in n8n exports. This workflow is inactive and starts only on operator evaluation.",
-        "width": 770,
-        "height": 300,
-        "color": 5
-      }
-    },
-    {
-      "id": "per-message-policy",
-      "name": "PER-MESSAGE POLICY",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        910,
-        30
-      ],
-      "parameters": {
-        "content": "## PER-MESSAGE POLICY\nBackend enforces opt-out, proactive consent, 24-hour service window, template shape and sandbox contact blocking. Uncertain requests are never auto-retried.",
-        "width": 360,
-        "height": 460,
-        "color": 5
       }
     }
   ],

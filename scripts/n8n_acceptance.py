@@ -18,7 +18,7 @@ from pathlib import Path
 
 import httpx
 
-from scripts.n8n_deploy import deploy
+from scripts.n8n_deploy import deploy, workflow_templates
 
 ROOT = Path(__file__).resolve().parent.parent
 IMAGE = 'n8nio/n8n:1.113.3'
@@ -77,6 +77,13 @@ def acceptance(output, screenshots=False):
                     deploy(settings,state_path=manifest);after=json.loads(manifest.read_text())
                     assert before==after and len(after['workflows'])==14
                     report['checks'].append({'component':'Actual API import and repeat import','status':'PASS','workflow_count':14})
+                    for flow in workflow_templates():
+                        stored=n8n.get('/api/v1/workflows/'+str(after['workflows'][flow['name']]),headers={'X-N8N-API-KEY':key})
+                        stored.raise_for_status();current=stored.json()
+                        assert [(n['id'],n['position']) for n in current['nodes']]==[(n['id'],n['position']) for n in flow['nodes']]
+                        assert current['connections']==flow['connections'] and not current['active']
+                        assert not any(n['type'].endswith('.stickyNote') for n in current['nodes'])
+                    report['checks'].append({'component':'Stored clean layouts and unchanged connections for all 14 workflows','status':'PASS','executable_nodes':327})
                     app.post('/api/auth/demo').raise_for_status()
                     run=app.post('/api/demo/runs');run.raise_for_status();run_id=run.json()['id']
                     print('Executing actual Full Demo',flush=True)
