@@ -382,7 +382,7 @@ export default function App() {
     try {
       if (modal === "lead") await api("/leads", "POST", form);
       if (modal === "property") {
-        const { id, tenant_id, created_at, ...data } = form;
+        const { id, tenant_id, created_at, demo, reference, ...data } = form;
         data.amenities = data.amenities
           .map((a: string) => a.trim())
           .filter(Boolean);
@@ -751,6 +751,17 @@ export default function App() {
                   "All properties, customers, and financial records are fictional.",
                 )}
               </span>
+              {state.user.role === "admin" && (
+                <button
+                  disabled={busy}
+                  onClick={() =>
+                    run(() => api("/demo/load", "POST"), "Demo data loaded")
+                  }
+                >
+                  <Building2 size={12} />
+                  {tr("Load Demo Data")}
+                </button>
+              )}
               <button onClick={() => open("reset")}>
                 {tr("Reset demo")}
                 <RefreshCw size={12} />
@@ -818,7 +829,11 @@ export default function App() {
             </div>
           )}
 
-          <OperatingStrip operations={operations} ar={ar} />
+          <OperatingStrip
+            operations={operations}
+            ar={ar}
+            demo={Boolean(state.company.demo)}
+          />
           {page === "health" && (
             <EnterpriseConsole
               leads={state.leads}
@@ -1219,7 +1234,18 @@ export default function App() {
                   <article className="card property-card" key={p.id}>
                     <div className="property-image">
                       {p.image ? (
-                        <img src={p.image} alt={p.title} />
+                        <img
+                          src={p.image}
+                          alt={
+                            p.demo
+                              ? tr(
+                                  "Fictional architectural illustration: {name}",
+                                  { name: p.title },
+                                )
+                              : p.title
+                          }
+                          loading="lazy"
+                        />
                       ) : (
                         <PropertyArt variant={i} />
                       )}
@@ -1246,6 +1272,11 @@ export default function App() {
                           p.intent === "rent" ? "FOR RENT" : "FOR SALE",
                         )}
                       </span>
+                      {p.demo && (
+                        <p className="fine">
+                          {tr("DEMO / FICTIONAL")} · {p.reference}
+                        </p>
+                      )}
                       <h3>{p.title}</h3>
                       <strong>
                         {money(p.price, currency)}
@@ -1253,7 +1284,13 @@ export default function App() {
                       </strong>
                       <p className="property-facts">
                         <span>
-                          {number(p.bedrooms)} {tr("beds")}
+                          {p.bedrooms > 0 ? (
+                            <>
+                              {number(p.bedrooms)} {tr("beds")}
+                            </>
+                          ) : (
+                            tr("Non-residential")
+                          )}
                         </span>
                         <b>·</b>
                         <span>
@@ -1788,6 +1825,7 @@ export default function App() {
                           <th>{tr("Agent")}</th>
                           <th>{tr("Assigned")}</th>
                           <th>{tr("Won")}</th>
+                          <th>{tr("Viewings")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1801,6 +1839,63 @@ export default function App() {
                       </tbody>
                     </table>
                   </div>
+                </section>
+              </div>
+              <div className="two-col section-gap">
+                <section className="card">
+                  <div className="card-head">
+                    <h3>{tr("Property demand by area")}</h3>
+                  </div>
+                  <div className="source-chart">
+                    {Object.entries(metrics.demand_by_area || {}).map(
+                      ([area, count]) => (
+                        <div key={area}>
+                          <span>{localize(area)}</span>
+                          <div>
+                            <i
+                              className="bar-1"
+                              style={{
+                                width:
+                                  (Number(count) /
+                                    Math.max(metrics.total_leads, 1)) *
+                                    100 +
+                                  "%",
+                              }}
+                            />
+                          </div>
+                          <strong>{number(count)}</strong>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </section>
+                <section className="card">
+                  <div className="card-head">
+                    <h3>{tr("Viewing and follow-up activity")}</h3>
+                  </div>
+                  <div className="identifiers">
+                    {Object.entries(metrics.appointment_activity || {}).map(
+                      ([status, count]) => (
+                        <p key={status}>
+                          {localize(status)}: <strong>{number(count)}</strong>
+                        </p>
+                      ),
+                    )}
+                    <p>
+                      {tr("Completed follow-ups")}:{" "}
+                      <strong>
+                        {number(metrics.followups?.completed || 0)} /{" "}
+                        {number(metrics.followups?.total || 0)}
+                      </strong>
+                    </p>
+                  </div>
+                  <p className="fine">
+                    {state.company.demo
+                      ? tr(
+                          "Demo analytics use fictional records; no earned revenue is implied.",
+                        )
+                      : tr("Computed from recorded events")}
+                  </p>
                 </section>
               </div>
               <section className="card roi-card section-gap">
@@ -2264,7 +2359,11 @@ export default function App() {
                   )}
                 </p>
               </div>
-              <TelegramSetup demo={Boolean(state.company.demo)} admin={state.user.role === "admin"} refresh={refresh} />
+              <TelegramSetup
+                demo={Boolean(state.company.demo)}
+                admin={state.user.role === "admin"}
+                refresh={refresh}
+              />
               <div className="integration-grid">
                 {state.integrations.map((i: Row) => (
                   <section className="card integration-card" key={i.name}>
@@ -2345,7 +2444,11 @@ export default function App() {
 
           {page === "settings" && (
             <>
-              <TelegramSetup demo={Boolean(state.company.demo)} admin={state.user.role === "admin"} refresh={refresh} />
+              <TelegramSetup
+                demo={Boolean(state.company.demo)}
+                admin={state.user.role === "admin"}
+                refresh={refresh}
+              />
               <section className="card onboarding">
                 <div>
                   <span className="eyebrow">{tr("CLIENT ONBOARDING")}</span>
@@ -2539,6 +2642,9 @@ export default function App() {
                       {select("Property type", "property_type", [
                         "Apartment",
                         "Villa",
+                        "Duplex",
+                        "Penthouse",
+                        "Commercial",
                         "Office",
                         "Land",
                       ])}
@@ -2569,6 +2675,9 @@ export default function App() {
                       {select("Property type", "property_type", [
                         "Apartment",
                         "Villa",
+                        "Duplex",
+                        "Penthouse",
+                        "Commercial",
                         "Office",
                         "Land",
                       ])}
@@ -2588,7 +2697,11 @@ export default function App() {
                           }
                         />
                       </label>
-                      {field("Image HTTPS URL (optional)", "image", "url")}
+                      {field(
+                        "Image URL or bundled asset path (optional)",
+                        "image",
+                        "text",
+                      )}
                       <label className="field full">
                         {tr("Verified description")}
                         <textarea
@@ -2773,7 +2886,7 @@ export default function App() {
               <>
                 <p>
                   {tr(
-                    "This resets only this isolated workspace’s fictional customers, properties, conversations, and appointments.",
+                    "Reset restores only generated demo records. Added records and referenced demo records are preserved; real workspaces stay untouched.",
                   )}
                 </p>
                 <div className="modal-footer">

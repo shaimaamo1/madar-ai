@@ -21,7 +21,7 @@ class LeadInput(Model):
     external_id: str = Field(default='', max_length=200)
     budget: float = Field(default=0, ge=0, le=1e12)
     location: str = Field(default='', max_length=150)
-    property_type: Literal['', 'Apartment', 'Villa', 'Office', 'Land'] = ''
+    property_type: Literal['', 'Apartment', 'Villa', 'Duplex', 'Penthouse', 'Office', 'Commercial', 'Land'] = ''
     intent: Literal['buy', 'rent'] = 'buy'
     bedrooms: int = Field(default=0, ge=0, le=50)
     min_size: float = Field(default=0, ge=0, le=1000000)
@@ -54,7 +54,7 @@ class PublicChat(Model):
 class PropertyInput(Model):
     title: str = Field(min_length=1, max_length=160)
     location: str = Field(min_length=1, max_length=150)
-    property_type: Literal['Apartment', 'Villa', 'Office', 'Land'] = 'Apartment'
+    property_type: Literal['Apartment', 'Villa', 'Duplex', 'Penthouse', 'Office', 'Commercial', 'Land'] = 'Apartment'
     intent: Literal['buy', 'rent'] = 'buy'
     price: float = Field(gt=0, le=1e12)
     size: float = Field(gt=0, le=1000000)

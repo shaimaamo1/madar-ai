@@ -39,7 +39,7 @@ async def respond(c, tenant, lead, text, channel='website', external_id='', allo
                   'Return JSON {"preferences":[{"field":"budget|location|intent|property_type|bedrooms|min_size",'
                   '"value":number_or_string,"quote":"exact customer quote","confidence":0_to_1}]}. '
                   'Normalize budget to a number; bedrooms and minimum size are numbers; intent is buy/rent; '
-                  'property_type is Apartment/Villa/Office/Land. Use English area names when unambiguous. '
+                  'property_type is Apartment/Villa/Duplex/Penthouse/Office/Commercial/Land. Use English area names when unambiguous. '
                   'Use exact source quotes for each extracted field. Return no other fields or prose.')
         facts = {'customer_message': text, 'company_currency': cfg['currency']}
         try:

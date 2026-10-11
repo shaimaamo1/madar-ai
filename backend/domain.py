@@ -12,6 +12,9 @@ def record(row):
     d = dict(row)
     if 'amenities' in d:
         d['amenities'] = json.loads(d['amenities'])
+    if 'size' in d and 'price' in d and d.get('id', '').startswith('demo-property-'):
+        d['demo'] = True
+        d['reference'] = 'DEMO-EG-' + d['id'].rsplit('-', 1)[-1]
     return d
 
 
@@ -118,6 +121,7 @@ def qualify(c, tenant, lead, text):
             updates['budget'] = float(budget[1].replace(',', ''))
     locations = {'new cairo': 'New Cairo', 'التجمع': 'New Cairo', 'القاهرة الجديدة': 'New Cairo',
                  'sheikh zayed': 'Sheikh Zayed', 'الشيخ زايد': 'Sheikh Zayed', 'dubai': 'Dubai', 'دبي': 'Dubai',
+                 'fifth settlement':'Fifth Settlement', 'التجمع الخامس':'Fifth Settlement', 'new capital':'New Capital', 'العاصمة الإدارية':'New Capital', '6th of october':'6th of October', 'السادس من أكتوبر':'6th of October', 'maadi':'Maadi', 'المعادي':'Maadi',
                  'north coast': 'North Coast', 'الساحل': 'North Coast', 'riyadh': 'Riyadh', 'الرياض': 'Riyadh',
                  'abu dhabi': 'Abu Dhabi', 'أبوظبي': 'Abu Dhabi', 'ابوظبي': 'Abu Dhabi', 'jeddah': 'Jeddah', 'جدة': 'Jeddah'}
     for phrase, location in locations.items():
@@ -141,7 +145,7 @@ def qualify(c, tenant, lead, text):
         updates['intent'] = 'rent'
     elif any(word in lowered for word in ('buy', 'شراء', 'اشتري')):
         updates['intent'] = 'buy'
-    for words, kind in [(('apartment', 'شقة', 'شقه'), 'Apartment'), (('villa', 'فيلا'), 'Villa'), (('office', 'مكتب'), 'Office')]:
+    for words, kind in [(('apartment', 'شقة', 'شقه'), 'Apartment'), (('villa', 'فيلا'), 'Villa'), (('office', 'مكتب'), 'Office'), (('duplex', 'دوبلكس'), 'Duplex'), (('penthouse', 'بنتهاوس'), 'Penthouse'), (('commercial', 'محل', 'تجاري'), 'Commercial')]:
         if any(word in lowered for word in words):
             updates['property_type'] = kind
     if any(word in lowered for word in ('stop', 'unsubscribe', 'إلغاء', 'متبعتش', 'وقف الرسائل')):

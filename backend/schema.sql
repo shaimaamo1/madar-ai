@@ -40,3 +40,7 @@ CREATE TABLE IF NOT EXISTS telegram_polling(bot_id TEXT PRIMARY KEY, tenant_id T
 CREATE TABLE IF NOT EXISTS telegram_actions(id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL REFERENCES tenants(id), lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE, bot_id TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL, expires_at TEXT NOT NULL, used INTEGER NOT NULL DEFAULT 0);
 
 CREATE TABLE IF NOT EXISTS telegram_contacts(tenant_id TEXT NOT NULL REFERENCES tenants(id), lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE, language TEXT NOT NULL, PRIMARY KEY(tenant_id,lead_id));
+
+-- Track only records created by the presentation dataset for safe selective reset.
+CREATE TABLE IF NOT EXISTS demo_seed_records(tenant_id TEXT NOT NULL REFERENCES tenants(id), table_name TEXT NOT NULL, record_id TEXT NOT NULL, PRIMARY KEY(tenant_id,table_name,record_id));
+CREATE TABLE IF NOT EXISTS demo_datasets(tenant_id TEXT PRIMARY KEY REFERENCES tenants(id), version TEXT NOT NULL, anchor_at TEXT NOT NULL);

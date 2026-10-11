@@ -54,7 +54,7 @@ def test_complete_customer_journey(client):
     assert client.post('/api/integrations/dispatch').json()['sent'] == 0
     assert client.post('/api/deals', json={'lead_id': lead['id'], 'property_id': chat['matches'][0]['id'], 'amount': 4800000, 'commission': 96000, 'status': 'Won'}).status_code == 200
     analytics = client.get('/api/analytics').json()
-    assert analytics['total_leads'] == 7 and analytics['revenue'] == 192000
+    assert analytics['total_leads'] == len(state['leads']) and analytics['revenue'] == 96000
     assert analytics['average_response_seconds'] is not None
 
 
@@ -83,7 +83,7 @@ def test_deduplication_and_contact_conflict(client):
 
 def test_arabic_qualification_optout_and_inventory(client):
     state = demo(client)
-    lead = state['leads'][0]
+    lead = client.post('/api/leads', json={'name':'Arabic qualification customer','consent':True}).json()['lead']
     reply = client.post('/api/leads/' + lead['id'] + '/chat', json={'text': 'عايز شقة في التجمع ميزانيتي ٥ مليون و٣ غرف'})
     assert reply.status_code == 200, reply.text
     assert reply.json()['lead']['location'] == 'New Cairo'
@@ -141,9 +141,10 @@ def test_demo_reset_preserves_other_tenants(client):
     second = demo(client)
     client.post('/api/leads', json={'name': 'Temporary'})
     assert client.post('/api/demo/reset').status_code == 200
-    assert len(client.get('/api/state').json()['leads']) == 6
+    assert len(client.get('/api/state').json()['leads']) == len(second['leads']) + 1
+    assert any(l['name']=='Temporary' for l in client.get('/api/state').json()['leads'])
     with db.connection() as c:
-        assert c.execute('SELECT COUNT(*) FROM leads WHERE tenant_id=?', (first['company']['id'],)).fetchone()[0] == 6
+        assert c.execute('SELECT COUNT(*) FROM leads WHERE tenant_id=?', (first['company']['id'],)).fetchone()[0] == len(first['leads'])
 
 
 def test_bridge_and_settings_validation(client, monkeypatch):

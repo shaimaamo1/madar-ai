@@ -17,19 +17,25 @@ import { workflowCatalog } from "./workflowCatalog";
 export function OperatingStrip({
   operations,
   ar,
+  demo = false,
 }: {
   operations: Row;
   ar: boolean;
+  demo?: boolean;
 }) {
   return (
     <div className="operating-strip">
       <span>
         <ShieldCheck size={14} />
-        <strong>{tr("Private company workspace")}</strong>
+        <strong>
+          {demo
+            ? tr("Isolated demo workspace")
+            : tr("Private company workspace")}
+        </strong>
       </span>
       <span>
         <span className="status-dot" />
-        {tr("Live CRM records")}
+        {demo ? tr("Fictional CRM records") : tr("Live CRM records")}
       </span>
       <span>
         <UsersRound size={14} />

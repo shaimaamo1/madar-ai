@@ -114,7 +114,7 @@ def test_bridge_booking_replay_and_changed_event_conflict(client, monkeypatch):
     assert first.status_code == 200, first.text
     repeat = client.post('/api/bridge/appointments', headers=headers, json=booking).json()
     assert repeat['duplicate'] and repeat['appointment']['id'] == first.json()['appointment']['id']
-    assert len(client.get('/api/state').json()['appointments']) == 1
+    assert len(client.get('/api/state').json()['appointments']) == len(state['appointments']) + 1
     booking['appointment']['notes'] = 'changed event'
     assert client.post('/api/bridge/appointments', headers=headers, json=booking).status_code == 409
     booking['event_id'] = 'another-confirmation'

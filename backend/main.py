@@ -402,8 +402,12 @@ def analytics(user=Depends(current_user)):
         responses = c.execute("SELECT i.created_at AS received, MIN(o.created_at) AS replied FROM messages i JOIN messages o ON o.tenant_id=i.tenant_id AND o.lead_id=i.lead_id AND o.direction='outbound' AND o.created_at>=i.created_at WHERE i.tenant_id=? AND i.direction='inbound' GROUP BY i.id", (tenant,)).fetchall()
         times = [(datetime.fromisoformat(r['replied']) - datetime.fromisoformat(r['received'])).total_seconds() for r in responses]
         sources = {source: sum(l['source'] == source for l in leads) for source in set(l['source'] for l in leads)}
-        agents = [{'name': r['name'], 'leads': sum(l['assigned_to'] == r['id'] for l in leads), 'won': sum(l['assigned_to'] == r['id'] and l['stage'] == 'Won' for l in leads)} for r in c.execute('SELECT id,name FROM users WHERE tenant_id=?', (tenant,))]
-        return {'total_leads': len(leads), 'qualified': sum(l['score'] >= 65 for l in leads), 'conversion_rate': round(100 * sum(l['stage'] == 'Won' for l in leads) / max(len(leads), 1), 1), 'revenue': sum(d['commission'] for d in deals if d['status'] == 'Won'), 'sales_volume': sum(d['amount'] for d in deals if d['status'] == 'Won'), 'open_pipeline': sum(d['amount'] for d in deals if d['status'] == 'Open'), 'appointments': len(appointments), 'appointment_conversion': round(100 * sum(a['status'] == 'Completed' for a in appointments) / max(len(appointments), 1), 1), 'average_response_seconds': round(sum(times)/len(times), 1) if times else None, 'sources': sources, 'agents': agents, 'pipeline': {s: sum(l['stage'] == s for l in leads) for s in db.settings(c, tenant)['stages']}, 'missed_opportunities': sum(i['type'] == 'Leakage' for i in insights(c, tenant))}
+        agents = [{'name': r['name'], 'leads': sum(l['assigned_to'] == r['id'] for l in leads), 'won': sum(l['assigned_to'] == r['id'] and l['stage'] == 'Won' for l in leads), 'appointments':sum(a['agent_id']==r['id'] for a in appointments)} for r in c.execute('SELECT id,name FROM users WHERE tenant_id=?', (tenant,))]
+        tasks = [dict(r) for r in c.execute('SELECT status FROM tasks WHERE tenant_id=?', (tenant,))]
+        demand = {location:sum(l['location']==location for l in leads) for location in sorted({l['location'] for l in leads if l['location']})}
+        appointment_activity = {status:sum(a['status']==status for a in appointments) for status in ('Booked','Completed','Cancelled')}
+        demo_scope = bool(c.execute('SELECT demo FROM tenants WHERE id=?', (tenant,)).fetchone()[0])
+        return {'demo':demo_scope, 'demand_by_area':demand, 'appointment_activity':appointment_activity, 'followups':{'total':len(tasks),'completed':sum(t['status']=='Completed' for t in tasks),'pending':sum(t['status']=='Pending' for t in tasks)}, 'total_leads': len(leads), 'qualified': sum(l['score'] >= 65 for l in leads), 'conversion_rate': round(100 * sum(l['stage'] == 'Won' for l in leads) / max(len(leads), 1), 1), 'revenue': sum(d['commission'] for d in deals if d['status'] == 'Won'), 'sales_volume': sum(d['amount'] for d in deals if d['status'] == 'Won'), 'open_pipeline': sum(d['amount'] for d in deals if d['status'] == 'Open'), 'appointments': len(appointments), 'appointment_conversion': round(100 * sum(a['status'] == 'Completed' for a in appointments) / max(len(appointments), 1), 1), 'average_response_seconds': round(sum(times)/len(times), 1) if times else None, 'sources': sources, 'agents': agents, 'pipeline': {s: sum(l['stage'] == s for l in leads) for s in db.settings(c, tenant)['stages']}, 'missed_opportunities': sum(i['type'] == 'Leakage' for i in insights(c, tenant))}
 
 
 @app.put('/api/settings')
@@ -440,19 +444,25 @@ def deactivate(user_id: str, user=Depends(current_user)):
     return {'ok': True}
 
 
+@app.post('/api/demo/load')
+def load_demo(user=Depends(current_user)):
+    admin(user)
+    from .seed import seed_demo
+    with db.connection() as c:
+        c.execute('BEGIN IMMEDIATE')
+        seed_demo(c, user['tenant_id'], user['id'], hasher.hash(secrets.token_urlsafe(32)))
+    return {'ok': True}
+
+
 @app.post('/api/demo/reset')
 def reset_demo(user=Depends(current_user)):
     admin(user)
+    from .seed import reset_generated, seed_demo
     with db.connection() as c:
-        tenant = c.execute('SELECT demo FROM tenants WHERE id=?', (user['tenant_id'],)).fetchone()
-        if not tenant[0]:
-            raise HTTPException(403, 'Reset is available only for fictional demo workspaces')
-        for table in ('enterprise_artifacts', 'adviser_cases', 'demo_runs', 'chat_sessions', 'conversation_controls', 'consent_events', 'automation_receipts', 'incidents', 'outbox', 'webhook_events', 'activities', 'deals', 'appointments', 'tasks', 'messages', 'leads', 'properties'):
-            c.execute(f'DELETE FROM {table} WHERE tenant_id=?', (user['tenant_id'],))
-        c.execute('DELETE FROM users WHERE tenant_id=? AND id<>?', (user['tenant_id'], user['id']))
-        from .seed import seed_demo
+        c.execute('BEGIN IMMEDIATE')
+        retained = reset_generated(c, user['tenant_id'])
         seed_demo(c, user['tenant_id'], user['id'], hasher.hash(secrets.token_urlsafe(32)))
-    return {'ok': True}
+    return {'ok': True, 'retained_referenced_demo_records': retained}
 
 
 @app.post('/api/automation/tick')
@@ -490,6 +500,9 @@ from .enterprise import router as enterprise_router
 app.include_router(enterprise_router)
 from .ai_agents import router as ai_agents_router
 app.include_router(ai_agents_router)
+
+DEMO_ASSETS = Path(__file__).resolve().parent / 'demo_assets'
+app.mount('/demo-assets', StaticFiles(directory=DEMO_ASSETS), name='demo-assets')
 
 DIST = Path(__file__).resolve().parent.parent / 'frontend' / 'dist'
 if (DIST / 'assets').exists():
