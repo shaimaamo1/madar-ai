@@ -4,6 +4,8 @@ A real estate operations workspace for Egypt and the Gulf, with a React/TypeScri
 
 The working local journey is **website inquiry → bilingual qualification → verified property matching → CRM → viewing booking → follow-up → analytics**. All seeded demo data is fictional. The rules assistant operates without external services; a real language model is optional and not yet authorized here.
 
+Telegram now supports local Docker long polling, secure guided setup, bilingual inventory recommendations, confirmed viewing bookings, consent and human handoff. Start with [Telegram setup](docs/telegram-integration.md); [verification](docs/telegram-verification.md) separates automated checks from unverified live delivery. No public endpoint is needed and Telegram sending stays disabled until you enable it.
+
 ## Premium product upgrade
 
 The midnight navy, sapphire, champagne gold, deep teal and warm ivory interface includes fourteen operational pages, self-hosted Manrope/Arabic typography, dark mode, mobile RTL and keyboard dialogs. The **WhatsApp studio** rehearses a complete fictional inquiry → qualification → inventory → viewing → human handoff/opt-out journey without Meta or paid-model requests. Fourteen inactive n8n exports include eight business canvases with 36–41 executable nodes each, a real isolated full-demo orchestrator, and delivery/error support modules. System Health distinguishes actual checks from unverified Windows/provider execution. All 14 n8n exports use clean, functional-node-only layouts; existing workflow IDs are updated by `Update-Madar.cmd` without duplicate imports. See [layout verification](docs/workflow-layout-verification.md).

@@ -1,4 +1,5 @@
 import json
+import asyncio
 import os
 import secrets
 import sqlite3
@@ -8,6 +9,8 @@ from pathlib import Path
 
 from argon2.exceptions import VerificationError
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -28,7 +31,17 @@ async def lifespan(app):
         if not tenant:
             raise RuntimeError('Configured integration workspace does not exist')
         os.environ['MADAR_INTEGRATION_TENANT_ID'] = tenant[0]
-    yield
+    from .telegram_polling import worker
+    task = asyncio.create_task(worker()) if os.getenv('MADAR_TELEGRAM_POLL_WORKER', 'true') == 'true' else None
+    try:
+        yield
+    finally:
+        if task:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 app = FastAPI(title='MADAR AI', version='1.1.0', lifespan=lifespan, docs_url=None, redoc_url=None)
@@ -59,6 +72,13 @@ async def guards(request, call_next):
     if request.url.path.startswith('/api'):
         response.headers['Cache-Control'] = 'no-store'
     return response
+
+
+@app.exception_handler(RequestValidationError)
+async def safe_validation(request, error):
+    if request.url.path.startswith('/api/telegram/'):
+        return JSONResponse({'detail': 'Invalid Telegram configuration; input values omitted'}, status_code=422)
+    return await request_validation_exception_handler(request, error)
 
 
 @app.exception_handler(sqlite3.IntegrityError)
@@ -165,6 +185,12 @@ def integration_status(tenant):
     for name, keys in specs.items():
         if name == 'n8n' and os.getenv('N8N_ENABLED', 'false') != 'true':
             result.append({'name': name, 'status': 'Local setup required', 'missing': ['N8N_ENABLED', *keys], 'detail': 'Self-hosted n8n runs on your computer; Cloud preview does not connect to it'})
+            continue
+        if name == 'telegram':
+            from .telegram import configuration, status
+            cfg = status(configuration()) if bound else {}
+            result.append({'name': name, 'status': 'Operational' if cfg.get('verified') else 'Configured, unverified' if cfg.get('configured') else 'Needs authorization',
+                           'missing': [] if cfg.get('configured') else list(keys), 'detail': 'Telegram delivery enabled by operator' if cfg.get('enabled') else 'Telegram delivery disabled'})
             continue
         configured = all(os.getenv(k) for k in keys) and (bound or name == 'language_model')
         result.append({'name': name, 'status': 'Configured, unverified' if configured else 'Needs authorization', 'missing': [k for k in keys if not os.getenv(k)] + ([] if bound or name == 'language_model' else ['MADAR_INTEGRATION_TENANT_ID']), 'detail': 'External delivery disabled' if os.getenv('MADAR_ALLOW_EXTERNAL_SEND') != 'true' else 'Delivery enabled by operator'})
@@ -451,6 +477,9 @@ def report(user=Depends(current_user)):
 
 
 # Integration routes registered after core functions to avoid circular imports.
+from .telegram import router as telegram_router
+app.include_router(telegram_router)
+
 from .integrations import router
 app.include_router(router)
 from .availability import router as availability_router

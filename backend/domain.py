@@ -168,11 +168,15 @@ def qualify(c, tenant, lead, text):
     return lead
 
 
-def rules_reply(c, tenant, lead, text):
-    arabic = bool(re.search('[\u0600-\u06ff]', text))
+def human_requested(text):
+    return any(w in text.casefold() for w in ('human', 'complaint', 'إنسان', 'موظف', 'شكوى', 'legal', 'عقد', 'مستشار', 'حد يكلمني'))
+
+
+def rules_reply(c, tenant, lead, text, language=None):
+    arabic = language == 'ar' if language else bool(re.search('[\u0600-\u06ff]', text))
     if lead['opted_out']:
         return ('تمام، وقفنا رسائل المتابعة. مش هنبعت لك تاني إلا بموافقتك.' if arabic else 'Follow-up messages are stopped.'), []
-    if any(w in text.casefold() for w in ('human', 'complaint', 'إنسان', 'موظف', 'شكوى', 'legal', 'عقد', 'مستشار', 'حد يكلمني')):
+    if human_requested(text):
         from .operations import set_handoff
         set_handoff(c, tenant, lead['id'], True, 'Customer requested an adviser', 'assistant')
         return ('أكيد، سجّلنا طلبك ومستشار عقاري هيتابع معاك. الردود الآلية متوقفة لحد ما المستشار يرجع المساعد.' if arabic else 'I have recorded your request for a human adviser.'), []
@@ -248,6 +252,20 @@ def insights(c, tenant):
     return result
 
 
+def channel_followup(c, tenant, row, body):
+    if row['source'] != 'telegram':
+        return body
+    language = c.execute('SELECT language FROM telegram_contacts WHERE tenant_id=? AND lead_id=?', (tenant, row['lead_id'])).fetchone()
+    if language and language[0] == 'ar':
+        if body.startswith('Viewing reminder: '):
+            body = 'تذكير بموعد المعاينة: ' + body.removeprefix('Viewing reminder: ')
+        elif body.startswith('Available properties matching your recorded preferences: '):
+            body = 'عقارات متاحة تناسب تفضيلاتك: ' + body.removeprefix('Available properties matching your recorded preferences: ')
+        else:
+            body = 'مستشارك العقاري جاهز لمتابعة طلبك. استخدم /properties للعقارات أو /agent للتواصل مع المستشار.'
+    return body
+
+
 def tick(c, tenant):
     count = 0
     due = now()
@@ -261,20 +279,20 @@ def tick(c, tenant):
             if not matches:
                 continue
             body = 'Available properties matching your recorded preferences: ' + ', '.join(p['title'] for p in matches[:3])
-        cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['lead_id'], row['source'], body, '', 'task:' + row['id'], 'Pending', 0, due, '', '', due))
+        cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['lead_id'], row['source'], channel_followup(c, tenant, row, body), '', 'task:' + row['id'], 'Pending', 0, due, '', '', due))
         count += cursor.rowcount
     horizon = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
     for row in c.execute("SELECT a.*,l.source,l.consent,l.opted_out FROM appointments a JOIN leads l ON l.id=a.lead_id AND l.tenant_id=a.tenant_id WHERE a.tenant_id=? AND a.status='Booked' AND a.start_at>? AND a.start_at<=?", (tenant, due, horizon)).fetchall():
         if not row['consent'] or row['opted_out']:
             continue
-        cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['lead_id'], row['source'], 'Viewing reminder: ' + row['start_at'], '', 'appointment:' + row['id'] + ':' + row['start_at'], 'Pending', 0, due, '', '', due))
+        cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['lead_id'], row['source'], channel_followup(c, tenant, row, 'Viewing reminder: ' + row['start_at']), '', 'appointment:' + row['id'] + ':' + row['start_at'], 'Pending', 0, due, '', '', due))
         count += cursor.rowcount
     # Once-per-lead reactivation and retention; consent and opt-out are enforced.
     dormant = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
     for row in c.execute("SELECT * FROM leads l WHERE tenant_id=? AND consent=1 AND opted_out=0 AND NOT EXISTS (SELECT 1 FROM conversation_controls cc WHERE cc.lead_id=l.id AND cc.tenant_id=l.tenant_id AND cc.human_active=1) AND ((updated_at<? AND stage NOT IN ('Won','Lost')) OR stage='Won')", (tenant, dormant)).fetchall():
         kind = 'retention' if row['stage'] == 'Won' else 'reactivation'
         text = 'Your property adviser is available if you need further help.' if kind == 'retention' else 'Would you like to review your property search preferences?'
-        cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['id'], row['source'], text, '', kind + ':' + row['id'], 'Pending', 0, due, '', '', due))
+        cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['id'], row['source'], channel_followup(c, tenant, dict(row, lead_id=row['id']), text), '', kind + ':' + row['id'], 'Pending', 0, due, '', '', due))
         count += cursor.rowcount
     audit(c, tenant, 'automation', 'automation.tick', tenant, f'{count} messages queued; delivery requires approval')
     return {'queued': count}

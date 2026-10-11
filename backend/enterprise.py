@@ -343,5 +343,9 @@ async def health(user=Depends(current_user)):
         checks.append({'component':'n8n API','status':'PASS' if remote is not None else 'NOT VERIFIED','detail':'Workflow read access verified' if remote is not None else 'Local API access is not configured'})
     except (httpx.HTTPError,ValueError):
         checks.append({'component':'n8n API','status':'FAIL','detail':'Connection or access failed; response omitted'})
+    from .telegram import configuration, status
+    telegram_status = status(configuration()) if user['tenant_id'] == os.getenv('MADAR_INTEGRATION_TENANT_ID') else {}
+    checks.append({'component':'Telegram polling','status':'PASS' if telegram_status.get('polling_active') else 'NOT VERIFIED', 'detail':'Polling read access verified' if telegram_status.get('polling_active') else 'Connect your dedicated bot locally'})
+    checks.append({'component':'Telegram delivery','status':'NOT VERIFIED' if telegram_status.get('enabled') else 'PASS', 'detail':'Telegram delivery authorized; receiving and replying to a real message still needs verification' if telegram_status.get('enabled') else 'Telegram delivery disabled independently'})
     checks += [{'component':'Docker Desktop','status':'NOT VERIFIED','detail':'Requires trusted Windows launcher evidence'}, {'component':'Windows execution','status':'NOT VERIFIED','detail':'Requires execution on Windows'}, {'component':'Meta delivery','status':'NOT VERIFIED','detail':'Real customer delivery has not been authorized'}]
     return {'checked_at':db.now(),'checks':checks,'safety':safety,'model_configured':bool(os.getenv('MADAR_AI_API_KEY')),'paid_model_enabled':os.getenv('MADAR_ALLOW_MODEL_USAGE')=='true'}

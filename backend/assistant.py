@@ -22,7 +22,7 @@ class Interpretation(Model):
     preferences: list[Preference] = Field(default_factory=list, max_length=6)
 
 
-async def respond(c, tenant, lead, text, channel='website', external_id='', allow_model=True):
+async def respond(c, tenant, lead, text, channel='website', external_id='', allow_model=True, reply_language=None):
     c.execute('INSERT INTO messages VALUES(?,?,?,?,?,?,?,?)', (uid(), tenant, lead['id'], 'inbound', channel, text, external_id, now()))
     lead = qualify(c, tenant, lead, text)
     control = c.execute('SELECT human_active FROM conversation_controls WHERE tenant_id=? AND lead_id=?', (tenant, lead['id'])).fetchone()
@@ -66,7 +66,7 @@ async def respond(c, tenant, lead, text, channel='website', external_id='', allo
         except (httpx.HTTPError, ValueError, ValidationError, KeyError, IndexError):
             mode = 'rules-fallback'
             audit(c, tenant, 'assistant', 'ai.fallback', lead['id'], 'Provider unavailable; no credentials recorded')
-    body, matches = rules_reply(c, tenant, lead, text)
+    body, matches = rules_reply(c, tenant, lead, text, reply_language)
     c.execute('INSERT INTO messages VALUES(?,?,?,?,?,?,?,?)', (uid(), tenant, lead['id'], 'outbound', channel, body, '', now()))
     c.execute('UPDATE leads SET updated_at=? WHERE tenant_id=? AND id=?', (now(), tenant, lead['id']))
     audit(c, tenant, 'assistant', 'conversation.replied', lead['id'], mode)

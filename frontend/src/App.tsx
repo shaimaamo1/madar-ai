@@ -1,3 +1,4 @@
+import { TelegramSetup } from "./TelegramSetup";
 import { useEffect, useRef, useState, FormEvent } from "react";
 import {
   Activity,
@@ -2263,6 +2264,7 @@ export default function App() {
                   )}
                 </p>
               </div>
+              <TelegramSetup demo={Boolean(state.company.demo)} admin={state.user.role === "admin"} refresh={refresh} />
               <div className="integration-grid">
                 {state.integrations.map((i: Row) => (
                   <section className="card integration-card" key={i.name}>
@@ -2343,6 +2345,7 @@ export default function App() {
 
           {page === "settings" && (
             <>
+              <TelegramSetup demo={Boolean(state.company.demo)} admin={state.user.role === "admin"} refresh={refresh} />
               <section className="card onboarding">
                 <div>
                   <span className="eyebrow">{tr("CLIENT ONBOARDING")}</span>

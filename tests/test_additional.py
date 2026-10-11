@@ -124,6 +124,8 @@ def test_approved_dispatch_uses_official_api_and_tracks_delivery(client, monkeyp
     assert client.post('/api/integrations/dispatch').json()['sent'] == 0
     assert calls == []
     monkeypatch.setenv('MADAR_ALLOW_EXTERNAL_SEND', 'true')
+    assert client.post('/api/integrations/dispatch').json()['sent'] == 0
+    monkeypatch.setenv('MADAR_ALLOW_TELEGRAM_SEND', 'true')
     assert client.post('/api/integrations/dispatch').json()['sent'] == 1
     assert calls[0][0].startswith('https://api.telegram.org/')
     outbox = client.get('/api/state').json()['outbox'][0]

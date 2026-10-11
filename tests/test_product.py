@@ -16,6 +16,8 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv('MADAR_ADMIN_PASSWORD', 'TestOnlyPassword123!')
     monkeypatch.delenv('MADAR_AI_API_KEY', raising=False)
     monkeypatch.delenv('MADAR_ALLOW_EXTERNAL_SEND', raising=False)
+    monkeypatch.delenv('MADAR_ALLOW_TELEGRAM_SEND', raising=False)
+    monkeypatch.setenv('MADAR_TELEGRAM_POLL_WORKER', 'false')
     security._rates.clear()
     with TestClient(app) as c:
         yield c

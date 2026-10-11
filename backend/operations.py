@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import BackgroundTasks, APIRouter, Depends, HTTPException, Request
 from pydantic import Field
 
 from . import db
@@ -162,10 +162,17 @@ async def whatsapp_delivery(request: Request):
 
 
 @router.post('/api/bridge/reconcile')
-def reconcile(request: Request):
+def reconcile(request: Request, background: BackgroundTasks):
     with db.connection() as c:
         c.execute('BEGIN IMMEDIATE')
         tenant = bridge_tenant(request, c)
+        from .telegram import configuration
+        if configuration().get('enabled'):
+            from .integrations import dispatch
+            background.add_task(dispatch, tenant, 'telegram')
+        # A crashed sender cannot safely assume delivery failed. Escalate, never replay.
+        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+        c.execute("UPDATE outbox SET status='Uncertain',error='Interrupted provider delivery; reconcile before retry' WHERE tenant_id=? AND channel='telegram' AND status='Sending' AND next_attempt<?", (tenant, cutoff))
         created = 0
         for row in c.execute("SELECT id,status FROM outbox WHERE tenant_id=? AND status IN ('Uncertain','Failed')", (tenant,)).fetchall():
             category = 'delivery_reconciliation' if row['status'] == 'Uncertain' else 'provider_rejected'

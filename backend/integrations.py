@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import Field
 
@@ -52,18 +52,9 @@ async def ingest(c, tenant, channel, event_id, name, contact, text, consent=Fals
 
 @router.post('/webhooks/telegram')
 @db.serialized_conversation
-async def telegram(request: Request):
-    expected = os.getenv('TELEGRAM_WEBHOOK_SECRET', '')
-    if not expected or not secrets.compare_digest(request.headers.get('x-telegram-bot-api-secret-token', ''), expected):
-        raise HTTPException(401, 'Webhook secret required')
-    data = await request.json()
-    message = data.get('message', {})
-    if not message.get('text') or message.get('chat', {}).get('type') != 'private':
-        return {'ignored': True}
-    with db.connection() as c:
-        c.execute('BEGIN IMMEDIATE')
-        tenant = integration_tenant(c)
-        return await ingest(c, tenant, 'telegram', str(data['update_id']), message.get('from', {}).get('first_name', 'Telegram visitor'), str(message['chat']['id']), message['text'][:4000])
+async def telegram(request: Request, background: BackgroundTasks):
+    from .telegram import receive
+    return await receive(request, background)
 
 
 @router.get('/webhooks/meta')
@@ -199,7 +190,11 @@ def template(data: TemplateInput, user=Depends(current_user)):
 
 
 async def dispatch(tenant, channel=None):
-    if os.getenv('MADAR_ALLOW_EXTERNAL_SEND') != 'true':
+    from .telegram import configuration
+    telegram_cfg = configuration()
+    telegram_enabled = bool(telegram_cfg.get('enabled'))
+    external_enabled = os.getenv('MADAR_ALLOW_EXTERNAL_SEND') == 'true'
+    if not external_enabled and not telegram_enabled:
         return {'sent': 0, 'blocked': 'Owner approval required before real external messages'}
     if tenant != os.getenv('MADAR_INTEGRATION_TENANT_ID'):
         raise HTTPException(403, 'Integration tenant mismatch')
@@ -207,18 +202,28 @@ async def dispatch(tenant, channel=None):
     with db.connection() as c:
         c.execute('BEGIN IMMEDIATE')
         # Never retry uncertain delivery automatically; operator must reconcile provider state.
-        rows = [dict(r) for r in c.execute("SELECT * FROM outbox WHERE tenant_id=? AND status IN ('Pending','Retry') AND next_attempt<=? AND attempts<5 AND (? IS NULL OR channel=?) ORDER BY created_at LIMIT 10", (tenant, db.now(), channel, channel))]
+        rows = [dict(r) for r in c.execute("SELECT * FROM outbox WHERE tenant_id=? AND status IN ('Pending','Retry') AND next_attempt<=? AND attempts<5 AND (? IS NULL OR channel=?) AND ((channel='telegram' AND ?) OR (channel<>'telegram' AND ?)) ORDER BY created_at LIMIT 10", (tenant, db.now(), channel, channel, telegram_enabled, external_enabled))]
+        rows = [r for r in rows if (telegram_enabled if r['channel'] == 'telegram' else external_enabled)]
         for row in rows:
             c.execute("UPDATE outbox SET status='Sending',attempts=attempts+1 WHERE id=? AND tenant_id=?", (row['id'], tenant))
     for row in rows:
         with db.connection() as c:
+            pause = c.execute('SELECT resume_at FROM channel_pauses WHERE tenant_id=? AND channel=?', (tenant, row['channel'])).fetchone()
+            if pause and pause[0] > db.now():
+                c.execute("UPDATE outbox SET status='Retry',attempts=attempts-1,next_attempt=? WHERE tenant_id=? AND id=?", (pause[0], tenant, row['id']))
+                continue
             lead = require(c, 'leads', tenant, row['lead_id'])
             last = c.execute("SELECT MAX(created_at) FROM messages WHERE tenant_id=? AND lead_id=? AND direction='inbound' AND channel=?", (tenant, lead['id'], row['channel'])).fetchone()[0]
-        reactive = row['dedupe_key'].startswith(('event:', 'manual:'))
+        with db.connection() as c:
+            control = c.execute('SELECT human_active FROM conversation_controls WHERE tenant_id=? AND lead_id=?', (tenant, lead['id'])).fetchone()
+        reactive = row['dedupe_key'].startswith(('event:', 'manual:', 'handoff-ack:'))
         recent = last and datetime.fromisoformat(last) > datetime.now(timezone.utc) - timedelta(hours=24)
         status, error, external_id = 'Held', '', ''
+        retry_seconds = 60 * 2 ** (row['attempts'] + 1)
         if lead['external_id'].startswith('sandbox:'):
             error = 'Sandbox contact cannot receive real provider messages'
+        elif control and control[0] and not row['dedupe_key'].startswith(('manual:', 'handoff-ack:')):
+            error = 'Human adviser owns this conversation'
         elif lead['opted_out'] or (not reactive and not lead['consent']):
             error = 'Opt-out or no follow-up consent'
         elif row['channel'] in ('whatsapp', 'instagram', 'facebook') and not recent and not row['template']:
@@ -227,10 +232,13 @@ async def dispatch(tenant, channel=None):
             try:
                 async with httpx.AsyncClient(timeout=20) as client:
                     if row['channel'] == 'telegram':
-                        token = os.getenv('TELEGRAM_BOT_TOKEN')
+                        telegram_cfg = configuration()
+                        if not telegram_cfg.get('enabled'):
+                            raise ValueError('Telegram delivery permission disabled')
+                        token = telegram_cfg.get('token')
                         if not token:
                             raise ValueError('Telegram credentials missing')
-                        response = await client.post('https://api.telegram.org/bot' + token + '/sendMessage', json={'chat_id': lead['external_id'], 'text': row['body']})
+                        response = await client.post('https://api.telegram.org/bot' + token + '/sendMessage', json={'chat_id': lead['external_id'], 'text': row['body'][:4096], **({'reply_markup': json.loads(row['template'])} if row['template'] else {})})
                     elif row['channel'] == 'whatsapp':
                         token, phone = os.getenv('WHATSAPP_ACCESS_TOKEN'), os.getenv('WHATSAPP_PHONE_NUMBER_ID')
                         if not token or not phone:
@@ -242,10 +250,18 @@ async def dispatch(tenant, channel=None):
                         token = os.getenv('META_PAGE_ACCESS_TOKEN')
                         if not token:
                             raise ValueError('Meta page credentials missing')
-                        response = await client.post(GRAPH + '/me/messages', headers={'Authorization': 'Bearer ' + token}, json={'recipient': {'id': lead['external_id']}, 'message': {'text': row['body']}})
+                        response = await client.post(GRAPH + '/me/messages', headers={'Authorization': 'Bearer ' + token}, json={'recipient': {'id': lead['external_id']}, 'message': {'text': row['body'][:4096]}})
                     else:
                         raise ValueError('No delivery provider configured for this channel')
-                if response.status_code == 429 or response.status_code >= 500:
+                payload = response.json() if row['channel'] == 'telegram' else {}
+                provider_code = payload.get('error_code', response.status_code)
+                if provider_code == 429 and row['channel'] == 'telegram':
+                    delay = payload.get('parameters', {}).get('retry_after', 60)
+                    retry_seconds = min(max(delay if type(delay) is int else 60, 1), 86400)
+                    resume = (datetime.now(timezone.utc) + timedelta(seconds=retry_seconds)).isoformat()
+                    with db.connection() as c:
+                        c.execute('INSERT INTO channel_pauses VALUES(?,?,?) ON CONFLICT(tenant_id,channel) DO UPDATE SET resume_at=excluded.resume_at', (tenant, 'telegram', resume))
+                if provider_code == 429 or response.status_code >= 500:
                     status, error = ('Failed', 'Provider retry limit reached') if row['attempts'] + 1 >= 5 else ('Retry', 'Provider temporarily unavailable')
                 elif response.status_code >= 400:
                     status, error = 'Failed', f'Provider rejected request (HTTP {response.status_code})'
@@ -264,7 +280,7 @@ async def dispatch(tenant, channel=None):
         if status == 'Held':
             held += 1
         with db.connection() as c:
-            retry = (datetime.now(timezone.utc) + timedelta(minutes=2 ** (row['attempts'] + 1))).isoformat()
+            retry = (datetime.now(timezone.utc) + timedelta(seconds=retry_seconds)).isoformat()
             c.execute('UPDATE outbox SET status=?,error=?,external_id=?,next_attempt=? WHERE tenant_id=? AND id=?', (status, error, external_id, retry, tenant, row['id']))
             db.audit(c, tenant, 'dispatcher', 'outbox.' + status.lower(), row['id'], error)
     return {'sent': sent, 'held': held}
@@ -287,7 +303,9 @@ async def verify(name: str, user=Depends(current_user)):
         url = base.rstrip('/') + '/api/v1/workflows?limit=1'
         headers = {'X-N8N-API-KEY': os.getenv('N8N_API_KEY', '')}
     elif name == 'telegram':
-        url = 'https://api.telegram.org/bot' + os.getenv('TELEGRAM_BOT_TOKEN', '') + '/getMe'
+        from .telegram import test_connection
+        result = await test_connection(user)
+        return {'verified': result['verified'], 'http_status': 200}
     elif name == 'whatsapp':
         url = GRAPH + '/' + os.getenv('WHATSAPP_PHONE_NUMBER_ID', '') + '?fields=id,display_phone_number'
         headers = {'Authorization': 'Bearer ' + os.getenv('WHATSAPP_ACCESS_TOKEN', '')}

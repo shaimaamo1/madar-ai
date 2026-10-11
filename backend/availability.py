@@ -79,27 +79,32 @@ def available_slots(data: SlotRequest, request: Request):
     limit('slots:' + request.client.host, 30, 60)
     with db.connection() as c:
         tenant, lead_id = chat_identity(c, data.tenant_slug, data.session)
-        p = require(c, 'properties', tenant, data.property_id)
-        if p['status'] != 'Available':
-            return {'slots': []}
-        cfg = db.settings(c, tenant)
-        zone = ZoneInfo(cfg['timezone'])
-        current = datetime.now(timezone.utc)
-        agents = c.execute('SELECT id FROM users WHERE tenant_id=? AND active=1 ORDER BY id', (tenant,)).fetchall()
-        slots = []
-        for day in range(1, 8):
-            base = (current.astimezone(zone) + timedelta(days=day)).replace(minute=0, second=0, microsecond=0)
-            for hour in range(cfg['business_start'], cfg['business_end']):
-                start = base.replace(hour=hour).astimezone(timezone.utc)
-                end = start + timedelta(hours=1)
-                a, b = start.isoformat(), end.isoformat()
-                for agent in agents:
-                    conflict = c.execute("SELECT 1 FROM appointments WHERE tenant_id=? AND status='Booked' AND (agent_id=? OR lead_id=? OR property_id=?) AND start_at<? AND end_at>?", (tenant, agent['id'], lead_id, p['id'], b, a)).fetchone()
-                    if not conflict:
-                        slots.append({'start_at': a, 'end_at': b})
-                        break
-                if len(slots) >= 15:
-                    return {'slots': slots, 'timezone': cfg['timezone']}
+        result = inventory_slots(c, tenant, lead_id, data.property_id)
+        return {**result, 'slots': [{k:v for k,v in slot.items() if k != 'agent_id'} for slot in result['slots']]}
+
+
+def inventory_slots(c, tenant, lead_id, property_id):
+    p = require(c, 'properties', tenant, property_id)
+    if p['status'] != 'Available':
+        return {'slots': []}
+    cfg = db.settings(c, tenant)
+    zone = ZoneInfo(cfg['timezone'])
+    current = datetime.now(timezone.utc)
+    agents = c.execute('SELECT id FROM users WHERE tenant_id=? AND active=1 ORDER BY id', (tenant,)).fetchall()
+    slots = []
+    for day in range(1, 8):
+        base = (current.astimezone(zone) + timedelta(days=day)).replace(minute=0, second=0, microsecond=0)
+        for hour in range(cfg['business_start'], cfg['business_end']):
+            start = base.replace(hour=hour).astimezone(timezone.utc)
+            end = start + timedelta(hours=1)
+            a, b = start.isoformat(), end.isoformat()
+            for agent in agents:
+                conflict = c.execute("SELECT 1 FROM appointments WHERE tenant_id=? AND status='Booked' AND (agent_id=? OR lead_id=? OR property_id=?) AND start_at<? AND end_at>?", (tenant, agent['id'], lead_id, p['id'], b, a)).fetchone()
+                if not conflict:
+                    slots.append({'start_at': a, 'end_at': b, 'agent_id': agent['id']})
+                    break
+            if len(slots) >= 15:
+                return {'slots': slots, 'timezone': cfg['timezone']}
     return {'slots': slots, 'timezone': cfg['timezone']}
 
 

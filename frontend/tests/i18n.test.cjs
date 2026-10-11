@@ -43,6 +43,7 @@ test("rendered literals and translation calls cannot silently miss a catalog ent
     "App.tsx",
     "Premium.tsx",
     "Enterprise.tsx",
+    "TelegramSetup.tsx",
     "LanguageSelector.tsx",
     "i18n.ts",
   ]) {

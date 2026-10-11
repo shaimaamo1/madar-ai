@@ -32,3 +32,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS demo_active_run ON demo_runs(tenant_id) WHERE 
 CREATE TABLE IF NOT EXISTS enterprise_artifacts(id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL REFERENCES tenants(id), run_id TEXT REFERENCES demo_runs(id), event_id TEXT NOT NULL, kind TEXT NOT NULL, lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE, request_hash TEXT NOT NULL, result TEXT NOT NULL, execution_id TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, UNIQUE(tenant_id,event_id,kind));
 CREATE TABLE IF NOT EXISTS adviser_cases(id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL REFERENCES tenants(id), lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE, agent_id TEXT NOT NULL, status TEXT NOT NULL, priority TEXT NOT NULL, due_at TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(tenant_id,lead_id));
 INSERT OR IGNORE INTO schema_migrations VALUES(3,datetime('now'));
+
+-- Telegram provider-wide retry pause; additive and tenant-isolated.
+CREATE TABLE IF NOT EXISTS channel_pauses(tenant_id TEXT NOT NULL REFERENCES tenants(id), channel TEXT NOT NULL, resume_at TEXT NOT NULL, PRIMARY KEY(tenant_id,channel));
+
+CREATE TABLE IF NOT EXISTS telegram_polling(bot_id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL REFERENCES tenants(id), update_offset INTEGER NOT NULL DEFAULT 0, owner TEXT NOT NULL DEFAULT '', lease_until TEXT NOT NULL DEFAULT '', last_received TEXT NOT NULL DEFAULT '', error TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS telegram_actions(id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL REFERENCES tenants(id), lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE, bot_id TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL, expires_at TEXT NOT NULL, used INTEGER NOT NULL DEFAULT 0);
+
+CREATE TABLE IF NOT EXISTS telegram_contacts(tenant_id TEXT NOT NULL REFERENCES tenants(id), lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE, language TEXT NOT NULL, PRIMARY KEY(tenant_id,lead_id));
