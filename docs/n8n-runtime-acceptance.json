@@ -1,0 +1,86 @@
+{
+  "runtime": "n8nio/n8n:1.113.3",
+  "fixture": "Disposable isolated Cloud/Linux Docker, fictional data only",
+  "windows": "NOT VERIFIED",
+  "owner_local_n8n": "NOT VERIFIED",
+  "provider_delivery": "NOT VERIFIED",
+  "checks": [
+    {
+      "component": "Actual API import and repeat import",
+      "status": "PASS",
+      "workflow_count": 14
+    },
+    {
+      "component": "Actual Full Demo plus eight business modules",
+      "status": "PASS",
+      "execution_id": "1",
+      "workflow_id": "7u3lgclYd9glONJF",
+      "steps": [
+        {
+          "kind": "intake",
+          "execution_id": "2"
+        },
+        {
+          "kind": "qualification",
+          "execution_id": "3"
+        },
+        {
+          "kind": "matching",
+          "execution_id": "5"
+        },
+        {
+          "kind": "appointment",
+          "execution_id": "6"
+        },
+        {
+          "kind": "followup",
+          "execution_id": "7"
+        },
+        {
+          "kind": "conversation",
+          "execution_id": "8"
+        },
+        {
+          "kind": "handoff",
+          "execution_id": "9"
+        },
+        {
+          "kind": "reporting",
+          "execution_id": "10"
+        }
+      ]
+    },
+    {
+      "component": "Replay, booking conflict and provider suppression",
+      "status": "PASS"
+    },
+    {
+      "component": "System Health real n8n API read",
+      "status": "PASS"
+    },
+    {
+      "component": "Actual error routing and tenant reference rejection",
+      "status": "PASS"
+    },
+    {
+      "component": "No workflow activation",
+      "status": "PASS"
+    }
+  ],
+  "workflow_sha256": {
+    "madar-delivery-reconciliation.json": "2d99c8ef4e653570b66070e2d05d9346f5ca719a8572f16bda778400ec8759d9",
+    "madar-error-monitor.json": "6192d259e69dad03afcf9559e47edd544be83b5892917c5ebfc6a0c386b0b48c",
+    "madar-follow-up-scheduler.json": "678e7fd3f503cf038f35d8d6963ae2996ecb16cc96f6a5c703e9f6f07fc5803b",
+    "madar-full-demo.json": "04dd96705e1d0af62ccb37b175e4689e810bd6d36a92d8760e43503e84ad156a",
+    "madar-human-handoff-&-escalation.json": "9536db447245fa0abd3639e5249a9c44cc94938db5b5a47389cbaa5218e6ae6f",
+    "madar-ingestion-subworkflow.json": "ac0e80add60d6a75aaff370973315c234ba12a86057f5ab3ac635f087a42723d",
+    "madar-lead-intelligence.json": "81774849e40414c405d600dff9e25b850b6084ca0282e31fa45c69f877b81c74",
+    "madar-omnichannel-intake.json": "dd46eb82da00a1355335d4058f92b0ae1512dc6eda94b5316f594ce1d44ee34e",
+    "madar-property-matching-engine.json": "5a395ff8dc52bdf9736702c0f9b7f5635d1acb2cba33524620ffe4d2ad2d0d2d",
+    "madar-sales-reporting.json": "dc4a0d4f21b69c53932766aa7e2e87d2a99f7e49a9964c49a039d798268cc7d7",
+    "madar-test-evaluation.json": "5ebb6a0077d303c4fabd163233e6fd698bf5661f397a641c1688c8b39df5fbf9",
+    "madar-viewing-reservations.json": "e4fc5854b821198ba0df2f55db144d18565aae781fed3e3b1ac6e25ee87f31b0",
+    "madar-whatsapp-conversation.json": "e470738cc06df274d2ae5791704ad5c9e63f4e596b3969a5b19e9a1499cb4f53",
+    "madar-whatsapp-delivery.json": "e55e66b5c37e7959b900b17e8deb27a3ffd2335d46baa1f5506b43d36cb2fdfe"
+  }
+}

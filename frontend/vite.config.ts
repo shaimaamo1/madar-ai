@@ -34,6 +34,16 @@ const apiProxy = {
 };
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.endsWith("/workflowCatalog.ts"))
+            return "workflow-architecture";
+        },
+      },
+    },
+  },
   server: {
     host: "0.0.0.0",
     port: 3000,

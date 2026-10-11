@@ -65,6 +65,7 @@ def deploy(settings, transport=None, state_path=None):
         # manifest or a manual import, while refusing ambiguous names and takeovers.
         templates = workflow_templates()
         legacy = json.loads((ROOT / 'scripts' / 'legacy_workflow_identities.json').read_text())
+        versions = json.loads((ROOT / 'scripts' / 'workflow_identity_versions.json').read_text())
         catalog, cursors, cursor = [], set(), None
         while True:
             page = request('GET', 'workflows', params={'limit': 100, **({'cursor': cursor} if cursor else {})})
@@ -91,7 +92,8 @@ def deploy(settings, transport=None, state_path=None):
                 expected = {(n['id'], n['type']) for n in definition['nodes']}
                 actual = {(n.get('id'), n.get('type')) for n in current.get('nodes', [])}
                 previous_version = {tuple(n) for n in legacy.get(definition['name'], [])}
-                if actual != expected and (not previous_version or actual != previous_version):
+                known_versions = [{tuple(n) for n in v['nodes']} for v in versions.get(definition['name'], [])]
+                if actual != expected and actual != previous_version and actual not in known_versions:
                     raise ValueError('An unrelated same-name workflow exists; refusing to overwrite or duplicate it')
                 saved['workflows'][definition['name']] = current['id']
             else:

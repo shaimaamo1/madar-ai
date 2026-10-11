@@ -6,7 +6,7 @@ The working local journey is **website inquiry → bilingual qualification → v
 
 ## Premium product upgrade
 
-The midnight navy, sapphire, champagne gold, deep teal and warm ivory interface includes thirteen operational pages, self-hosted Manrope/Arabic typography, dark mode, mobile RTL and keyboard dialogs. The **WhatsApp studio** rehearses a complete fictional inquiry → qualification → inventory → viewing → human handoff/opt-out journey without Meta or paid-model requests. Ten modular n8n exports add authenticated intake, sales intelligence, reservations, policy-gated delivery, reporting and incident reconciliation.
+The midnight navy, sapphire, champagne gold, deep teal and warm ivory interface includes fourteen operational pages, self-hosted Manrope/Arabic typography, dark mode, mobile RTL and keyboard dialogs. The **WhatsApp studio** rehearses a complete fictional inquiry → qualification → inventory → viewing → human handoff/opt-out journey without Meta or paid-model requests. Fourteen inactive n8n exports include eight business canvases with 36–41 executable nodes each, a real isolated full-demo orchestrator, and delivery/error support modules. System Health distinguishes actual checks from unverified Windows/provider execution.
 
 [View actual dashboard previews](docs/previews/README.md) · [Workflow architecture and SVG diagrams](docs/workflow-architecture.md) · [WhatsApp sandbox/live setup](docs/whatsapp-setup.md) · [PASS / FAIL / NOT VERIFIED report](docs/premium-verification.md)
 
@@ -73,7 +73,7 @@ The API contract is available at `/api/docs`. Additive SQLite migrations 001/002
 - Follow-up and reminder evaluation, availability tasks, dormant reactivation/retention queues, opt-outs, and an approval-gated delivery outbox.
 - Luxury responsive light/dark dashboard, Arabic navigation and RTL, management metrics/report exports, property comparison, listing-copy drafts, and an editable ROI scenario calculator.
 - Official Telegram and Meta webhook/dispatch adapters, Facebook Lead Ads fetch, message status updates, approved WhatsApp templates with text body parameters, and normalized email/CRM ingestion.
-- Ten modular inactive n8n workflows and a direct API deployment tool; Docker preparation, backup helper, client customization guide, sales presentation, pricing assumptions, and portfolio draft.
+- Fourteen modular inactive n8n workflows and a direct API deployment tool; Docker preparation, backup helper, client customization guide, sales presentation, pricing assumptions, and portfolio draft.
 
 ## External access and current limits
 
@@ -96,3 +96,5 @@ This release uses one process and SQLite with persistent storage; it is suitable
 - [Verification evidence and remaining work](docs/status.md)
 
 Credentials belong in secure environment settings, never source control or chat. Real-customer messaging, production release, public publication, paid services, and production-data deletion require the owner’s explicit approval.
+
+The enterprise release adds scoped demo capabilities, durable automation artifacts, adviser SLA cases and five grounded agents. [Enterprise verification and exact local demo steps](docs/enterprise-verification.md) include actual isolated n8n execution evidence and explicit live-integration limitations.

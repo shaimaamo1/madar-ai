@@ -17,6 +17,7 @@ const names = [
   "Automations",
   "Integrations",
   "Company settings",
+  "System Health",
 ];
 // One isolated fictional tenant for this read/locale suite keeps the full 14-test
 // run within the existing ten-demo-creation rate limit. Credentials stay in memory.
@@ -371,4 +372,84 @@ test("public inquiry, property times and booking confirmation localize while mes
       exact: true,
     }),
   ).toBeVisible();
+});
+
+test("System Health, queued real demo and grounded agents stay honest and bilingual", async ({
+  page,
+}) => {
+  await demo(page);
+  await page
+    .getByRole("button", { name: "System Health", exact: true })
+    .click();
+  await expect(
+    page.getByText("Authenticated API responded", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Local API access is not configured", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Queue full demo", exact: true })
+    .click();
+  await expect(page.getByText("Queued", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Queue full demo", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText("Not yet reported", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Evaluate agents", exact: true })
+    .click();
+  await expect(
+    page.getByText("Reply drafting agent", { exact: true }),
+  ).toBeVisible();
+  const selection = await page
+    .getByLabel("Customer", { exact: true })
+    .inputValue();
+  await expect(page.locator(".toast")).not.toBeVisible({ timeout: 7000 });
+  await page.screenshot({
+    path: "../docs/previews/system-health.png",
+    fullPage: true,
+  });
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await language(page, "ar");
+  await expect(page.getByLabel(ar.Customer, { exact: true })).toHaveValue(
+    selection,
+  );
+  await expect(
+    page.getByText(ar["Reply drafting agent"], { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(ar.Queued, { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(ar["Local API access is not configured"], { exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: "../docs/previews/system-health-arabic.png",
+    fullPage: true,
+  });
+  const runs = await page.evaluate(async () =>
+    (await fetch("/api/demo/runs")).json(),
+  );
+  expect(runs[0].status).toBe("Queued");
+  expect(runs[0].steps).toHaveLength(0);
+  expect(runs[0].execution_id).toBe("");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
 });

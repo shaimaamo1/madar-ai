@@ -36,3 +36,11 @@ Typography is self-hosted Manrope and Noto Sans Arabic from the Google Fonts rep
 ## Bilingual milestone
 
 Actual fictional-data Chromium captures: [Arabic desktop](bilingual-arabic-desktop.png) and [Arabic mobile](bilingual-arabic-mobile.png). The English page previews are refreshed with the working language selector. Customer and listing names intentionally retain their original content.
+
+## Enterprise runtime previews (11 October 2026)
+
+- [Actual n8n intake canvas](actual-n8n-intake-canvas.png): imported 41-node workflow in an isolated n8n 1.113.3 editor; inactive.
+- [Verified full-demo System Health](enterprise-verified-demo.png) and [Arabic version](enterprise-verified-demo-arabic.png): actual isolated n8n success, eight business outcomes, grounded agents; Windows/Meta explicitly unverified.
+- [Provider-free System Health](system-health.png) and [Arabic version](system-health-arabic.png): queued local execution correctly remains unverified when n8n is absent.
+
+All records are fictional. Runtime fixtures are disposable; owner Windows/n8n and live providers were not tested. SVG architecture artifacts represent the importable JSON directly.

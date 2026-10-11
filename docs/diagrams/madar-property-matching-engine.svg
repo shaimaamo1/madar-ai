@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4760" height="2612" viewBox="0 0 4760 2612" role="img" aria-labelledby="title desc">
+<title id="title">MADAR Property Matching Engine — actual inactive n8n architecture</title>
+<desc id="desc">Generated directly from importable workflow nodes and connections. No workflows are activated.</desc>
+<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#263b53"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#79b2b6"/></marker></defs>
+<rect width="4760" height="2612" fill="#101E31"/><rect width="4760" height="2612" fill="url(#dots)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="45" y="43" fill="#D8BE83" font-size="13" letter-spacing="3">MADAR AI / AUTOMATION ARCHITECTURE</text>
+<text x="45" y="82" fill="#F7F2E8" font-size="27" font-weight="600">Property Matching Engine</text>
+<rect x="1010" y="230" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="255" fill="#D8BE83" font-size="11" letter-spacing="1.4">INPUT AND AUTHORITY</text>
+<rect x="1010" y="780" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="805" fill="#D8BE83" font-size="11" letter-spacing="1.4">QUALIFICATION AND POLICY</text>
+<rect x="1010" y="1330" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="1355" fill="#D8BE83" font-size="11" letter-spacing="1.4">BUSINESS DECISIONS</text>
+<rect x="1010" y="1880" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="1905" fill="#D8BE83" font-size="11" letter-spacing="1.4">EVIDENCE AND COMMIT</text>
+<path d="M375,362 C425,362 365,362 420,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M635,362 C685,362 655,362 710,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M925,362 C975,362 1005,362 1060,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M925,362 C975,362 3765,2312 3820,2312" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,362 C1325,362 1275,362 1330,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,362 C1595,362 1655,362 1710,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,362 C1595,362 1275,552 1330,552" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,552 C1595,552 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,362 C1975,362 1925,362 1980,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,362 C2245,362 2305,362 2360,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,362 C2245,362 1925,552 1980,552" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,552 C2245,552 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,362 C2625,362 2955,362 3010,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,362 C3275,362 1005,912 1060,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,912 C1325,912 1655,912 1710,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,912 C1975,912 2305,912 2360,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,912 C2625,912 2955,912 3010,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,912 C3275,912 1005,1462 1060,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,1462 C1325,1462 1655,1462 1710,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,1462 C1975,1462 2305,1462 2360,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,1462 C2625,1462 2575,1462 2630,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,1462 C2895,1462 2955,1462 3010,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,1462 C2895,1462 2575,1652 2630,1652" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,1652 C2895,1652 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,1462 C3275,1462 3225,1462 3280,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3495,1462 C3545,1462 1005,2012 1060,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3495,1462 C3545,1462 3225,1652 3280,1652" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3495,1652 C3545,1652 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,2012 C1325,2012 1275,2012 1330,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,2012 C1595,2012 1655,2012 1710,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,2012 C1595,2012 1275,2202 1330,2202" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,2202 C1595,2202 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,2012 C1975,2012 1925,2012 1980,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,2012 C2245,2012 2305,2012 2360,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,2012 C2245,2012 1925,2202 1980,2202" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,2202 C2245,2202 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,2012 C2625,2012 2955,2012 3010,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,2012 C3275,2012 3765,2012 3820,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4035,2012 C4085,2012 4045,2012 4100,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4035,2012 C4085,2012 3765,2312 3820,2312" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4035,2312 C4085,2312 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4345,2492 C4395,2492 4385,2492 4440,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<g data-node-id="sub"><rect x="160" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="173" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="186" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="210" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Called by workflow</text>
+<text x="175" y="389" font-size="10" fill="#adbed2">executeWorkflowTrigger</text></g>
+<g data-node-id="validate-orchestration-envelope"><rect x="420" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="433" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="446" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="470" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate orchestration</text>
+<text x="470" y="364" font-size="11" fill="#F7F2E8" font-weight="600">envelope</text>
+<text x="435" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="read-tenant-scoped-business-context"><rect x="710" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="723" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="736" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="760" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Read tenant-scoped business</text>
+<text x="760" y="364" font-size="11" fill="#F7F2E8" font-weight="600">context</text>
+<text x="725" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="require-customer-inventory-context"><rect x="1060" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Require customer inventory</text>
+<text x="1110" y="364" font-size="11" fill="#F7F2E8" font-weight="600">context</text>
+<text x="1075" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="require-customer-inventory-context-accepted"><rect x="1330" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1343" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1356" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="1380" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Require customer inventory</text>
+<text x="1380" y="364" font-size="11" fill="#F7F2E8" font-weight="600">context accepted</text>
+<text x="1345" y="389" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="require-customer-inventory-context-review-required"><rect x="1330" y="510" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1343" y="524" width="26" height="26" rx="7" fill="#247F8644"/><text x="1356" y="542" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1380" y="537" font-size="11" fill="#F7F2E8" font-weight="600">Require customer inventory</text>
+<text x="1380" y="554" font-size="11" fill="#F7F2E8" font-weight="600">context review required</text>
+<text x="1345" y="579" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="validate-inventory-prices"><rect x="1710" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate inventory prices</text>
+<text x="1725" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="validate-inventory-prices-accepted"><rect x="1980" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="2030" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate inventory prices</text>
+<text x="2030" y="364" font-size="11" fill="#F7F2E8" font-weight="600">accepted</text>
+<text x="1995" y="389" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="validate-inventory-prices-review-required"><rect x="1980" y="510" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="524" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="542" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2030" y="537" font-size="11" fill="#F7F2E8" font-weight="600">Validate inventory prices</text>
+<text x="2030" y="554" font-size="11" fill="#F7F2E8" font-weight="600">review required</text>
+<text x="1995" y="579" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="filter-currently-available-inventory"><rect x="2360" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Filter currently available</text>
+<text x="2410" y="364" font-size="11" fill="#F7F2E8" font-weight="600">inventory</text>
+<text x="2375" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="filter-transaction-intent"><rect x="3010" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Filter transaction intent</text>
+<text x="3025" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="apply-hard-budget-constraint"><rect x="1060" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Apply hard budget</text>
+<text x="1110" y="914" font-size="11" fill="#F7F2E8" font-weight="600">constraint</text>
+<text x="1075" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="apply-hard-area-constraint"><rect x="1710" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Apply hard area constraint</text>
+<text x="1725" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="apply-hard-property-category"><rect x="2360" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Apply hard property</text>
+<text x="2410" y="914" font-size="11" fill="#F7F2E8" font-weight="600">category</text>
+<text x="2375" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="apply-minimum-bedrooms"><rect x="3010" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Apply minimum bedrooms</text>
+<text x="3025" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="apply-minimum-floor-area"><rect x="1060" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Apply minimum floor area</text>
+<text x="1075" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="evaluate-requested-amenities"><rect x="1710" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Evaluate requested</text>
+<text x="1760" y="1464" font-size="11" fill="#F7F2E8" font-weight="600">amenities</text>
+<text x="1725" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendation-ownership"><rect x="2360" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendation</text>
+<text x="2410" y="1464" font-size="11" fill="#F7F2E8" font-weight="600">ownership</text>
+<text x="2375" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendation-ownership-accepted"><rect x="2630" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2643" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="2656" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="2680" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendation</text>
+<text x="2680" y="1464" font-size="11" fill="#F7F2E8" font-weight="600">ownership accepted</text>
+<text x="2645" y="1489" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="verify-recommendation-ownership-review-required"><rect x="2630" y="1610" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2643" y="1624" width="26" height="26" rx="7" fill="#247F8644"/><text x="2656" y="1642" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2680" y="1637" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendation</text>
+<text x="2680" y="1654" font-size="11" fill="#F7F2E8" font-weight="600">ownership review required</text>
+<text x="2645" y="1679" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendation-availability"><rect x="3010" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendation</text>
+<text x="3060" y="1464" font-size="11" fill="#F7F2E8" font-weight="600">availability</text>
+<text x="3025" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendation-availability-accepted"><rect x="3280" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3293" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="3306" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="3330" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendation</text>
+<text x="3330" y="1464" font-size="11" fill="#F7F2E8" font-weight="600">availability accepted</text>
+<text x="3295" y="1489" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="verify-recommendation-availability-review-required"><rect x="3280" y="1610" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3293" y="1624" width="26" height="26" rx="7" fill="#247F8644"/><text x="3306" y="1642" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3330" y="1637" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendation</text>
+<text x="3330" y="1654" font-size="11" fill="#F7F2E8" font-weight="600">availability review</text>
+<text x="3295" y="1679" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendations-respect-budget"><rect x="1060" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendations</text>
+<text x="1110" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">respect budget</text>
+<text x="1075" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendations-respect-budget-accepted"><rect x="1330" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1343" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="1356" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="1380" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendations</text>
+<text x="1380" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">respect budget accepted</text>
+<text x="1345" y="2039" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="verify-recommendations-respect-budget-review-required"><rect x="1330" y="2160" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1343" y="2174" width="26" height="26" rx="7" fill="#247F8644"/><text x="1356" y="2192" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1380" y="2187" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendations</text>
+<text x="1380" y="2204" font-size="11" fill="#F7F2E8" font-weight="600">respect budget review</text>
+<text x="1345" y="2229" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendations-respect-transaction"><rect x="1710" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendations</text>
+<text x="1760" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">respect transaction</text>
+<text x="1725" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-recommendations-respect-transaction-accepted"><rect x="1980" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="2030" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendations</text>
+<text x="2030" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">respect transaction</text>
+<text x="1995" y="2039" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="verify-recommendations-respect-transaction-review-required"><rect x="1980" y="2160" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="2174" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="2192" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2030" y="2187" font-size="11" fill="#F7F2E8" font-weight="600">Verify recommendations</text>
+<text x="2030" y="2204" font-size="11" fill="#F7F2E8" font-weight="600">respect transaction review</text>
+<text x="1995" y="2229" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="explain-inventory-rejection-funnel"><rect x="2360" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Explain inventory rejection</text>
+<text x="2410" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">funnel</text>
+<text x="2375" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="prepare-honest-no-match-alternatives"><rect x="3010" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Prepare honest no-match</text>
+<text x="3060" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">alternatives</text>
+<text x="3025" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="commit-authoritative-matching"><rect x="3820" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3833" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="3846" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="3870" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Commit authoritative</text>
+<text x="3870" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">matching</text>
+<text x="3835" y="2039" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="redact-backend-rejection"><rect x="3820" y="2270" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3833" y="2284" width="26" height="26" rx="7" fill="#247F8644"/><text x="3846" y="2302" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3870" y="2297" font-size="11" fill="#F7F2E8" font-weight="600">Redact backend rejection</text>
+<text x="3835" y="2339" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="record-scoped-failure-incident"><rect x="4130" y="2450" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4143" y="2464" width="26" height="26" rx="7" fill="#247F8644"/><text x="4156" y="2482" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="4180" y="2477" font-size="11" fill="#F7F2E8" font-weight="600">Record scoped failure</text>
+<text x="4180" y="2494" font-size="11" fill="#F7F2E8" font-weight="600">incident</text>
+<text x="4145" y="2519" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="stop-rejected-business-execution"><rect x="4440" y="2450" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4453" y="2464" width="26" height="26" rx="7" fill="#247F8644"/><text x="4466" y="2482" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="4490" y="2477" font-size="11" fill="#F7F2E8" font-weight="600">Stop rejected business</text>
+<text x="4490" y="2494" font-size="11" fill="#F7F2E8" font-weight="600">execution</text>
+<text x="4455" y="2519" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="return-minimal-orchestration-receipt"><rect x="4100" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4113" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="4126" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="4150" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Return minimal</text>
+<text x="4150" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">orchestration receipt</text>
+<text x="4115" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<text x="45" y="2576" font-size="11" fill="#adbed2">36 executable nodes · source: workflows/madar-property-matching-engine.json · INACTIVE · live integration NOT VERIFIED</text>
+</g></svg>

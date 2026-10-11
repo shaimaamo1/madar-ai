@@ -11,7 +11,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { api, Row, money, date, download } from "./api";
-import { tr, localize, number, errorText } from "./i18n";
+import { tr, localize, number, percent, errorText } from "./i18n";
 import { workflowCatalog } from "./workflowCatalog";
 
 export function OperatingStrip({
@@ -145,6 +145,7 @@ type DiagramNode = {
 };
 export function WorkflowStudio({ ar }: { ar: boolean }) {
   const [key, setKey] = useState("madar-omnichannel-intake");
+  const [zoom, setZoom] = useState(1);
   const flow = workflowCatalog.find((w) => w.key === key)!;
   const nodes: DiagramNode[] = flow.nodes;
   const width =
@@ -162,7 +163,7 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
           </h3>
           <p>
             {tr(
-              "Generated from actual n8n JSON. All ten modules are inactive; runtime requires local verification.",
+              "Generated from actual n8n JSON. All modules are inactive; runtime requires local verification.",
             )}
           </p>
         </div>
@@ -212,13 +213,54 @@ export function WorkflowStudio({ ar }: { ar: boolean }) {
         ))}
       </div>
       <div
+        className="workflow-zoom"
+        role="group"
+        aria-label={tr("Diagram zoom")}
+      >
+        <button
+          type="button"
+          className="button"
+          onClick={() => setZoom(Math.max(0.15, zoom - 0.15))}
+        >
+          {tr("Zoom out")}
+        </button>
+        <span>{percent(zoom * 100)}</span>
+        <button
+          type="button"
+          className="button"
+          onClick={() => setZoom(Math.min(1.5, zoom + 0.15))}
+        >
+          {tr("Zoom in")}
+        </button>
+        <button
+          type="button"
+          className="button"
+          onClick={() =>
+            setZoom(
+              Math.max(
+                0.15,
+                Math.min(
+                  1,
+                  (document.getElementById("workflow-diagram")?.clientWidth ||
+                    900) / width,
+                ),
+              ),
+            )
+          }
+        >
+          {tr("Fit diagram")}
+        </button>
+      </div>
+      <div
         className="workflow-map"
         id="workflow-diagram"
         role="tabpanel"
+        tabIndex={0}
         aria-labelledby={"tab-" + key}
       >
         <svg
           viewBox={`75 0 ${width} ${height}`}
+          style={{ width: width * zoom, minWidth: 0 }}
           role="img"
           aria-label={tr("{name} actual workflow", {
             name: "MADAR " + tr(flow.name.replace("MADAR ", "")),

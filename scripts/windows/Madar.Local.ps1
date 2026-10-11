@@ -446,7 +446,7 @@ function Start-MadarLocal {
         } 'Real external messaging and billable model inference remain disabled.' 'Runtime safety flags were not verified; do not activate external delivery.'
         $prepared = Invoke-MadarStep $report 'Importable workflows' {
             $null = Assert-MadarDocker ($state.Helper + @('prepare'))
-        } 'Ten inactive, callback-adjusted JSON files prepared in var/n8n-import/.' 'Workflow export failed; source JSON remains in workflows/.'
+        } 'All inactive, callback-adjusted JSON files prepared in var/n8n-import/.' 'Workflow export failed; source JSON remains in workflows/.'
         $bridge = Invoke-MadarStep $report 'n8n API and bridge' {
             if (-not $state.N8nReady -or -not $state.Healthy -or -not $runtimeSafe) { throw 'Local prerequisite unavailable' }
             $helper = $state.Compose + @('run', '--rm', '--no-deps', '-T', '--volume', ($RepoRoot + ':/workspace'), '--workdir', '/workspace', '--entrypoint', 'python', '-e', 'MADAR_TEST_APP_URL=http://app:8000', 'app', '-m', 'scripts.local_n8n', '--env-file', '/workspace/.madar-local/.env', 'test', '--n8n-url', $state.Route)
@@ -455,7 +455,7 @@ function Start-MadarLocal {
         $null = Invoke-MadarStep $report 'Workflow import' {
             if (-not $bridge -or -not $prepared) { throw 'n8n check required' }
             $null = Assert-MadarDocker ($state.Helper + @('deploy', '--n8n-url', $state.Route))
-        } 'Ten managed workflows imported/updated without activation; repeat runs reuse them.' 'Import failed. Check workflow/credential API scopes; deactivate managed workflows before updating; resolve any ambiguous same-name imports locally.'
+        } 'All managed workflows imported/updated without activation; repeat runs reuse them.' 'Import failed. Check workflow/credential API scopes; deactivate managed workflows before updating; resolve any ambiguous same-name imports locally.'
         if (-not $NoBrowser) {
             $null = Invoke-MadarStep $report 'Dashboard browser' {
                 if (-not $state.Healthy -or -not $state.Frontend) { throw 'Dashboard not ready' }

@@ -42,6 +42,7 @@ test("rendered literals and translation calls cannot silently miss a catalog ent
   for (const filename of [
     "App.tsx",
     "Premium.tsx",
+    "Enterprise.tsx",
     "LanguageSelector.tsx",
     "i18n.ts",
   ]) {

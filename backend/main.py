@@ -421,7 +421,7 @@ def reset_demo(user=Depends(current_user)):
         tenant = c.execute('SELECT demo FROM tenants WHERE id=?', (user['tenant_id'],)).fetchone()
         if not tenant[0]:
             raise HTTPException(403, 'Reset is available only for fictional demo workspaces')
-        for table in ('chat_sessions', 'conversation_controls', 'consent_events', 'automation_receipts', 'incidents', 'outbox', 'webhook_events', 'activities', 'deals', 'appointments', 'tasks', 'messages', 'leads', 'properties'):
+        for table in ('enterprise_artifacts', 'adviser_cases', 'demo_runs', 'chat_sessions', 'conversation_controls', 'consent_events', 'automation_receipts', 'incidents', 'outbox', 'webhook_events', 'activities', 'deals', 'appointments', 'tasks', 'messages', 'leads', 'properties'):
             c.execute(f'DELETE FROM {table} WHERE tenant_id=?', (user['tenant_id'],))
         c.execute('DELETE FROM users WHERE tenant_id=? AND id<>?', (user['tenant_id'], user['id']))
         from .seed import seed_demo
@@ -457,6 +457,10 @@ from .availability import router as availability_router
 app.include_router(availability_router)
 from .operations import router as operations_router
 app.include_router(operations_router)
+from .enterprise import router as enterprise_router
+app.include_router(enterprise_router)
+from .ai_agents import router as ai_agents_router
+app.include_router(ai_agents_router)
 
 DIST = Path(__file__).resolve().parent.parent / 'frontend' / 'dist'
 if (DIST / 'assets').exists():

@@ -15,30 +15,595 @@
       }
     },
     {
-      "id": "validate-explicit-viewing-request",
-      "name": "Validate explicit viewing request",
+      "id": "validate-orchestration-envelope",
+      "name": "Validate orchestration envelope",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        410,
+        420,
         220
       ],
       "parameters": {
-        "jsCode": "return $input.all().map(({json})=>{if(!json.event_id||!json.appointment?.lead_id||!json.appointment?.start_at) throw new Error('Expected booking event_id and explicit appointment'); return {json:{event_id:json.event_id,appointment:json.appointment}};});"
+        "jsCode": "return $input.all().map(({json})=>{let b=json.body||json;if(json.body){if(typeof b.event_id!=='string'||!b.lead||typeof b.text!=='string')throw new Error('Invalid normalized envelope');b={...b,lead:{...b.lead,consent:b.lead.consent===true}};}if(!b.event_id)throw new Error('Stable event_id required');const allowed=['event_id','lead_id','run_id','run_token','lead','text','appointment'];const out={kind:\"appointment\"};for(const k of allowed)if(b[k]!==undefined && (k!=='appointment'||out.kind==='appointment') && (!['lead','text'].includes(k)||out.kind==='intake'))out[k]=b[k];return {json:out};});"
       }
     },
     {
-      "id": "reserve-conflict-safe-appointment",
-      "name": "Reserve conflict-safe appointment",
+      "id": "read-tenant-scoped-business-context",
+      "name": "Read tenant-scoped business context",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        680,
+        710,
         220
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://app:8000/api/bridge/appointments",
+        "url": "http://app:8000/api/bridge/enterprise/context",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "require-explicit-customer-reference",
+      "name": "Require explicit customer reference",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"customer_exists\"]=(Boolean(l?.id));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-explicit-customer-reference-accepted",
+      "name": "Require explicit customer reference accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1330,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.customer_exists === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-explicit-customer-reference-review-required",
+      "name": "Require explicit customer reference review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1330,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "resolve-requested-viewing-details",
+      "name": "Resolve requested viewing details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"booking\"]=(r.appointment||{lead_id:l.id,property_id:s.matches[0]?.id,agent_id:l.assigned_to,start_at:null});return {json:s};});"
+      }
+    },
+    {
+      "id": "require-explicit-booking-authorization",
+      "name": "Require explicit booking authorization",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"explicit_booking\"]=(s.demo===true||Boolean(r.appointment));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-explicit-booking-authorization-accepted",
+      "name": "Require explicit booking authorization accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2630,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.explicit_booking === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-explicit-booking-authorization-review-required",
+      "name": "Require explicit booking authorization review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2630,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "resolve-real-property",
+      "name": "Resolve real property",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"property\"]=(s.properties.find(p=>p.id===a.booking.property_id)||null);return {json:s};});"
+      }
+    },
+    {
+      "id": "require-currently-available-property",
+      "name": "Require currently available property",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"property_available\"]=(a.property?.status==='Available');return {json:s};});"
+      }
+    },
+    {
+      "id": "require-currently-available-property-accepted",
+      "name": "Require currently available property accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1330,
+        770
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.property_available === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-currently-available-property-review-required",
+      "name": "Require currently available property review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1330,
+        960
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "resolve-nominated-adviser",
+      "name": "Resolve nominated adviser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"adviser\"]=(s.agents.find(u=>u.id===a.booking.agent_id)||null);return {json:s};});"
+      }
+    },
+    {
+      "id": "require-active-adviser",
+      "name": "Require active adviser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"adviser_active\"]=(Boolean(a.adviser?.active));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-active-adviser-accepted",
+      "name": "Require active adviser accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2630,
+        770
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.adviser_active === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-active-adviser-review-required",
+      "name": "Require active adviser review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2630,
+        960
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "validate-customer-booking-binding",
+      "name": "Validate customer booking binding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"lead_binding\"]=(a.booking.lead_id===l.id);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-customer-booking-binding-accepted",
+      "name": "Validate customer booking binding accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3280,
+        770
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.lead_binding === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-customer-booking-binding-review-required",
+      "name": "Validate customer booking binding review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        960
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "normalize-timezone-aware-start",
+      "name": "Normalize timezone-aware start",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"normalized_start\"]=(a.booking.start_at&&/(Z|[+-]\\d{2}:\\d{2})$/.test(a.booking.start_at)?new Date(a.booking.start_at).toISOString():null);return {json:s};});"
+      }
+    },
+    {
+      "id": "require-future-timezone-aware-slot",
+      "name": "Require future timezone-aware slot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"future_slot\"]=(s.demo===true||Boolean(a.normalized_start&&new Date(a.normalized_start)>new Date()));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-future-timezone-aware-slot-accepted",
+      "name": "Require future timezone-aware slot accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        1320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.future_slot === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-future-timezone-aware-slot-review-required",
+      "name": "Require future timezone-aware slot review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        1510
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "calculate-reservation-duration",
+      "name": "Calculate reservation duration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"duration_minutes\"]=(60);return {json:s};});"
+      }
+    },
+    {
+      "id": "find-customer-schedule-conflicts",
+      "name": "Find customer schedule conflicts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"customer_conflicts\"]=(s.appointments.filter(x=>x.status==='Booked'&&x.lead_id===l.id&&a.normalized_start&&new Date(x.start_at)<new Date(new Date(a.normalized_start).getTime()+3600000)&&new Date(x.end_at)>new Date(a.normalized_start)).map(x=>x.id));return {json:s};});"
+      }
+    },
+    {
+      "id": "find-adviser-schedule-conflicts",
+      "name": "Find adviser schedule conflicts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"adviser_conflicts\"]=(s.appointments.filter(x=>x.status==='Booked'&&x.agent_id===a.booking.agent_id&&a.normalized_start&&new Date(x.start_at)<new Date(new Date(a.normalized_start).getTime()+3600000)&&new Date(x.end_at)>new Date(a.normalized_start)).map(x=>x.id));return {json:s};});"
+      }
+    },
+    {
+      "id": "find-property-schedule-conflicts",
+      "name": "Find property schedule conflicts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"property_conflicts\"]=(s.appointments.filter(x=>x.status==='Booked'&&x.property_id===a.booking.property_id&&a.normalized_start&&new Date(x.start_at)<new Date(new Date(a.normalized_start).getTime()+3600000)&&new Date(x.end_at)>new Date(a.normalized_start)).map(x=>x.id));return {json:s};});"
+      }
+    },
+    {
+      "id": "prepare-company-hours-verification",
+      "name": "Prepare company-hours verification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"business_hours\"]=(({timezone:s.settings.timezone,start:s.settings.business_start,end:s.settings.business_end,authoritative_check:'backend-transaction'}));return {json:s};});"
+      }
+    },
+    {
+      "id": "prepare-consent-aware-reminder-plan",
+      "name": "Prepare consent-aware reminder plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"reminder\"]=(({eligible:Boolean(l.consent&&!l.opted_out),human_review:Boolean(s.control.human_active),send_approved:false}));return {json:s};});"
+      }
+    },
+    {
+      "id": "commit-authoritative-appointment",
+      "name": "Commit authoritative appointment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3820,
+        1870
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({...$json.request,analysis:$json.analysis,execution_id:String($execution.id)}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "redact-backend-rejection",
+      "name": "Redact backend rejection",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3820,
+        2170
+      ],
+      "parameters": {
+        "jsCode": "const r=$(\"Validate orchestration envelope\").first().json;return [{json:{...r,execution_id:String($execution.id),reason:'backend_failed'}}];"
+      }
+    },
+    {
+      "id": "record-scoped-failure-incident",
+      "name": "Record scoped failure incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4130,
+        2350
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/failure",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {
@@ -58,31 +623,92 @@
       }
     },
     {
-      "id": "return-confirmed-crm-booking",
-      "name": "Return confirmed CRM booking",
+      "id": "stop-rejected-business-execution",
+      "name": "Stop rejected business execution",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        980,
-        220
+        4440,
+        2350
       ],
       "parameters": {
-        "jsCode": "return $input.all().map(({json})=>({json:{appointment_id:json.appointment.id,start_at:json.appointment.start_at,status:json.appointment.status,duplicate:json.duplicate}}));"
+        "jsCode": "throw new Error('MADAR business execution failed. Review the scoped dashboard incident; payload omitted.');"
       }
     },
     {
-      "id": "idempotent-reservation",
-      "name": "IDEMPOTENT RESERVATION",
+      "id": "return-minimal-orchestration-receipt",
+      "name": "Return minimal orchestration receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4100,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:r})=>({json:{kind:r.kind,event_id:r.event_id,run_id:r.run_id,run_token:r.run_token,lead_id:r.lead_id,duplicate:r.duplicate,mode:r.mode,external_messages_sent:r.external_messages_sent}}));"
+      }
+    },
+    {
+      "id": "input-and-authority",
+      "name": "INPUT AND AUTHORITY",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        110,
-        90
+        1010,
+        130
       ],
       "parameters": {
-        "content": "## IDEMPOTENT RESERVATION\nRequires an explicit customer, listing, adviser and timezone-aware future time. SQLite transaction prevents all resource overlaps; changed replay payloads conflict.",
-        "width": 1120,
-        "height": 270,
+        "content": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 2
+      }
+    },
+    {
+      "id": "qualification-and-policy",
+      "name": "QUALIFICATION AND POLICY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        680
+      ],
+      "parameters": {
+        "content": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 3
+      }
+    },
+    {
+      "id": "business-decisions",
+      "name": "BUSINESS DECISIONS",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1230
+      ],
+      "parameters": {
+        "content": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 4
+      }
+    },
+    {
+      "id": "evidence-and-commit",
+      "name": "EVIDENCE AND COMMIT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1780
+      ],
+      "parameters": {
+        "content": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
         "color": 5
       }
     }
@@ -92,29 +718,426 @@
       "main": [
         [
           {
-            "node": "Validate explicit viewing request",
+            "node": "Validate orchestration envelope",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Validate explicit viewing request": {
+    "Validate orchestration envelope": {
       "main": [
         [
           {
-            "node": "Reserve conflict-safe appointment",
+            "node": "Read tenant-scoped business context",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Reserve conflict-safe appointment": {
+    "Read tenant-scoped business context": {
       "main": [
         [
           {
-            "node": "Return confirmed CRM booking",
+            "node": "Require explicit customer reference",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redact backend rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require explicit customer reference": {
+      "main": [
+        [
+          {
+            "node": "Require explicit customer reference accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require explicit customer reference accepted": {
+      "main": [
+        [
+          {
+            "node": "Resolve requested viewing details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require explicit customer reference review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require explicit customer reference review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve requested viewing details": {
+      "main": [
+        [
+          {
+            "node": "Require explicit booking authorization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require explicit booking authorization": {
+      "main": [
+        [
+          {
+            "node": "Require explicit booking authorization accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require explicit booking authorization accepted": {
+      "main": [
+        [
+          {
+            "node": "Resolve real property",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require explicit booking authorization review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require explicit booking authorization review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve real property": {
+      "main": [
+        [
+          {
+            "node": "Require currently available property",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require currently available property": {
+      "main": [
+        [
+          {
+            "node": "Require currently available property accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require currently available property accepted": {
+      "main": [
+        [
+          {
+            "node": "Resolve nominated adviser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require currently available property review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require currently available property review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve nominated adviser": {
+      "main": [
+        [
+          {
+            "node": "Require active adviser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require active adviser": {
+      "main": [
+        [
+          {
+            "node": "Require active adviser accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require active adviser accepted": {
+      "main": [
+        [
+          {
+            "node": "Validate customer booking binding",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require active adviser review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require active adviser review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate customer booking binding": {
+      "main": [
+        [
+          {
+            "node": "Validate customer booking binding accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate customer booking binding accepted": {
+      "main": [
+        [
+          {
+            "node": "Normalize timezone-aware start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate customer booking binding review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate customer booking binding review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize timezone-aware start": {
+      "main": [
+        [
+          {
+            "node": "Require future timezone-aware slot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require future timezone-aware slot": {
+      "main": [
+        [
+          {
+            "node": "Require future timezone-aware slot accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require future timezone-aware slot accepted": {
+      "main": [
+        [
+          {
+            "node": "Calculate reservation duration",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require future timezone-aware slot review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require future timezone-aware slot review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate reservation duration": {
+      "main": [
+        [
+          {
+            "node": "Find customer schedule conflicts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find customer schedule conflicts": {
+      "main": [
+        [
+          {
+            "node": "Find adviser schedule conflicts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find adviser schedule conflicts": {
+      "main": [
+        [
+          {
+            "node": "Find property schedule conflicts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find property schedule conflicts": {
+      "main": [
+        [
+          {
+            "node": "Prepare company-hours verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare company-hours verification": {
+      "main": [
+        [
+          {
+            "node": "Prepare consent-aware reminder plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare consent-aware reminder plan": {
+      "main": [
+        [
+          {
+            "node": "Commit authoritative appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit authoritative appointment": {
+      "main": [
+        [
+          {
+            "node": "Return minimal orchestration receipt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redact backend rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redact backend rejection": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record scoped failure incident": {
+      "main": [
+        [
+          {
+            "node": "Stop rejected business execution",
             "type": "main",
             "index": 0
           }

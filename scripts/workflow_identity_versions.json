@@ -1,0 +1,308 @@
+{
+  "MADAR Ingestion Subworkflow": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "sub",
+          "n8n-nodes-base.executeWorkflowTrigger"
+        ],
+        [
+          "validate-normalized-inquiry",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "normalize-inquiry",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "atomic-crm-transaction",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Error Monitor": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "error",
+          "n8n-nodes-base.errorTrigger"
+        ],
+        [
+          "summary",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "record-operator-incident",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "restricted-incident-escalation",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Test Evaluation": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "manual",
+          "n8n-nodes-base.manualTrigger"
+        ],
+        [
+          "evaluate-due-follow-ups",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "read-operational-safeguards",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "local-acceptance",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Follow-up Scheduler": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "schedule",
+          "n8n-nodes-base.scheduleTrigger"
+        ],
+        [
+          "evaluate-due-follow-ups",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "read-delivery-authorization",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "owner-authorized-delivery",
+          "n8n-nodes-base.if"
+        ],
+        [
+          "dispatch-approved-delivery",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "return-queued-sandbox-status",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "consent-and-re-engagement",
+          "n8n-nodes-base.stickyNote"
+        ],
+        [
+          "approval-boundary",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Lead Intelligence": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "sub",
+          "n8n-nodes-base.executeWorkflowTrigger"
+        ],
+        [
+          "validate-customer-reference",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "read-intent-score-and-inventory",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "human-adviser-requested",
+          "n8n-nodes-base.if"
+        ],
+        [
+          "ensure-adviser-escalation-task",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "return-actionable-recommendations",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "authoritative-intelligence",
+          "n8n-nodes-base.stickyNote"
+        ],
+        [
+          "human-ownership",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Sales Reporting": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "schedule",
+          "n8n-nodes-base.scheduleTrigger"
+        ],
+        [
+          "compute-tenant-sales-report",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "build-executive-report-artifact",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "real-crm-measurement",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Delivery Reconciliation": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "schedule",
+          "n8n-nodes-base.scheduleTrigger"
+        ],
+        [
+          "escalate-uncertain-and-failed-delivery",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "incidents-need-operator-review",
+          "n8n-nodes-base.if"
+        ],
+        [
+          "return-reconciliation-queue",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "return-clean-delivery-review",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "reliability-and-audit",
+          "n8n-nodes-base.stickyNote"
+        ],
+        [
+          "operator-escalation",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Viewing Reservations": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "sub",
+          "n8n-nodes-base.executeWorkflowTrigger"
+        ],
+        [
+          "validate-explicit-viewing-request",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "reserve-conflict-safe-appointment",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "return-confirmed-crm-booking",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "idempotent-reservation",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR WhatsApp Delivery": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "manual",
+          "n8n-nodes-base.manualTrigger"
+        ],
+        [
+          "read-owner-delivery-authorization",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "real-delivery-explicitly-enabled",
+          "n8n-nodes-base.if"
+        ],
+        [
+          "dispatch-eligible-whatsapp-outbox",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "return-sandbox-boundary",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "official-meta-adapter",
+          "n8n-nodes-base.stickyNote"
+        ],
+        [
+          "per-message-policy",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ],
+  "MADAR Omnichannel Intake": [
+    {
+      "version": "bilingual-2026-10-11",
+      "nodes": [
+        [
+          "intake-webhook",
+          "n8n-nodes-base.webhook"
+        ],
+        [
+          "normalize-trusted-envelope",
+          "n8n-nodes-base.code"
+        ],
+        [
+          "crm-intake-transaction",
+          "n8n-nodes-base.httpRequest"
+        ],
+        [
+          "new-event-accepted",
+          "n8n-nodes-base.if"
+        ],
+        [
+          "resolve-sales-intelligence",
+          "n8n-nodes-base.executeWorkflow"
+        ],
+        [
+          "acknowledge-accepted-event",
+          "n8n-nodes-base.respondToWebhook"
+        ],
+        [
+          "authenticated-intake",
+          "n8n-nodes-base.stickyNote"
+        ],
+        [
+          "replay-and-context",
+          "n8n-nodes-base.stickyNote"
+        ]
+      ]
+    }
+  ]
+}

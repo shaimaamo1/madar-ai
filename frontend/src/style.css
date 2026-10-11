@@ -3267,3 +3267,100 @@ textarea,
     max-width: 128px;
   }
 }
+
+.enterprise-console {
+  display: grid;
+  gap: 24px;
+}
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  margin-block: 20px;
+}
+.health-check {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  overflow-wrap: anywhere;
+}
+.health-check .card-head {
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 0;
+  border: 0;
+}
+.demo-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 12px;
+  margin-block: 20px;
+}
+.demo-steps .step {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+}
+.demo-steps .complete {
+  color: var(--ink);
+  border-color: #247f86;
+}
+.enterprise-console .filter-row {
+  flex-wrap: wrap;
+}
+
+.workflow-zoom {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 0 24px 16px;
+  flex-wrap: wrap;
+}
+.workflow-map {
+  max-height: 560px;
+}
+
+.enterprise-console > .card {
+  padding: 24px;
+}
+.enterprise-console > .card > .card-head {
+  padding: 0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.enterprise-console .card > p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin-block: 12px;
+}
+.enterprise-console .health-check {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.enterprise-console .health-check p {
+  margin-block: 8px 0;
+}
+.enterprise-console .filter-row {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  margin-block: 20px;
+}
+.enterprise-console .filter-row .field {
+  flex: 1;
+  max-width: 440px;
+}
+@media (max-width: 640px) {
+  .enterprise-console > .card {
+    padding: 18px;
+  }
+  .enterprise-console .filter-row .field {
+    width: 100%;
+    flex-basis: 100%;
+  }
+}

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3530" height="670" viewBox="0 0 3530 670" role="img" aria-labelledby="title desc">
+<title id="title">MADAR Full Demo — actual inactive n8n architecture</title>
+<desc id="desc">Generated directly from importable workflow nodes and connections. No workflows are activated.</desc>
+<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#263b53"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#79b2b6"/></marker></defs>
+<rect width="3530" height="670" fill="#101E31"/><rect width="3530" height="670" fill="url(#dots)"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="45" y="43" fill="#D8BE83" font-size="13" letter-spacing="3">MADAR AI / AUTOMATION ARCHITECTURE</text>
+<text x="45" y="82" fill="#F7F2E8" font-size="27" font-weight="600">Full Demo</text>
+<rect x="80" y="200" width="3370" height="400" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="98" y="225" fill="#D8BE83" font-size="11" letter-spacing="1.4">ISOLATED DEMO / REAL N8N EXECUTION</text>
+<path d="M335,402 C385,402 345,402 400,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M615,402 C665,402 695,402 750,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M965,402 C1015,402 985,402 1040,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1255,402 C1305,402 1275,402 1330,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,402 C1595,402 1565,402 1620,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1835,402 C1885,402 1855,402 1910,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2125,402 C2175,402 2145,402 2200,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2415,402 C2465,402 2435,402 2490,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2705,402 C2755,402 2725,402 2780,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2995,402 C3045,402 3125,402 3180,402" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<g data-node-id="manual"><rect x="120" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="133" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="146" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="170" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run queued fictional demo</text>
+<text x="135" y="429" font-size="10" fill="#adbed2">manualTrigger</text></g>
+<g data-node-id="claim-isolated-demo-capability"><rect x="400" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="413" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="426" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="450" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Claim isolated demo</text>
+<text x="450" y="404" font-size="11" fill="#F7F2E8" font-weight="600">capability</text>
+<text x="415" y="429" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="run-intake-module"><rect x="750" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="763" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="776" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="800" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run intake module</text>
+<text x="765" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="run-qualification-module"><rect x="1040" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1053" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="1066" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="1090" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run qualification module</text>
+<text x="1055" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="run-matching-module"><rect x="1330" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1343" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="1356" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="1380" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run matching module</text>
+<text x="1345" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="run-appointment-module"><rect x="1620" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1633" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="1646" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="1670" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run appointment module</text>
+<text x="1635" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="run-followup-module"><rect x="1910" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1923" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="1936" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="1960" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run followup module</text>
+<text x="1925" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="run-conversation-module"><rect x="2200" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2213" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="2226" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="2250" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run conversation module</text>
+<text x="2215" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="run-handoff-module"><rect x="2490" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2503" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="2516" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="2540" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run handoff module</text>
+<text x="2505" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="run-reporting-module"><rect x="2780" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2793" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="2806" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="2830" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Run reporting module</text>
+<text x="2795" y="429" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="record-actual-execution-reference"><rect x="3180" y="360" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3193" y="374" width="26" height="26" rx="7" fill="#247F8644"/><text x="3206" y="392" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="3230" y="387" font-size="11" fill="#F7F2E8" font-weight="600">Record actual execution</text>
+<text x="3230" y="404" font-size="11" fill="#F7F2E8" font-weight="600">reference</text>
+<text x="3195" y="429" font-size="10" fill="#adbed2">httpRequest</text></g>
+<text x="45" y="634" font-size="11" fill="#adbed2">11 executable nodes · source: workflows/madar-full-demo.json · INACTIVE · live integration NOT VERIFIED</text>
+</g></svg>

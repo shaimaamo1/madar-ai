@@ -1,0 +1,1155 @@
+{
+  "name": "MADAR Human Handoff & Escalation",
+  "nodes": [
+    {
+      "id": "sub",
+      "name": "Called by workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        220
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "validate-orchestration-envelope",
+      "name": "Validate orchestration envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>{let b=json.body||json;if(json.body){if(typeof b.event_id!=='string'||!b.lead||typeof b.text!=='string')throw new Error('Invalid normalized envelope');b={...b,lead:{...b.lead,consent:b.lead.consent===true}};}if(!b.event_id)throw new Error('Stable event_id required');const allowed=['event_id','lead_id','run_id','run_token','lead','text','appointment'];const out={kind:\"handoff\"};for(const k of allowed)if(b[k]!==undefined && (k!=='appointment'||out.kind==='appointment') && (!['lead','text'].includes(k)||out.kind==='intake'))out[k]=b[k];return {json:out};});"
+      }
+    },
+    {
+      "id": "read-tenant-scoped-business-context",
+      "name": "Read tenant-scoped business context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        710,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/context",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "require-customer-escalation-reference",
+      "name": "Require customer escalation reference",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"customer_exists\"]=(Boolean(l?.id));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-customer-escalation-reference-accepted",
+      "name": "Require customer escalation reference accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1330,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.customer_exists === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-customer-escalation-reference-review-required",
+      "name": "Require customer escalation reference review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1330,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "validate-escalation-score",
+      "name": "Validate escalation score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"score_valid\"]=(Number.isFinite(l.score)&&l.score>=0&&l.score<=100);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-escalation-score-accepted",
+      "name": "Validate escalation score accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.score_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-escalation-score-review-required",
+      "name": "Validate escalation score review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "determine-escalation-priority",
+      "name": "Determine escalation priority",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"priority\"]=(l.score>=65?'High':'Normal');return {json:s};});"
+      }
+    },
+    {
+      "id": "determine-response-sla-duration",
+      "name": "Determine response SLA duration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"sla_minutes\"]=(a.priority==='High'?30:120);return {json:s};});"
+      }
+    },
+    {
+      "id": "calculate-sla-due-timestamp",
+      "name": "Calculate SLA due timestamp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"due_at\"]=(new Date(Date.now()+a.sla_minutes*60000).toISOString());return {json:s};});"
+      }
+    },
+    {
+      "id": "collect-active-advisers",
+      "name": "Collect active advisers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"active_advisers\"]=(s.agents.filter(u=>u.active));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-available-escalation-adviser",
+      "name": "Require available escalation adviser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"adviser_available\"]=(a.active_advisers.length>0);return {json:s};});"
+      }
+    },
+    {
+      "id": "require-available-escalation-adviser-accepted",
+      "name": "Require available escalation adviser accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2630,
+        770
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.adviser_available === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-available-escalation-adviser-review-required",
+      "name": "Require available escalation adviser review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2630,
+        960
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "measure-adviser-open-pipeline",
+      "name": "Measure adviser open pipeline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"workloads\"]=(a.active_advisers.map(u=>({id:u.id,open:s.leads.filter(l=>l.assigned_to===u.id&&!['Won','Lost'].includes(l.stage)).length})));return {json:s};});"
+      }
+    },
+    {
+      "id": "resolve-existing-assigned-adviser",
+      "name": "Resolve existing assigned adviser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"assigned_adviser\"]=(a.active_advisers.find(u=>u.id===l.assigned_to)||null);return {json:s};});"
+      }
+    },
+    {
+      "id": "require-active-assigned-owner",
+      "name": "Require active assigned owner",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"assigned_owner_valid\"]=(Boolean(a.assigned_adviser));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-active-assigned-owner-accepted",
+      "name": "Require active assigned owner accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        1320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.assigned_owner_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-active-assigned-owner-review-required",
+      "name": "Require active assigned owner review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        1510
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "find-existing-handoff-task",
+      "name": "Find existing handoff task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"handoff_tasks\"]=(s.tasks.filter(t=>t.lead_id===l.id&&t.kind==='handoff'&&t.status==='Pending').map(t=>t.id));return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-handoff-task-uniqueness",
+      "name": "Validate handoff task uniqueness",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"handoff_unique\"]=(a.handoff_tasks.length<=1);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-handoff-task-uniqueness-accepted",
+      "name": "Validate handoff task uniqueness accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3280,
+        1320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.handoff_unique === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-handoff-task-uniqueness-review-required",
+      "name": "Validate handoff task uniqueness review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        1510
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "collect-confirmed-viewing-context",
+      "name": "Collect confirmed viewing context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"viewings\"]=(s.appointments.filter(x=>x.lead_id===l.id&&x.status==='Booked').map(x=>({id:x.id,start_at:x.start_at,property_id:x.property_id})));return {json:s};});"
+      }
+    },
+    {
+      "id": "summarize-recorded-customer-requirements",
+      "name": "Summarize recorded customer requirements",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"requirements\"]=(({budget:l.budget,location:l.location,property_type:l.property_type,bedrooms:l.bedrooms,intent:l.intent}));return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-supported-ownership-state",
+      "name": "Validate supported ownership state",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"ownership_valid\"]=([undefined,0,1].includes(s.control.human_active));return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-supported-ownership-state-accepted",
+      "name": "Validate supported ownership state accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2630,
+        1870
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.ownership_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-supported-ownership-state-review-required",
+      "name": "Validate supported ownership state review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2630,
+        2060
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "prepare-acknowledgement-and-resolution-policy",
+      "name": "Prepare acknowledgement and resolution policy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"ownership_policy\"]=(({pause_automated_replies:true,adviser_id:a.assigned_adviser.id,sla_minutes:a.sla_minutes,acknowledgement_required:true,resolution_requires_explicit_resume:true}));return {json:s};});"
+      }
+    },
+    {
+      "id": "commit-authoritative-handoff",
+      "name": "Commit authoritative handoff",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3820,
+        1870
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({...$json.request,analysis:$json.analysis,execution_id:String($execution.id)}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "redact-backend-rejection",
+      "name": "Redact backend rejection",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3820,
+        2170
+      ],
+      "parameters": {
+        "jsCode": "const r=$(\"Validate orchestration envelope\").first().json;return [{json:{...r,execution_id:String($execution.id),reason:'backend_failed'}}];"
+      }
+    },
+    {
+      "id": "record-scoped-failure-incident",
+      "name": "Record scoped failure incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4130,
+        2350
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/failure",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      }
+    },
+    {
+      "id": "stop-rejected-business-execution",
+      "name": "Stop rejected business execution",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4440,
+        2350
+      ],
+      "parameters": {
+        "jsCode": "throw new Error('MADAR business execution failed. Review the scoped dashboard incident; payload omitted.');"
+      }
+    },
+    {
+      "id": "return-minimal-orchestration-receipt",
+      "name": "Return minimal orchestration receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4100,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:r})=>({json:{kind:r.kind,event_id:r.event_id,run_id:r.run_id,run_token:r.run_token,lead_id:r.lead_id,duplicate:r.duplicate,mode:r.mode,external_messages_sent:r.external_messages_sent}}));"
+      }
+    },
+    {
+      "id": "input-and-authority",
+      "name": "INPUT AND AUTHORITY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        130
+      ],
+      "parameters": {
+        "content": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 2
+      }
+    },
+    {
+      "id": "qualification-and-policy",
+      "name": "QUALIFICATION AND POLICY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        680
+      ],
+      "parameters": {
+        "content": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 3
+      }
+    },
+    {
+      "id": "business-decisions",
+      "name": "BUSINESS DECISIONS",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1230
+      ],
+      "parameters": {
+        "content": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 4
+      }
+    },
+    {
+      "id": "evidence-and-commit",
+      "name": "EVIDENCE AND COMMIT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1780
+      ],
+      "parameters": {
+        "content": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Called by workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate orchestration envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate orchestration envelope": {
+      "main": [
+        [
+          {
+            "node": "Read tenant-scoped business context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read tenant-scoped business context": {
+      "main": [
+        [
+          {
+            "node": "Require customer escalation reference",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redact backend rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require customer escalation reference": {
+      "main": [
+        [
+          {
+            "node": "Require customer escalation reference accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require customer escalation reference accepted": {
+      "main": [
+        [
+          {
+            "node": "Validate escalation score",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require customer escalation reference review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require customer escalation reference review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate escalation score": {
+      "main": [
+        [
+          {
+            "node": "Validate escalation score accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate escalation score accepted": {
+      "main": [
+        [
+          {
+            "node": "Determine escalation priority",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate escalation score review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate escalation score review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine escalation priority": {
+      "main": [
+        [
+          {
+            "node": "Determine response SLA duration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine response SLA duration": {
+      "main": [
+        [
+          {
+            "node": "Calculate SLA due timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate SLA due timestamp": {
+      "main": [
+        [
+          {
+            "node": "Collect active advisers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect active advisers": {
+      "main": [
+        [
+          {
+            "node": "Require available escalation adviser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require available escalation adviser": {
+      "main": [
+        [
+          {
+            "node": "Require available escalation adviser accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require available escalation adviser accepted": {
+      "main": [
+        [
+          {
+            "node": "Measure adviser open pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require available escalation adviser review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require available escalation adviser review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Measure adviser open pipeline": {
+      "main": [
+        [
+          {
+            "node": "Resolve existing assigned adviser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve existing assigned adviser": {
+      "main": [
+        [
+          {
+            "node": "Require active assigned owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require active assigned owner": {
+      "main": [
+        [
+          {
+            "node": "Require active assigned owner accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require active assigned owner accepted": {
+      "main": [
+        [
+          {
+            "node": "Find existing handoff task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require active assigned owner review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require active assigned owner review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find existing handoff task": {
+      "main": [
+        [
+          {
+            "node": "Validate handoff task uniqueness",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate handoff task uniqueness": {
+      "main": [
+        [
+          {
+            "node": "Validate handoff task uniqueness accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate handoff task uniqueness accepted": {
+      "main": [
+        [
+          {
+            "node": "Collect confirmed viewing context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate handoff task uniqueness review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate handoff task uniqueness review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect confirmed viewing context": {
+      "main": [
+        [
+          {
+            "node": "Summarize recorded customer requirements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize recorded customer requirements": {
+      "main": [
+        [
+          {
+            "node": "Validate supported ownership state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate supported ownership state": {
+      "main": [
+        [
+          {
+            "node": "Validate supported ownership state accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate supported ownership state accepted": {
+      "main": [
+        [
+          {
+            "node": "Prepare acknowledgement and resolution policy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate supported ownership state review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate supported ownership state review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare acknowledgement and resolution policy": {
+      "main": [
+        [
+          {
+            "node": "Commit authoritative handoff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit authoritative handoff": {
+      "main": [
+        [
+          {
+            "node": "Return minimal orchestration receipt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redact backend rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redact backend rejection": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record scoped failure incident": {
+      "main": [
+        [
+          {
+            "node": "Stop rejected business execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none"
+  },
+  "active": false,
+  "tags": []
+}

@@ -1,3 +1,5 @@
+> Historical bilingual milestone. Current orchestration inventory and actual runtime acceptance are documented in [enterprise-verification.md](enterprise-verification.md).
+
 # Bilingual and Windows milestone verification
 
 Updated 11 October 2026. This is evidence for completed milestones, not acceptance of the full new enterprise automation brief.

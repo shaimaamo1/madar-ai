@@ -15,30 +15,595 @@
       }
     },
     {
-      "id": "validate-customer-reference",
-      "name": "Validate customer reference",
+      "id": "validate-orchestration-envelope",
+      "name": "Validate orchestration envelope",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        400,
+        420,
         220
       ],
       "parameters": {
-        "jsCode": "return $input.all().map(({json})=>{if(typeof json.lead_id!=='string'||!json.lead_id) throw new Error('lead_id required'); return {json:{lead_id:json.lead_id}};});"
+        "jsCode": "return $input.all().map(({json})=>{let b=json.body||json;if(json.body){if(typeof b.event_id!=='string'||!b.lead||typeof b.text!=='string')throw new Error('Invalid normalized envelope');b={...b,lead:{...b.lead,consent:b.lead.consent===true}};}if(!b.event_id)throw new Error('Stable event_id required');const allowed=['event_id','lead_id','run_id','run_token','lead','text','appointment'];const out={kind:\"qualification\"};for(const k of allowed)if(b[k]!==undefined && (k!=='appointment'||out.kind==='appointment') && (!['lead','text'].includes(k)||out.kind==='intake'))out[k]=b[k];return {json:out};});"
       }
     },
     {
-      "id": "read-intent-score-and-inventory",
-      "name": "Read intent score and inventory",
+      "id": "read-tenant-scoped-business-context",
+      "name": "Read tenant-scoped business context",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        670,
+        710,
         220
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://app:8000/api/bridge/intelligence",
+        "url": "http://app:8000/api/bridge/enterprise/context",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "resolve-recorded-customer",
+      "name": "Resolve recorded customer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"customer_exists\"]=(Boolean(l?.id));return {json:s};});"
+      }
+    },
+    {
+      "id": "resolve-recorded-customer-accepted",
+      "name": "Resolve recorded customer accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1330,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.customer_exists === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "resolve-recorded-customer-review-required",
+      "name": "Resolve recorded customer review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1330,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "validate-persisted-preference-bounds",
+      "name": "Validate persisted preference bounds",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"preference_valid\"]=(l.budget>=0&&l.budget<=1e12&&l.bedrooms>=0&&l.bedrooms<=50);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-persisted-preference-bounds-accepted",
+      "name": "Validate persisted preference bounds accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.preference_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-persisted-preference-bounds-review-required",
+      "name": "Validate persisted preference bounds review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "detect-preferred-conversation-language",
+      "name": "Detect preferred conversation language",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"language\"]=(s.messages.some(m=>m.direction==='inbound'&&/[\\u0600-\\u06ff]/.test(m.body))?'ar':'en');return {json:s};});"
+      }
+    },
+    {
+      "id": "identify-missing-qualification-fields",
+      "name": "Identify missing qualification fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"missing_fields\"]=(['budget','location','property_type'].filter(k=>!l[k]));return {json:s};});"
+      }
+    },
+    {
+      "id": "audit-budget-contribution",
+      "name": "Audit budget contribution",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"budget_points\"]=(l.budget>0?25:0);return {json:s};});"
+      }
+    },
+    {
+      "id": "audit-location-contribution",
+      "name": "Audit location contribution",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"location_points\"]=(l.location?20:0);return {json:s};});"
+      }
+    },
+    {
+      "id": "audit-specification-contribution",
+      "name": "Audit specification contribution",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"specification_points\"]=((l.property_type?15:0)+(l.bedrooms?10:0));return {json:s};});"
+      }
+    },
+    {
+      "id": "audit-contact-and-consent-contribution",
+      "name": "Audit contact and consent contribution",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"contact_points\"]=((l.phone||l.email?15:0)+(l.consent?15:0));return {json:s};});"
+      }
+    },
+    {
+      "id": "reconcile-persisted-qualification-score",
+      "name": "Reconcile persisted qualification score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"score_consistent\"]=(l.score===Math.min(100,a.budget_points+a.location_points+a.specification_points+a.contact_points));return {json:s};});"
+      }
+    },
+    {
+      "id": "reconcile-persisted-qualification-score-accepted",
+      "name": "Reconcile persisted qualification score accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1330,
+        1320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.score_consistent === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "reconcile-persisted-qualification-score-review-required",
+      "name": "Reconcile persisted qualification score review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1330,
+        1510
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "detect-viewing-intent-evidence",
+      "name": "Detect viewing intent evidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"viewing_intent\"]=(s.messages.filter(m=>m.direction==='inbound').slice(0,3).some(m=>/viewing|appointment|book|معاينة|معاينه|احجز|موعد/i.test(m.body)));return {json:s};});"
+      }
+    },
+    {
+      "id": "detect-urgency-evidence",
+      "name": "Detect urgency evidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"urgent\"]=(s.messages.filter(m=>m.direction==='inbound').slice(0,3).some(m=>/urgent|today|اليوم|النهارده|عاجل/i.test(m.body)));return {json:s};});"
+      }
+    },
+    {
+      "id": "determine-authoritative-ownership",
+      "name": "Determine authoritative ownership",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"human_active\"]=(s.control.human_active===1);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-assigned-adviser-membership",
+      "name": "Validate assigned adviser membership",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"assignment_valid\"]=(!l.assigned_to||s.agents.some(u=>u.id===l.assigned_to));return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-assigned-adviser-membership-accepted",
+      "name": "Validate assigned adviser membership accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1330,
+        1870
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.assignment_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-assigned-adviser-membership-review-required",
+      "name": "Validate assigned adviser membership review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1330,
+        2060
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "validate-qualification-enum-values",
+      "name": "Validate qualification enum values",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"enum_valid\"]=(['buy','rent'].includes(l.intent)&&['','Apartment','Villa','Office','Land'].includes(l.property_type));return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-qualification-enum-values-accepted",
+      "name": "Validate qualification enum values accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        1870
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.enum_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-qualification-enum-values-review-required",
+      "name": "Validate qualification enum values review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        2060
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "require-available-qualification-evidence",
+      "name": "Require available qualification evidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"evidence_available\"]=(Boolean(l.created_at)&&Number.isFinite(l.score));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-available-qualification-evidence-accepted",
+      "name": "Require available qualification evidence accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2630,
+        1870
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.evidence_available === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-available-qualification-evidence-review-required",
+      "name": "Require available qualification evidence review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2630,
+        2060
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "choose-safe-sales-readiness",
+      "name": "Choose safe sales readiness",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"readiness\"]=(l.opted_out?'opted_out':a.human_active?'human_review':a.missing_fields.length?'exploring':a.viewing_intent?'viewing_ready':'qualified');return {json:s};});"
+      }
+    },
+    {
+      "id": "commit-authoritative-qualification",
+      "name": "Commit authoritative qualification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3820,
+        1870
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({...$json.request,analysis:$json.analysis,execution_id:String($execution.id)}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "redact-backend-rejection",
+      "name": "Redact backend rejection",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3820,
+        2170
+      ],
+      "parameters": {
+        "jsCode": "const r=$(\"Validate orchestration envelope\").first().json;return [{json:{...r,execution_id:String($execution.id),reason:'backend_failed'}}];"
+      }
+    },
+    {
+      "id": "record-scoped-failure-incident",
+      "name": "Record scoped failure incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4130,
+        2350
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/failure",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {
@@ -58,111 +623,92 @@
       }
     },
     {
-      "id": "human-adviser-requested",
-      "name": "Human adviser requested",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        950,
-        220
-      ],
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "check",
-              "leftValue": "={{ $json.human_active === true }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      }
-    },
-    {
-      "id": "ensure-adviser-escalation-task",
-      "name": "Ensure adviser escalation task",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1230,
-        100
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "http://app:8000/api/bridge/handoff",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "options": {
-          "timeout": 30000
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({lead_id:$json.lead_id,active:true,reason:\"Customer requested an adviser\"}) }}"
-      },
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 2000,
-      "credentials": {
-        "httpHeaderAuth": {
-          "name": "MADAR bridge"
-        }
-      }
-    },
-    {
-      "id": "return-actionable-recommendations",
-      "name": "Return actionable recommendations",
+      "id": "stop-rejected-business-execution",
+      "name": "Stop rejected business execution",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1230,
-        340
+        4440,
+        2350
       ],
       "parameters": {
-        "jsCode": "return $input.all().map(({json})=>({json:{lead_id:json.lead_id,intent:json.intent,score:json.score,next_action:json.next_action,missing_fields:json.missing_fields,assigned_agent_id:json.assigned_agent_id,recommendations:json.recommendations,followup_eligible:json.followup_eligible,template_required:json.template_required}}));"
+        "jsCode": "throw new Error('MADAR business execution failed. Review the scoped dashboard incident; payload omitted.');"
       }
     },
     {
-      "id": "authoritative-intelligence",
-      "name": "AUTHORITATIVE INTELLIGENCE",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
+      "id": "return-minimal-orchestration-receipt",
+      "name": "Return minimal orchestration receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        110,
-        75
+        4100,
+        1870
       ],
       "parameters": {
-        "content": "## AUTHORITATIVE INTELLIGENCE\nArabic / English qualification and workload assignment happen atomically at ingestion. This module reads persisted CRM evidence and real available inventory.",
-        "width": 810,
-        "height": 280,
-        "color": 5
+        "jsCode": "return $input.all().map(({json:r})=>({json:{kind:r.kind,event_id:r.event_id,run_id:r.run_id,run_token:r.run_token,lead_id:r.lead_id,duplicate:r.duplicate,mode:r.mode,external_messages_sent:r.external_messages_sent}}));"
       }
     },
     {
-      "id": "human-ownership",
-      "name": "HUMAN OWNERSHIP",
+      "id": "input-and-authority",
+      "name": "INPUT AND AUTHORITY",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        920,
-        35
+        1010,
+        130
       ],
       "parameters": {
-        "content": "## HUMAN OWNERSHIP\nPersistent handoff pauses automated sales replies. Escalation tasks are deduplicated. Recommendations never fabricate listing facts.",
-        "width": 580,
-        "height": 440,
+        "content": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 2
+      }
+    },
+    {
+      "id": "qualification-and-policy",
+      "name": "QUALIFICATION AND POLICY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        680
+      ],
+      "parameters": {
+        "content": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 3
+      }
+    },
+    {
+      "id": "business-decisions",
+      "name": "BUSINESS DECISIONS",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1230
+      ],
+      "parameters": {
+        "content": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 4
+      }
+    },
+    {
+      "id": "evidence-and-commit",
+      "name": "EVIDENCE AND COMMIT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1780
+      ],
+      "parameters": {
+        "content": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
         "color": 5
       }
     }
@@ -172,47 +718,426 @@
       "main": [
         [
           {
-            "node": "Validate customer reference",
+            "node": "Validate orchestration envelope",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Validate customer reference": {
+    "Validate orchestration envelope": {
       "main": [
         [
           {
-            "node": "Read intent score and inventory",
+            "node": "Read tenant-scoped business context",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Read intent score and inventory": {
+    "Read tenant-scoped business context": {
       "main": [
         [
           {
-            "node": "Human adviser requested",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Human adviser requested": {
-      "main": [
-        [
-          {
-            "node": "Ensure adviser escalation task",
+            "node": "Resolve recorded customer",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Return actionable recommendations",
+            "node": "Redact backend rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve recorded customer": {
+      "main": [
+        [
+          {
+            "node": "Resolve recorded customer accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve recorded customer accepted": {
+      "main": [
+        [
+          {
+            "node": "Validate persisted preference bounds",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resolve recorded customer review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve recorded customer review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate persisted preference bounds": {
+      "main": [
+        [
+          {
+            "node": "Validate persisted preference bounds accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate persisted preference bounds accepted": {
+      "main": [
+        [
+          {
+            "node": "Detect preferred conversation language",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate persisted preference bounds review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate persisted preference bounds review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect preferred conversation language": {
+      "main": [
+        [
+          {
+            "node": "Identify missing qualification fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify missing qualification fields": {
+      "main": [
+        [
+          {
+            "node": "Audit budget contribution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit budget contribution": {
+      "main": [
+        [
+          {
+            "node": "Audit location contribution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit location contribution": {
+      "main": [
+        [
+          {
+            "node": "Audit specification contribution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit specification contribution": {
+      "main": [
+        [
+          {
+            "node": "Audit contact and consent contribution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit contact and consent contribution": {
+      "main": [
+        [
+          {
+            "node": "Reconcile persisted qualification score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile persisted qualification score": {
+      "main": [
+        [
+          {
+            "node": "Reconcile persisted qualification score accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile persisted qualification score accepted": {
+      "main": [
+        [
+          {
+            "node": "Detect viewing intent evidence",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reconcile persisted qualification score review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile persisted qualification score review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect viewing intent evidence": {
+      "main": [
+        [
+          {
+            "node": "Detect urgency evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect urgency evidence": {
+      "main": [
+        [
+          {
+            "node": "Determine authoritative ownership",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine authoritative ownership": {
+      "main": [
+        [
+          {
+            "node": "Validate assigned adviser membership",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate assigned adviser membership": {
+      "main": [
+        [
+          {
+            "node": "Validate assigned adviser membership accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate assigned adviser membership accepted": {
+      "main": [
+        [
+          {
+            "node": "Validate qualification enum values",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate assigned adviser membership review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate assigned adviser membership review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate qualification enum values": {
+      "main": [
+        [
+          {
+            "node": "Validate qualification enum values accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate qualification enum values accepted": {
+      "main": [
+        [
+          {
+            "node": "Require available qualification evidence",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate qualification enum values review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate qualification enum values review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require available qualification evidence": {
+      "main": [
+        [
+          {
+            "node": "Require available qualification evidence accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require available qualification evidence accepted": {
+      "main": [
+        [
+          {
+            "node": "Choose safe sales readiness",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require available qualification evidence review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require available qualification evidence review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Choose safe sales readiness": {
+      "main": [
+        [
+          {
+            "node": "Commit authoritative qualification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit authoritative qualification": {
+      "main": [
+        [
+          {
+            "node": "Return minimal orchestration receipt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redact backend rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redact backend rejection": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record scoped failure incident": {
+      "main": [
+        [
+          {
+            "node": "Stop rejected business execution",
             "type": "main",
             "index": 0
           }

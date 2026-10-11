@@ -17,6 +17,7 @@ const pages = [
   "Automations",
   "Integrations",
   "Company settings",
+  "System Health",
 ];
 async function demo(page: any) {
   await page.goto("/");
@@ -100,7 +101,7 @@ test("workflow diagrams display actual modules and inactive operation contracts"
   await expect(
     page.getByRole("tab", { name: "Omnichannel Intake", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
-  expect(await page.locator('[role="tablist"] [role="tab"]').count()).toBe(10);
+  expect(await page.locator('[role="tablist"] [role="tab"]').count()).toBe(14);
   await expect(
     page.getByRole("img", { name: "MADAR Omnichannel Intake actual workflow" }),
   ).toBeVisible();
@@ -108,7 +109,7 @@ test("workflow diagrams display actual modules and inactive operation contracts"
     .getByRole("tab", { name: "Viewing Reservations", exact: true })
     .click();
   await expect(
-    page.locator('[data-node-id="reserve-conflict-safe-appointment"]'),
+    page.locator('[data-node-id="commit-authoritative-appointment"]'),
   ).toBeVisible();
   await page
     .getByRole("tab", { name: "WhatsApp Delivery", exact: true })

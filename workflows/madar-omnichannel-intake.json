@@ -2,13 +2,39 @@
   "name": "MADAR Omnichannel Intake",
   "nodes": [
     {
+      "id": "sub",
+      "name": "Called by workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        220
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "normalize-trusted-envelope",
+      "name": "Normalize trusted envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json})=>{let b=json.body||json;if(json.body){if(typeof b.event_id!=='string'||!b.lead||typeof b.text!=='string')throw new Error('Invalid normalized envelope');b={...b,lead:{...b.lead,consent:b.lead.consent===true}};}if(!b.event_id)throw new Error('Stable event_id required');const allowed=['event_id','lead_id','run_id','run_token','lead','text','appointment'];const out={kind:\"intake\"};for(const k of allowed)if(b[k]!==undefined && (k!=='appointment'||out.kind==='appointment') && (!['lead','text'].includes(k)||out.kind==='intake'))out[k]=b[k];return {json:out};});"
+      }
+    },
+    {
       "id": "intake-webhook",
       "name": "Authenticated normalized events",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        160,
-        220
+        140,
+        430
       ],
       "parameters": {
         "httpMethod": "POST",
@@ -25,30 +51,17 @@
       }
     },
     {
-      "id": "normalize-trusted-envelope",
-      "name": "Normalize trusted envelope",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        420,
-        220
-      ],
-      "parameters": {
-        "jsCode": "return $input.all().map(({json})=>{const body=json.body; if(!body||typeof body.event_id!=='string'||!body.lead||typeof body.text!=='string') throw new Error('Invalid normalized envelope'); if(body.text.length>4000) throw new Error('Message too long'); const lead={...body.lead,consent:body.lead.consent===true}; return {json:{event_id:body.event_id,lead,text:body.text}};});"
-      }
-    },
-    {
-      "id": "crm-intake-transaction",
-      "name": "CRM intake transaction",
+      "id": "read-tenant-scoped-business-context",
+      "name": "Read tenant-scoped business context",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        680,
+        710,
         220
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://app:8000/api/integrations/ingest",
+        "url": "http://app:8000/api/bridge/enterprise/context",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {
@@ -63,18 +76,596 @@
       "waitBetweenTries": 2000,
       "credentials": {
         "httpHeaderAuth": {
-          "name": "MADAR ingestion"
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "validate-event-identity",
+      "name": "Validate event identity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"event_valid\"]=(typeof r.event_id==='string' && r.event_id.length>0 && r.event_id.length<=200);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-event-identity-accepted",
+      "name": "Validate event identity accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1330,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.event_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-event-identity-review-required",
+      "name": "Validate event identity review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1330,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "validate-customer-name",
+      "name": "Validate customer name",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"name_valid\"]=(typeof r.lead?.name==='string' && r.lead.name.trim().length>0);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-customer-name-accepted",
+      "name": "Validate customer name accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.name_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-customer-name-review-required",
+      "name": "Validate customer name review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "validate-message-size",
+      "name": "Validate message size",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"message_valid\"]=(typeof r.text==='string' && r.text.length>0 && r.text.length<=4000);return {json:s};});"
+      }
+    },
+    {
+      "id": "validate-message-size-accepted",
+      "name": "Validate message size accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2630,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.message_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "validate-message-size-review-required",
+      "name": "Validate message size review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2630,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "authorize-supported-source",
+      "name": "Authorize supported source",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"source_valid\"]=(['website','whatsapp','telegram','facebook','instagram','email','crm'].includes(r.lead?.source));return {json:s};});"
+      }
+    },
+    {
+      "id": "authorize-supported-source-accepted",
+      "name": "Authorize supported source accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3280,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.source_valid === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "authorize-supported-source-review-required",
+      "name": "Authorize supported source review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        410
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "normalize-contact-phone",
+      "name": "Normalize contact phone",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"normalized_phone\"]=(String(r.lead?.phone||'').replace(/\\D/g,''));return {json:s};});"
+      }
+    },
+    {
+      "id": "normalize-contact-email",
+      "name": "Normalize contact email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"normalized_email\"]=(String(r.lead?.email||'').trim().toLowerCase());return {json:s};});"
+      }
+    },
+    {
+      "id": "resolve-contact-identity-collisions",
+      "name": "Resolve contact identity collisions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"identity_safe\"]=(new Set(s.leads.filter(l=>(a.normalized_phone&&l.phone===a.normalized_phone)||(a.normalized_email&&l.email===a.normalized_email)||(r.lead?.external_id&&l.external_id===r.lead.external_id&&l.source===r.lead.source)).map(l=>l.id)).size<=1);return {json:s};});"
+      }
+    },
+    {
+      "id": "resolve-contact-identity-collisions-accepted",
+      "name": "Resolve contact identity collisions accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2630,
+        770
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.identity_safe === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "resolve-contact-identity-collisions-review-required",
+      "name": "Resolve contact identity collisions review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2630,
+        960
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "detect-explicit-arabic-or-english",
+      "name": "Detect explicit Arabic or English",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        770
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"language\"]=(/[\\u0600-\\u06ff]/.test(r.text)?'ar':'en');return {json:s};});"
+      }
+    },
+    {
+      "id": "detect-customer-opt-out",
+      "name": "Detect customer opt-out",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"opt_out_requested\"]=(/stop|unsubscribe|متبعتش|وقف الرسائل|إلغاء/i.test(r.text));return {json:s};});"
+      }
+    },
+    {
+      "id": "verify-literal-consent-flag",
+      "name": "Verify literal consent flag",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"consent_granted\"]=(r.lead?.consent===true && !a.opt_out_requested);return {json:s};});"
+      }
+    },
+    {
+      "id": "identify-injection-review-signals",
+      "name": "Identify injection review signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"security_review\"]=(/ignore.{0,30}instructions|system prompt|api.?key|تجاهل.{0,20}تعليمات/i.test(r.text));return {json:s};});"
+      }
+    },
+    {
+      "id": "calculate-preference-completeness",
+      "name": "Calculate preference completeness",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"preference_completeness\"]=(['budget','location','property_type'].filter(k=>r.lead?.[k]).length/3);return {json:s};});"
+      }
+    },
+    {
+      "id": "measure-active-adviser-workload",
+      "name": "Measure active adviser workload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"adviser_workload\"]=(s.agents.filter(u=>u.active).map(u=>({id:u.id,open:s.leads.filter(l=>l.assigned_to===u.id&&!['Won','Lost'].includes(l.stage)).length})));return {json:s};});"
+      }
+    },
+    {
+      "id": "require-an-available-adviser",
+      "name": "Require an available adviser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1710,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"adviser_available\"]=(a.adviser_workload.length>0);return {json:s};});"
+      }
+    },
+    {
+      "id": "require-an-available-adviser-accepted",
+      "name": "Require an available adviser accepted",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        1870
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $json.analysis.adviser_available === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "require-an-available-adviser-review-required",
+      "name": "Require an available adviser review required",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        2060
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>({json:{...s.request,execution_id:String($execution.id),reason:'validation_failed'}}));"
+      }
+    },
+    {
+      "id": "plan-consent-aware-intake-follow-up",
+      "name": "Plan consent-aware intake follow-up",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"followup_plan\"]=(({eligible:a.consent_granted,delay_hours:s.settings.followup_hours,requires_template:r.lead?.source==='whatsapp'}));return {json:s};});"
+      }
+    },
+    {
+      "id": "prepare-atomic-crm-disposition",
+      "name": "Prepare atomic CRM disposition",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3010,
+        1870
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({json:s})=>{const r=s.inquiry||s.request,l=s.lead,a=s.analysis;a[\"intake_disposition\"]=(({contact_merge:'authoritative-backend',qualification_language:a.language,human_review:a.security_review,opt_out:a.opt_out_requested}));return {json:s};});"
+      }
+    },
+    {
+      "id": "commit-authoritative-intake",
+      "name": "Commit authoritative intake",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3820,
+        1870
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({...$json.request,analysis:$json.analysis,execution_id:String($execution.id)}) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "redact-backend-rejection",
+      "name": "Redact backend rejection",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3820,
+        2170
+      ],
+      "parameters": {
+        "jsCode": "const r=$(\"Normalize trusted envelope\").first().json;return [{json:{...r,execution_id:String($execution.id),reason:'backend_failed'}}];"
+      }
+    },
+    {
+      "id": "record-scoped-failure-incident",
+      "name": "Record scoped failure incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4130,
+        2350
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/api/bridge/enterprise/failure",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "MADAR bridge"
         }
       }
     },
     {
-      "id": "new-event-accepted",
-      "name": "New event accepted",
+      "id": "stop-rejected-business-execution",
+      "name": "Stop rejected business execution",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4440,
+        2350
+      ],
+      "parameters": {
+        "jsCode": "throw new Error('MADAR business execution failed. Review the scoped dashboard incident; payload omitted.');"
+      }
+    },
+    {
+      "id": "new-event-requires-intelligence",
+      "name": "New event requires intelligence",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        930,
-        100
+        4050,
+        1700
       ],
       "parameters": {
         "conditions": {
@@ -107,8 +698,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        950,
-        300
+        4100,
+        1870
       ],
       "parameters": {
         "workflowId": {
@@ -123,54 +714,144 @@
       }
     },
     {
+      "id": "http-request-requires-acknowledgement",
+      "name": "HTTP request requires acknowledgement",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4380,
+        1870
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check",
+              "leftValue": "={{ $('Authenticated normalized events').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
       "id": "acknowledge-accepted-event",
       "name": "Acknowledge accepted event",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        1450,
-        220
+        4670,
+        1780
       ],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({accepted:true,duplicate:$(\"CRM intake transaction\").first().json.duplicate === true}) }}",
+        "responseBody": "={{ JSON.stringify({accepted:true,lead_id:$json.lead_id,duplicate:$json.duplicate===true}) }}",
         "options": {}
       }
     },
     {
-      "id": "authenticated-intake",
-      "name": "AUTHENTICATED INTAKE",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
+      "id": "return-scoped-module-result",
+      "name": "Return scoped module result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        100,
-        0
+        4670,
+        1990
       ],
       "parameters": {
-        "content": "## AUTHENTICATED INTAKE\nWebsite / CRM / authorized inbox sources send normalized events. Meta signatures terminate at MADAR /webhooks/meta, never at this JSON webhook.",
-        "width": 770,
-        "height": 440,
-        "color": 5
+        "jsCode": "return $input.all().map(item=>({json:item.json}));"
       }
     },
     {
-      "id": "replay-and-context",
-      "name": "REPLAY AND CONTEXT",
+      "id": "input-and-authority",
+      "name": "INPUT AND AUTHORITY",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        890,
-        0
+        1010,
+        130
       ],
       "parameters": {
-        "content": "## REPLAY AND CONTEXT\nDuplicate events skip intelligence work. Import helper resolves subworkflow IDs. HTTP retries reuse stable event IDs.",
-        "width": 780,
-        "height": 460,
+        "content": "## INPUT AND AUTHORITY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 2
+      }
+    },
+    {
+      "id": "qualification-and-policy",
+      "name": "QUALIFICATION AND POLICY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        680
+      ],
+      "parameters": {
+        "content": "## QUALIFICATION AND POLICY\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 3
+      }
+    },
+    {
+      "id": "business-decisions",
+      "name": "BUSINESS DECISIONS",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1230
+      ],
+      "parameters": {
+        "content": "## BUSINESS DECISIONS\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
+        "color": 4
+      }
+    },
+    {
+      "id": "evidence-and-commit",
+      "name": "EVIDENCE AND COMMIT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1010,
+        1780
+      ],
+      "parameters": {
+        "content": "## EVIDENCE AND COMMIT\nDistinct evidence calculations and connected validation branches. Mutations commit atomically; failures use the bound Error Monitor.",
+        "width": 2600,
+        "height": 450,
         "color": 5
       }
     }
   ],
   "connections": {
+    "Called by workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize trusted envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Authenticated normalized events": {
       "main": [
         [
@@ -186,25 +867,422 @@
       "main": [
         [
           {
-            "node": "CRM intake transaction",
+            "node": "Read tenant-scoped business context",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "CRM intake transaction": {
+    "Read tenant-scoped business context": {
       "main": [
         [
           {
-            "node": "New event accepted",
+            "node": "Validate event identity",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redact backend rejection",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "New event accepted": {
+    "Validate event identity": {
+      "main": [
+        [
+          {
+            "node": "Validate event identity accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate event identity accepted": {
+      "main": [
+        [
+          {
+            "node": "Validate customer name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate event identity review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate event identity review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate customer name": {
+      "main": [
+        [
+          {
+            "node": "Validate customer name accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate customer name accepted": {
+      "main": [
+        [
+          {
+            "node": "Validate message size",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate customer name review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate customer name review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate message size": {
+      "main": [
+        [
+          {
+            "node": "Validate message size accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate message size accepted": {
+      "main": [
+        [
+          {
+            "node": "Authorize supported source",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate message size review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate message size review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize supported source": {
+      "main": [
+        [
+          {
+            "node": "Authorize supported source accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize supported source accepted": {
+      "main": [
+        [
+          {
+            "node": "Normalize contact phone",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Authorize supported source review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize supported source review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize contact phone": {
+      "main": [
+        [
+          {
+            "node": "Normalize contact email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize contact email": {
+      "main": [
+        [
+          {
+            "node": "Resolve contact identity collisions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve contact identity collisions": {
+      "main": [
+        [
+          {
+            "node": "Resolve contact identity collisions accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve contact identity collisions accepted": {
+      "main": [
+        [
+          {
+            "node": "Detect explicit Arabic or English",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resolve contact identity collisions review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve contact identity collisions review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect explicit Arabic or English": {
+      "main": [
+        [
+          {
+            "node": "Detect customer opt-out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect customer opt-out": {
+      "main": [
+        [
+          {
+            "node": "Verify literal consent flag",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify literal consent flag": {
+      "main": [
+        [
+          {
+            "node": "Identify injection review signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify injection review signals": {
+      "main": [
+        [
+          {
+            "node": "Calculate preference completeness",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate preference completeness": {
+      "main": [
+        [
+          {
+            "node": "Measure active adviser workload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Measure active adviser workload": {
+      "main": [
+        [
+          {
+            "node": "Require an available adviser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require an available adviser": {
+      "main": [
+        [
+          {
+            "node": "Require an available adviser accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require an available adviser accepted": {
+      "main": [
+        [
+          {
+            "node": "Plan consent-aware intake follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Require an available adviser review required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Require an available adviser review required": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan consent-aware intake follow-up": {
+      "main": [
+        [
+          {
+            "node": "Prepare atomic CRM disposition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare atomic CRM disposition": {
+      "main": [
+        [
+          {
+            "node": "Commit authoritative intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit authoritative intake": {
+      "main": [
+        [
+          {
+            "node": "New event requires intelligence",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redact backend rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redact backend rejection": {
+      "main": [
+        [
+          {
+            "node": "Record scoped failure incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record scoped failure incident": {
+      "main": [
+        [
+          {
+            "node": "Stop rejected business execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New event requires intelligence": {
       "main": [
         [
           {
@@ -215,7 +1293,7 @@
         ],
         [
           {
-            "node": "Acknowledge accepted event",
+            "node": "HTTP request requires acknowledgement",
             "type": "main",
             "index": 0
           }
@@ -226,7 +1304,25 @@
       "main": [
         [
           {
+            "node": "HTTP request requires acknowledgement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP request requires acknowledgement": {
+      "main": [
+        [
+          {
             "node": "Acknowledge accepted event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return scoped module result",
             "type": "main",
             "index": 0
           }

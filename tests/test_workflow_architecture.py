@@ -16,7 +16,7 @@ def test_every_workflow_contract_resolves_to_real_backend_and_modules_are_ordere
     routes = app.openapi()['paths']
     templates = workflow_templates()
     seen = set()
-    assert len(templates) == 10
+    assert len(templates) == 14
     for flow in templates:
         assert not flow['active']
         assert flow['settings']['saveDataErrorExecution'] == 'none'
@@ -71,7 +71,7 @@ def test_legacy_four_workflows_recover_and_subworkflow_ids_are_bound(tmp_path):
         remote[identifier]=dict(data,id=identifier,active=False)
         return httpx.Response(200,json=remote[identifier])
     deploy({'N8N_BASE_URL':'http://localhost:5678','N8N_API_KEY':'test-key','MADAR_BRIDGE_TOKEN':'test-bridge','MADAR_INGEST_TOKEN':'test-ingest'},transport=httpx.MockTransport(handler),state_path=tmp_path/'state.json')
-    assert len(remote)==10
+    assert len(remote)==14
     assert all(remote[value]['name']==name for name,value in original_ids.items())
     intelligence=next(w for w in remote.values() if w['name']=='MADAR Lead Intelligence')
     intake=next(w for w in remote.values() if w['name']=='MADAR Omnichannel Intake')

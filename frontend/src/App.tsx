@@ -58,6 +58,8 @@ import {
   WorkflowStudio,
 } from "./Premium";
 
+import { EnterpriseConsole } from "./Enterprise";
+
 const pages = [
   ["overview", "Overview", LayoutDashboard, "نظرة عامة"],
   ["leads", "Leads & CRM", UsersRound, "العملاء وإدارة المبيعات"],
@@ -72,6 +74,7 @@ const pages = [
   ["automation", "Automations", Workflow, "الأتمتة"],
   ["integrations", "Integrations", Plug, "التكاملات"],
   ["settings", "Company settings", Settings2, "إعدادات الشركة"],
+  ["health", "System Health", Activity, "حالة النظام"],
 ] as const;
 const stageColors: Record<string, string> = {
   New: "blue",
@@ -815,6 +818,13 @@ export default function App() {
           )}
 
           <OperatingStrip operations={operations} ar={ar} />
+          {page === "health" && (
+            <EnterpriseConsole
+              leads={state.leads}
+              demo={Boolean(state.company.demo)}
+              refresh={refresh}
+            />
+          )}
           {page === "whatsapp" && (
             <WhatsAppStudio
               state={state}

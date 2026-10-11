@@ -1,39 +1,215 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1770" height="630" viewBox="0 0 1770 630" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="4990" height="2612" viewBox="0 0 4990 2612" role="img" aria-labelledby="title desc">
 <title id="title">MADAR Omnichannel Intake — actual inactive n8n architecture</title>
 <desc id="desc">Generated directly from importable workflow nodes and connections. No workflows are activated.</desc>
 <defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#263b53"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10" fill="#79b2b6"/></marker></defs>
-<rect width="1770" height="630" fill="#101E31"/><rect width="1770" height="630" fill="url(#dots)"/>
+<rect width="4990" height="2612" fill="#101E31"/><rect width="4990" height="2612" fill="url(#dots)"/>
 <g font-family="Segoe UI,Arial,sans-serif">
 <text x="45" y="43" fill="#D8BE83" font-size="13" letter-spacing="3">MADAR AI / AUTOMATION ARCHITECTURE</text>
 <text x="45" y="82" fill="#F7F2E8" font-size="27" font-weight="600">Omnichannel Intake</text>
-<rect x="100" y="100" width="770" height="440" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
-<text x="118" y="125" fill="#D8BE83" font-size="11" letter-spacing="1.4">AUTHENTICATED INTAKE</text>
-<rect x="890" y="100" width="780" height="460" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
-<text x="908" y="125" fill="#D8BE83" font-size="11" letter-spacing="1.4">REPLAY AND CONTEXT</text>
+<rect x="1010" y="230" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="255" fill="#D8BE83" font-size="11" letter-spacing="1.4">INPUT AND AUTHORITY</text>
+<rect x="1010" y="780" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="805" fill="#D8BE83" font-size="11" letter-spacing="1.4">QUALIFICATION AND POLICY</text>
+<rect x="1010" y="1330" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="1355" fill="#D8BE83" font-size="11" letter-spacing="1.4">BUSINESS DECISIONS</text>
+<rect x="1010" y="1880" width="2600" height="450" rx="15" fill="#193B572a" stroke="#385b72" stroke-dasharray="6 7"/>
+<text x="1028" y="1905" fill="#D8BE83" font-size="11" letter-spacing="1.4">EVIDENCE AND COMMIT</text>
 <path d="M375,362 C425,362 365,362 420,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
-<path d="M635,362 C685,362 625,362 680,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
-<path d="M895,362 C945,362 875,242 930,242" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
-<path d="M1145,242 C1195,242 895,442 950,442" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
-<path d="M1145,242 C1195,242 1395,362 1450,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
-<path d="M1165,442 C1215,442 1395,362 1450,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
-<g data-node-id="intake-webhook"><rect x="160" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="173" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="186" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
-<text x="210" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Authenticated normalized</text>
-<text x="210" y="364" font-size="11" fill="#F7F2E8" font-weight="600">events</text>
-<text x="175" y="389" font-size="10" fill="#adbed2">webhook</text></g>
+<path d="M355,572 C405,572 365,362 420,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M635,362 C685,362 655,362 710,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M925,362 C975,362 1005,362 1060,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M925,362 C975,362 3765,2312 3820,2312" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,362 C1325,362 1275,362 1330,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,362 C1595,362 1655,362 1710,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,362 C1595,362 1275,552 1330,552" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1545,552 C1595,552 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,362 C1975,362 1925,362 1980,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,362 C2245,362 2305,362 2360,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,362 C2245,362 1925,552 1980,552" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,552 C2245,552 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,362 C2625,362 2575,362 2630,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,362 C2895,362 2955,362 3010,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,362 C2895,362 2575,552 2630,552" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,552 C2895,552 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,362 C3275,362 3225,362 3280,362" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3495,362 C3545,362 1005,912 1060,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3495,362 C3545,362 3225,552 3280,552" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3495,552 C3545,552 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,912 C1325,912 1655,912 1710,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,912 C1975,912 2305,912 2360,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,912 C2625,912 2575,912 2630,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,912 C2895,912 2955,912 3010,912" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,912 C2895,912 2575,1102 2630,1102" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2845,1102 C2895,1102 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,912 C3275,912 1005,1462 1060,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,1462 C1325,1462 1655,1462 1710,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,1462 C1975,1462 2305,1462 2360,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,1462 C2625,1462 2955,1462 3010,1462" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,1462 C3275,1462 1005,2012 1060,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1275,2012 C1325,2012 1655,2012 1710,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1925,2012 C1975,2012 1925,2012 1980,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,2012 C2245,2012 2305,2012 2360,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,2012 C2245,2012 1925,2202 1980,2202" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2195,2202 C2245,2202 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M2575,2012 C2625,2012 2955,2012 3010,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M3225,2012 C3275,2012 3765,2012 3820,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4035,2012 C4085,2012 3995,1842 4050,1842" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4035,2012 C4085,2012 3765,2312 3820,2312" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4035,2312 C4085,2312 4075,2492 4130,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4345,2492 C4395,2492 4385,2492 4440,2492" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4265,1842 C4315,1842 4045,2012 4100,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4265,1842 C4315,1842 4325,2012 4380,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4315,2012 C4365,2012 4325,2012 4380,2012" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4595,2012 C4645,2012 4615,1922 4670,1922" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M4595,2012 C4645,2012 4615,2132 4670,2132" fill="none" stroke="#79b2b6" stroke-width="2" marker-end="url(#arrow)"/>
+<g data-node-id="sub"><rect x="160" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="173" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="186" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="210" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Called by workflow</text>
+<text x="175" y="389" font-size="10" fill="#adbed2">executeWorkflowTrigger</text></g>
 <g data-node-id="normalize-trusted-envelope"><rect x="420" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="433" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="446" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
 <text x="470" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Normalize trusted envelope</text>
 <text x="435" y="389" font-size="10" fill="#adbed2">code</text></g>
-<g data-node-id="crm-intake-transaction"><rect x="680" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="693" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="706" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
-<text x="730" y="347" font-size="11" fill="#F7F2E8" font-weight="600">CRM intake transaction</text>
-<text x="695" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
-<g data-node-id="new-event-accepted"><rect x="930" y="200" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="943" y="214" width="26" height="26" rx="7" fill="#247F8644"/><text x="956" y="232" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
-<text x="980" y="227" font-size="11" fill="#F7F2E8" font-weight="600">New event accepted</text>
-<text x="945" y="269" font-size="10" fill="#adbed2">if</text></g>
-<g data-node-id="resolve-sales-intelligence"><rect x="950" y="400" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="963" y="414" width="26" height="26" rx="7" fill="#247F8644"/><text x="976" y="432" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
-<text x="1000" y="427" font-size="11" fill="#F7F2E8" font-weight="600">Resolve sales intelligence</text>
-<text x="965" y="469" font-size="10" fill="#adbed2">executeWorkflow</text></g>
-<g data-node-id="acknowledge-accepted-event"><rect x="1450" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1463" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1476" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
-<text x="1500" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Acknowledge accepted event</text>
-<text x="1465" y="389" font-size="10" fill="#adbed2">respondToWebhook</text></g>
-<text x="45" y="594" font-size="11" fill="#adbed2">6 executable nodes · source: workflows/madar-omnichannel-intake.json · INACTIVE · live integration NOT VERIFIED</text>
+<g data-node-id="intake-webhook"><rect x="140" y="530" width="215" height="84" rx="11" fill="#172c43" stroke="#D8BE83"/><rect x="153" y="544" width="26" height="26" rx="7" fill="#247F8644"/><text x="166" y="562" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="190" y="557" font-size="11" fill="#F7F2E8" font-weight="600">Authenticated normalized</text>
+<text x="190" y="574" font-size="11" fill="#F7F2E8" font-weight="600">events</text>
+<text x="155" y="599" font-size="10" fill="#adbed2">webhook</text></g>
+<g data-node-id="read-tenant-scoped-business-context"><rect x="710" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="723" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="736" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="760" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Read tenant-scoped business</text>
+<text x="760" y="364" font-size="11" fill="#F7F2E8" font-weight="600">context</text>
+<text x="725" y="389" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="validate-event-identity"><rect x="1060" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate event identity</text>
+<text x="1075" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="validate-event-identity-accepted"><rect x="1330" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1343" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1356" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="1380" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate event identity</text>
+<text x="1380" y="364" font-size="11" fill="#F7F2E8" font-weight="600">accepted</text>
+<text x="1345" y="389" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="validate-event-identity-review-required"><rect x="1330" y="510" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1343" y="524" width="26" height="26" rx="7" fill="#247F8644"/><text x="1356" y="542" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1380" y="537" font-size="11" fill="#F7F2E8" font-weight="600">Validate event identity</text>
+<text x="1380" y="554" font-size="11" fill="#F7F2E8" font-weight="600">review required</text>
+<text x="1345" y="579" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="validate-customer-name"><rect x="1710" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate customer name</text>
+<text x="1725" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="validate-customer-name-accepted"><rect x="1980" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="2030" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate customer name</text>
+<text x="2030" y="364" font-size="11" fill="#F7F2E8" font-weight="600">accepted</text>
+<text x="1995" y="389" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="validate-customer-name-review-required"><rect x="1980" y="510" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="524" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="542" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2030" y="537" font-size="11" fill="#F7F2E8" font-weight="600">Validate customer name</text>
+<text x="2030" y="554" font-size="11" fill="#F7F2E8" font-weight="600">review required</text>
+<text x="1995" y="579" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="validate-message-size"><rect x="2360" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate message size</text>
+<text x="2375" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="validate-message-size-accepted"><rect x="2630" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2643" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="2656" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="2680" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Validate message size</text>
+<text x="2680" y="364" font-size="11" fill="#F7F2E8" font-weight="600">accepted</text>
+<text x="2645" y="389" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="validate-message-size-review-required"><rect x="2630" y="510" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2643" y="524" width="26" height="26" rx="7" fill="#247F8644"/><text x="2656" y="542" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2680" y="537" font-size="11" fill="#F7F2E8" font-weight="600">Validate message size</text>
+<text x="2680" y="554" font-size="11" fill="#F7F2E8" font-weight="600">review required</text>
+<text x="2645" y="579" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="authorize-supported-source"><rect x="3010" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Authorize supported source</text>
+<text x="3025" y="389" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="authorize-supported-source-accepted"><rect x="3280" y="320" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3293" y="334" width="26" height="26" rx="7" fill="#247F8644"/><text x="3306" y="352" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="3330" y="347" font-size="11" fill="#F7F2E8" font-weight="600">Authorize supported source</text>
+<text x="3330" y="364" font-size="11" fill="#F7F2E8" font-weight="600">accepted</text>
+<text x="3295" y="389" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="authorize-supported-source-review-required"><rect x="3280" y="510" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3293" y="524" width="26" height="26" rx="7" fill="#247F8644"/><text x="3306" y="542" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3330" y="537" font-size="11" fill="#F7F2E8" font-weight="600">Authorize supported source</text>
+<text x="3330" y="554" font-size="11" fill="#F7F2E8" font-weight="600">review required</text>
+<text x="3295" y="579" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="normalize-contact-phone"><rect x="1060" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Normalize contact phone</text>
+<text x="1075" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="normalize-contact-email"><rect x="1710" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Normalize contact email</text>
+<text x="1725" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="resolve-contact-identity-collisions"><rect x="2360" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Resolve contact identity</text>
+<text x="2410" y="914" font-size="11" fill="#F7F2E8" font-weight="600">collisions</text>
+<text x="2375" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="resolve-contact-identity-collisions-accepted"><rect x="2630" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2643" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="2656" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="2680" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Resolve contact identity</text>
+<text x="2680" y="914" font-size="11" fill="#F7F2E8" font-weight="600">collisions accepted</text>
+<text x="2645" y="939" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="resolve-contact-identity-collisions-review-required"><rect x="2630" y="1060" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2643" y="1074" width="26" height="26" rx="7" fill="#247F8644"/><text x="2656" y="1092" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2680" y="1087" font-size="11" fill="#F7F2E8" font-weight="600">Resolve contact identity</text>
+<text x="2680" y="1104" font-size="11" fill="#F7F2E8" font-weight="600">collisions review required</text>
+<text x="2645" y="1129" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="detect-explicit-arabic-or-english"><rect x="3010" y="870" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="884" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="902" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="897" font-size="11" fill="#F7F2E8" font-weight="600">Detect explicit Arabic or</text>
+<text x="3060" y="914" font-size="11" fill="#F7F2E8" font-weight="600">English</text>
+<text x="3025" y="939" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="detect-customer-opt-out"><rect x="1060" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Detect customer opt-out</text>
+<text x="1075" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="verify-literal-consent-flag"><rect x="1710" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Verify literal consent flag</text>
+<text x="1725" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="identify-injection-review-signals"><rect x="2360" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Identify injection review</text>
+<text x="2410" y="1464" font-size="11" fill="#F7F2E8" font-weight="600">signals</text>
+<text x="2375" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="calculate-preference-completeness"><rect x="3010" y="1420" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="1434" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="1452" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="1447" font-size="11" fill="#F7F2E8" font-weight="600">Calculate preference</text>
+<text x="3060" y="1464" font-size="11" fill="#F7F2E8" font-weight="600">completeness</text>
+<text x="3025" y="1489" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="measure-active-adviser-workload"><rect x="1060" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1073" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="1086" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1110" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Measure active adviser</text>
+<text x="1110" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">workload</text>
+<text x="1075" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="require-an-available-adviser"><rect x="1710" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1723" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="1736" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="1760" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Require an available</text>
+<text x="1760" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">adviser</text>
+<text x="1725" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="require-an-available-adviser-accepted"><rect x="1980" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="2030" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Require an available</text>
+<text x="2030" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">adviser accepted</text>
+<text x="1995" y="2039" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="require-an-available-adviser-review-required"><rect x="1980" y="2160" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="1993" y="2174" width="26" height="26" rx="7" fill="#247F8644"/><text x="2006" y="2192" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2030" y="2187" font-size="11" fill="#F7F2E8" font-weight="600">Require an available</text>
+<text x="2030" y="2204" font-size="11" fill="#F7F2E8" font-weight="600">adviser review required</text>
+<text x="1995" y="2229" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="plan-consent-aware-intake-follow-up"><rect x="2360" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="2373" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="2386" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="2410" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Plan consent-aware intake</text>
+<text x="2410" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">follow-up</text>
+<text x="2375" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="prepare-atomic-crm-disposition"><rect x="3010" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3023" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="3036" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3060" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Prepare atomic CRM</text>
+<text x="3060" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">disposition</text>
+<text x="3025" y="2039" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="commit-authoritative-intake"><rect x="3820" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3833" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="3846" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="3870" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Commit authoritative intake</text>
+<text x="3835" y="2039" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="redact-backend-rejection"><rect x="3820" y="2270" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="3833" y="2284" width="26" height="26" rx="7" fill="#247F8644"/><text x="3846" y="2302" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="3870" y="2297" font-size="11" fill="#F7F2E8" font-weight="600">Redact backend rejection</text>
+<text x="3835" y="2339" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="record-scoped-failure-incident"><rect x="4130" y="2450" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4143" y="2464" width="26" height="26" rx="7" fill="#247F8644"/><text x="4156" y="2482" fill="#D8BE83" text-anchor="middle" font-size="12">↗</text>
+<text x="4180" y="2477" font-size="11" fill="#F7F2E8" font-weight="600">Record scoped failure</text>
+<text x="4180" y="2494" font-size="11" fill="#F7F2E8" font-weight="600">incident</text>
+<text x="4145" y="2519" font-size="10" fill="#adbed2">httpRequest</text></g>
+<g data-node-id="stop-rejected-business-execution"><rect x="4440" y="2450" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4453" y="2464" width="26" height="26" rx="7" fill="#247F8644"/><text x="4466" y="2482" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="4490" y="2477" font-size="11" fill="#F7F2E8" font-weight="600">Stop rejected business</text>
+<text x="4490" y="2494" font-size="11" fill="#F7F2E8" font-weight="600">execution</text>
+<text x="4455" y="2519" font-size="10" fill="#adbed2">code</text></g>
+<g data-node-id="new-event-requires-intelligence"><rect x="4050" y="1800" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4063" y="1814" width="26" height="26" rx="7" fill="#247F8644"/><text x="4076" y="1832" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="4100" y="1827" font-size="11" fill="#F7F2E8" font-weight="600">New event requires</text>
+<text x="4100" y="1844" font-size="11" fill="#F7F2E8" font-weight="600">intelligence</text>
+<text x="4065" y="1869" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="resolve-sales-intelligence"><rect x="4100" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4113" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="4126" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="4150" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">Resolve sales intelligence</text>
+<text x="4115" y="2039" font-size="10" fill="#adbed2">executeWorkflow</text></g>
+<g data-node-id="http-request-requires-acknowledgement"><rect x="4380" y="1970" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4393" y="1984" width="26" height="26" rx="7" fill="#247F8644"/><text x="4406" y="2002" fill="#D8BE83" text-anchor="middle" font-size="12">?</text>
+<text x="4430" y="1997" font-size="11" fill="#F7F2E8" font-weight="600">HTTP request requires</text>
+<text x="4430" y="2014" font-size="11" fill="#F7F2E8" font-weight="600">acknowledgement</text>
+<text x="4395" y="2039" font-size="10" fill="#adbed2">if</text></g>
+<g data-node-id="acknowledge-accepted-event"><rect x="4670" y="1880" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4683" y="1894" width="26" height="26" rx="7" fill="#247F8644"/><text x="4696" y="1912" fill="#D8BE83" text-anchor="middle" font-size="12">◈</text>
+<text x="4720" y="1907" font-size="11" fill="#F7F2E8" font-weight="600">Acknowledge accepted event</text>
+<text x="4685" y="1949" font-size="10" fill="#adbed2">respondToWebhook</text></g>
+<g data-node-id="return-scoped-module-result"><rect x="4670" y="2090" width="215" height="84" rx="11" fill="#172c43" stroke="#3a637c"/><rect x="4683" y="2104" width="26" height="26" rx="7" fill="#247F8644"/><text x="4696" y="2122" fill="#D8BE83" text-anchor="middle" font-size="12">{}</text>
+<text x="4720" y="2117" font-size="11" fill="#F7F2E8" font-weight="600">Return scoped module result</text>
+<text x="4685" y="2159" font-size="10" fill="#adbed2">code</text></g>
+<text x="45" y="2576" font-size="11" fill="#adbed2">41 executable nodes · source: workflows/madar-omnichannel-intake.json · INACTIVE · live integration NOT VERIFIED</text>
 </g></svg>
