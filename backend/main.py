@@ -1,4 +1,5 @@
 import json
+import mimetypes
 import asyncio
 import os
 import secrets
@@ -501,6 +502,8 @@ app.include_router(enterprise_router)
 from .ai_agents import router as ai_agents_router
 app.include_router(ai_agents_router)
 
+# Slim Python images may lack /etc/mime.types entries for WebP.
+mimetypes.add_type('image/webp', '.webp')
 DEMO_ASSETS = Path(__file__).resolve().parent / 'demo_assets'
 
 
