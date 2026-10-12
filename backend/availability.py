@@ -90,7 +90,7 @@ def inventory_slots(c, tenant, lead_id, property_id):
     cfg = db.settings(c, tenant)
     zone = ZoneInfo(cfg['timezone'])
     current = datetime.now(timezone.utc)
-    agents = c.execute('SELECT id FROM users WHERE tenant_id=? AND active=1 ORDER BY id', (tenant,)).fetchall()
+    agents = c.execute("SELECT id FROM users u WHERE tenant_id=? AND active=1 AND NOT EXISTS (SELECT 1 FROM sample_records sr WHERE sr.tenant_id=u.tenant_id AND sr.table_name='users' AND sr.record_id=u.id) ORDER BY id", (tenant,)).fetchall()
     slots = []
     for day in range(1, 8):
         base = (current.astimezone(zone) + timedelta(days=day)).replace(minute=0, second=0, microsecond=0)
@@ -114,7 +114,7 @@ def public_book(data: PublicBooking, request: Request):
     with db.connection() as c:
         c.execute('BEGIN IMMEDIATE')
         tenant, lead = chat_identity(c, data.tenant_slug, data.session)
-        agents = c.execute('SELECT id FROM users WHERE tenant_id=? AND active=1 ORDER BY id', (tenant,)).fetchall()
+        agents = c.execute("SELECT id FROM users u WHERE tenant_id=? AND active=1 AND NOT EXISTS (SELECT 1 FROM sample_records sr WHERE sr.tenant_id=u.tenant_id AND sr.table_name='users' AND sr.record_id=u.id) ORDER BY id", (tenant,)).fetchall()
         for agent in agents:
             try:
                 appointment = book(c, tenant, {'lead_id': lead, 'property_id': data.property_id, 'agent_id': agent['id'], 'start_at': data.start_at}, 'website-customer')

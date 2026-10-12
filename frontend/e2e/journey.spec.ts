@@ -39,9 +39,14 @@ test("demo website inquiry becomes a qualified CRM lead and booked viewing", asy
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.getByRole("button", { name: "Appointments", exact: true }).click();
-  await expect(page.getByText("Palm Residence", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Complete", exact: true }).click();
-  await expect(page.getByText("Completed", { exact: true })).toBeVisible();
+  const viewing = page
+    .locator(".appointment-card")
+    .filter({ hasText: "Website demo visitor" });
+  await expect(
+    viewing.getByRole("heading", { name: "Palm Residence", exact: true }),
+  ).toBeVisible();
+  await viewing.getByRole("button", { name: "Complete", exact: true }).click();
+  await expect(viewing.getByText("Completed", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Automations", exact: true }).click();
   await page.getByRole("button", { name: "Evaluate due follow-ups" }).click();
   await expect(

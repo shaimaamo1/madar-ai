@@ -220,7 +220,7 @@ async def dispatch(tenant, channel=None):
         recent = last and datetime.fromisoformat(last) > datetime.now(timezone.utc) - timedelta(hours=24)
         status, error, external_id = 'Held', '', ''
         retry_seconds = 60 * 2 ** (row['attempts'] + 1)
-        if lead['external_id'].startswith('sandbox:'):
+        if lead.get('sample') or lead['external_id'].startswith('sandbox:'):
             error = 'Sandbox contact cannot receive real provider messages'
         elif control and control[0] and not row['dedupe_key'].startswith(('manual:', 'handoff-ack:')):
             error = 'Human adviser owns this conversation'

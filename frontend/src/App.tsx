@@ -1,3 +1,4 @@
+import { SampleBusinessData } from "./SampleBusinessData";
 import { TelegramSetup } from "./TelegramSetup";
 import { useEffect, useRef, useState, FormEvent } from "react";
 import {
@@ -382,7 +383,16 @@ export default function App() {
     try {
       if (modal === "lead") await api("/leads", "POST", form);
       if (modal === "property") {
-        const { id, tenant_id, created_at, demo, reference, ...data } = form;
+        const {
+          id,
+          tenant_id,
+          created_at,
+          demo,
+          sample,
+          sample_label,
+          reference,
+          ...data
+        } = form;
         data.amenities = data.amenities
           .map((a: string) => a.trim())
           .filter(Boolean);
@@ -834,6 +844,14 @@ export default function App() {
             ar={ar}
             demo={Boolean(state.company.demo)}
           />
+          {state.sample_data?.loaded && (
+            <div className="assistant-disclosure" role="status">
+              {tr("Sample / Fictional")} ·{" "}
+              {tr(
+                "Imported samples are marked throughout the CRM. Business analytics exclude sample customers and activity; genuine Telegram interactions are counted.",
+              )}
+            </div>
+          )}
           {page === "health" && (
             <EnterpriseConsole
               leads={state.leads}
@@ -1237,7 +1255,7 @@ export default function App() {
                         <img
                           src={p.image}
                           alt={
-                            p.demo
+                            p.demo || p.sample
                               ? tr(
                                   "Illustrative synthetic property image: {name}",
                                   { name: p.title },
@@ -1272,9 +1290,14 @@ export default function App() {
                           p.intent === "rent" ? "FOR RENT" : "FOR SALE",
                         )}
                       </span>
-                      {p.demo && (
+                      {(p.demo || p.sample) && (
                         <p className="fine">
-                          {tr("DEMO / FICTIONAL")} · {p.reference} ·{" "}
+                          {tr(
+                            p.sample
+                              ? "Sample / Fictional"
+                              : "DEMO / FICTIONAL",
+                          )}{" "}
+                          · {p.reference} ·{" "}
                           {tr("AI-generated illustrative image")}
                         </p>
                       )}
@@ -1365,6 +1388,7 @@ export default function App() {
                     <Avatar name={l.name} index={i} />
                     <span>
                       <strong>{l.name}</strong>
+                      {l.sample && <small>{tr("Sample / Fictional")}</small>}
                       <small>
                         {localize(l.source)} · {localize(l.stage)}
                       </small>
@@ -1380,6 +1404,9 @@ export default function App() {
                       <Avatar name={selected.name} />
                       <div>
                         <h3>{selected.name}</h3>
+                        {selected.sample && (
+                          <small>{tr("Sample / Fictional")}</small>
+                        )}
                         <small>
                           {localize(selected.source)} ·{" "}
                           {selected.location || tr("Location to qualify")}
@@ -1393,7 +1420,12 @@ export default function App() {
                         "Rules assistant works now. Live language model needs authorization.",
                       )}
                     </div>
-                    <div className="message-list">
+                    <div
+                      className="message-list"
+                      tabIndex={0}
+                      role="region"
+                      aria-label={tr("Conversation history")}
+                    >
                       {state.messages
                         .filter((m: Row) => m.lead_id === selectedLead)
                         .slice()
@@ -1461,6 +1493,7 @@ export default function App() {
                 <aside className="customer-context">
                   <span className="eyebrow">{tr("CUSTOMER CONTEXT")}</span>
                   <h3>{selected.name}</h3>
+                  {selected.sample && <small>{tr("Sample / Fictional")}</small>}
                   <div className="score-circle">
                     {localize(selected.score)}
                     <small>/ 100</small>
@@ -1534,6 +1567,7 @@ export default function App() {
                   {matches.map((p) => (
                     <div className="mini-property" key={p.id}>
                       <strong>{p.title}</strong>
+                      {p.sample && <small>{tr("Sample / Fictional")}</small>}
                       <small>{money(p.price, currency)}</small>
                       <span>{p.reasons.map(localize).join(" · ")}</span>
                     </div>
@@ -1614,6 +1648,9 @@ export default function App() {
                       <CalendarDays size={21} />
                       <strong>{date(a.start_at)}</strong>
                       <Pill value={a.status} />
+                      {a.sample && (
+                        <span className="fine">{tr("Sample / Fictional")}</span>
+                      )}
                     </div>
                     <h3>{findProp(a.property_id)?.title}</h3>
                     <p>
@@ -1989,6 +2026,11 @@ export default function App() {
                   <section className="card agent-card" key={u.id}>
                     <Avatar name={u.name} index={i} />
                     <h3>{u.name}</h3>
+                    {u.sample && (
+                      <p className="fine">
+                        {tr("Sample staff · no sign-in access")}
+                      </p>
+                    )}
                     <p>{u.email}</p>
                     <Pill value={u.active ? u.role : "Inactive"} />
                     <div className="agent-stats">
@@ -2485,6 +2527,14 @@ export default function App() {
                   ))}
                 </div>
               </section>
+              {!state.company.demo &&
+                state.company.slug === "madar" &&
+                state.user.role === "admin" && (
+                  <SampleBusinessData
+                    data={state.sample_data || {}}
+                    refresh={refresh}
+                  />
+                )}
               <SettingsForm
                 settings={cfg}
                 disabled={state.user.role !== "admin" || busy}
@@ -2918,6 +2968,9 @@ export default function App() {
                   .map((p: Row) => (
                     <div key={p.id}>
                       <h3>{p.title}</h3>
+                      {p.sample && (
+                        <p className="fine">{tr("Sample / Fictional")}</p>
+                      )}
                       <PropertyArt />
                       <dl>
                         <dt>{tr("Price")}</dt>
@@ -3041,6 +3094,7 @@ export default function App() {
                     <Avatar name={l.name} index={i} />
                     <span>
                       <strong>{l.name}</strong>
+                      {l.sample && <small>{tr("Sample / Fictional")}</small>}
                       <small>{l.location || tr("Location to qualify")}</small>
                     </span>
                   </button>
@@ -3343,7 +3397,12 @@ function WebsiteChat({
           "This is the working public website chat. Inquiries create customers in this company’s CRM.",
         )}
       </p>
-      <div className="message-list">
+      <div
+        className="message-list"
+        tabIndex={0}
+        role="region"
+        aria-label={tr("Conversation history")}
+      >
         {messages.length === 0 && (
           <div className="empty compact">
             <Sparkles size={27} />
@@ -3388,6 +3447,7 @@ function WebsiteChat({
               <Building2 size={18} />
               <span>
                 <strong>{p.title}</strong>
+                {p.sample && <small>{tr("Sample / Fictional")}</small>}
                 <small>
                   {p.location} · {number(p.size)} {tr("m²")}
                 </small>
@@ -3419,7 +3479,10 @@ function WebsiteChat({
                     start_at: slot.start_at,
                   });
                   setBookingNotice({
-                    key: "Viewing confirmed: {time}",
+                    key: suggestions.find((p) => p.id === bookingProperty)
+                      ?.sample
+                      ? "Demonstration viewing confirmed: {time}"
+                      : "Viewing confirmed: {time}",
                     time: result.start_at,
                   });
                   setSlots([]);

@@ -44,3 +44,8 @@ CREATE TABLE IF NOT EXISTS telegram_contacts(tenant_id TEXT NOT NULL REFERENCES 
 -- Track only records created by the presentation dataset for safe selective reset.
 CREATE TABLE IF NOT EXISTS demo_seed_records(tenant_id TEXT NOT NULL REFERENCES tenants(id), table_name TEXT NOT NULL, record_id TEXT NOT NULL, PRIMARY KEY(tenant_id,table_name,record_id));
 CREATE TABLE IF NOT EXISTS demo_datasets(tenant_id TEXT PRIMARY KEY REFERENCES tenants(id), version TEXT NOT NULL, anchor_at TEXT NOT NULL);
+
+-- Real-workspace sample copies: separate provenance, never live credentials.
+CREATE TABLE IF NOT EXISTS sample_datasets(tenant_id TEXT PRIMARY KEY REFERENCES tenants(id), version TEXT NOT NULL, imported_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS sample_records(tenant_id TEXT NOT NULL REFERENCES tenants(id), table_name TEXT NOT NULL, record_id TEXT NOT NULL, PRIMARY KEY(tenant_id,table_name,record_id));
+INSERT OR IGNORE INTO schema_migrations VALUES(4,datetime('now'));

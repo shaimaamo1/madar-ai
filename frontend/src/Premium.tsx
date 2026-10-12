@@ -574,7 +574,13 @@ export function WhatsAppStudio({
               {tr("New conversation")}
             </button>
           </div>
-          <div className="message-list" aria-live="polite">
+          <div
+            className="message-list"
+            tabIndex={0}
+            role="region"
+            aria-label={tr("Conversation history")}
+            aria-live="polite"
+          >
             {!messages.length && (
               <div className="empty">
                 <Sparkles size={29} />

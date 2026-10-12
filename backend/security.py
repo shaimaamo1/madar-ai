@@ -51,7 +51,7 @@ def login_session(c, user_id, response):
 def current_user(request: Request):
     token = request.cookies.get('madar_session', '')
     with connection() as c:
-        user = c.execute('SELECT u.* FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token_hash=? AND s.expires_at>? AND u.active=1', (digest(token), now())).fetchone()
+        user = c.execute("SELECT u.* FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token_hash=? AND s.expires_at>? AND u.active=1 AND NOT EXISTS (SELECT 1 FROM sample_records sr WHERE sr.tenant_id=u.tenant_id AND sr.table_name='users' AND sr.record_id=u.id)", (digest(token), now())).fetchone()
     if not user:
         raise HTTPException(401, 'Sign in to continue')
     return dict(user)

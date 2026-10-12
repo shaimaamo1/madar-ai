@@ -135,7 +135,7 @@ test("every Arabic page, workflow module and mobile layout is translated and acc
   await demo(page);
   await page.setViewportSize({ width: 1440, height: 1024 });
   await language(page, "ar");
-  mkdirSync("../docs/previews", { recursive: true });
+  mkdirSync("../var/screenshots/i18n", { recursive: true });
   for (const name of names) {
     await page.getByRole("button", { name: ar[name], exact: true }).click();
     await expect(
@@ -182,7 +182,7 @@ test("every Arabic page, workflow module and mobile layout is translated and acc
       ).toContain("Noto Sans Arabic");
       await page.locator(".toast").waitFor({ state: "hidden" });
       await page.screenshot({
-        path: "../docs/previews/bilingual-arabic-desktop.png",
+        path: "../var/screenshots/i18n/bilingual-arabic-desktop.png",
         fullPage: true,
       });
     }
@@ -206,7 +206,7 @@ test("every Arabic page, workflow module and mobile layout is translated and acc
   await page.getByRole("button", { name: ar.Overview, exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
-    path: "../docs/previews/bilingual-arabic-mobile.png",
+    path: "../var/screenshots/i18n/bilingual-arabic-mobile.png",
     fullPage: true,
   });
   await page.getByRole("button", { name: ar["Open navigation"] }).click();
@@ -408,7 +408,7 @@ test("System Health, queued real demo and grounded agents stay honest and biling
     .inputValue();
   await expect(page.locator(".toast")).not.toBeVisible({ timeout: 7000 });
   await page.screenshot({
-    path: "../docs/previews/system-health.png",
+    path: "../var/screenshots/i18n/system-health.png",
     fullPage: true,
   });
   expect(
@@ -430,7 +430,7 @@ test("System Health, queued real demo and grounded agents stay honest and biling
     page.getByText(ar["Local API access is not configured"], { exact: true }),
   ).toBeVisible();
   await page.screenshot({
-    path: "../docs/previews/system-health-arabic.png",
+    path: "../var/screenshots/i18n/system-health-arabic.png",
     fullPage: true,
   });
   const runs = await page.evaluate(async () =>

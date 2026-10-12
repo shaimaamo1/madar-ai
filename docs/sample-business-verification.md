@@ -1,0 +1,26 @@
+# Real-workspace sample business data verification
+
+Verification performed in Codex Cloud against disposable SQLite databases and loopback fixture servers. No owner's database, local n8n endpoint, Docker volume, private configuration or running Telegram bot was accessed.
+
+| Check | Result | Evidence / scope |
+| --- | --- | --- |
+| Full backend suite | PASS | 157 passed; one native Windows ACL test skipped. Includes existing CRM, tenant isolation, Telegram polling/delivery, booking conflicts, enterprise and workflow regressions. |
+| New real-workspace sample tests | PASS | Ten tests: relationships/counts, all 30 WebP responses, repeat import, preserved original inventory/booking/customer, isolated demo unchanged, administrator/tenant/confirmation checks, inactive staff authentication, persisted analytics, whole-import rollback and safe removal; public customer recommendations/booking also disclose fictional inventory. |
+| Genuine Telegram intake path with sample inventory | PASS | Authenticated synthetic updates create one returning-customer CRM lead, persist linked inbound/outbound Inbox messages, recommend available inventory, require explicit confirmation, persist the appointment/CRM history and refuse duplicate updates. Mocked official API delivers only to the fixture's genuine-path chat ID. No actual Telegram delivery. |
+| Sample-versus-real safety | PASS | No provider calls during import even with send permissions enabled in the fixture. No copied Telegram contacts/events/configuration/polling state. Existing private configuration bytes and polling offset/lease are preserved. Sample tasks/reminders/retention do not queue; manual replies remain inbox-only; dispatch refuses samples even after a direct contact-ID rewrite. |
+| Safe removal / cross-tenant protection | PASS | Only tracked samples removed; unrelated customer/deal revenue retained. Existing appointment/property dependencies and pending Telegram actions block the whole deletion transaction. New untracked history and deliberately malformed legacy cross-tenant FK references are protected from cascades. Reimport after an unreferenced removal is repeatable. |
+| Frontend unit tests | PASS | Four localization/formatting tests; sample settings component is included in catalog completeness checks. |
+| Production build | PASS | TypeScript and Vite build completed without new application dependencies. |
+| Browser suite | PASS | 21 Chromium/Playwright journeys across all seven files. Fresh disposable server per file preserves production demo-login limits. Includes 30 rendered photos, explicit confirmation, retained checkbox state across language switching, Arabic RTL/mobile layout, safe removal, real-path synthetic Telegram → visible Inbox → persisted viewing, and dependency-disabled removal. |
+| Accessibility regressions | PASS | Sample settings pass automated WCAG checks in English and Arabic/mobile. Existing light/dark, keyboard dialogs and bilingual pages pass. Found and fixed keyboard access to overflowing conversation panels; no visual redesign. |
+| Docker cached-dependency runtime | PASS | Current backend and production frontend layered over the previously verified pinned runtime. Non-root UID 10001, FastAPI 0.143.0 / httpx 0.28.1, healthy application, browser import/idempotence/all 30 rendered images/confirmed removal tested in a disposable container. No n8n container created. |
+| Fresh Docker dependency installation | NOT VERIFIED | This task used available cached dependencies; it does not claim a fresh package-download build. The repository Docker architecture and dependency locks are unchanged. |
+| n8n library, demo dataset source, image assets and Windows launch/update scripts | PASS | Existing files unchanged; 14 workflow exports and 327 executable nodes retained, with no decorative panels added. Existing launcher regression checks pass where supported by Linux/PowerShell Core. |
+| Native Windows PowerShell 5.1 / Docker Desktop | NOT VERIFIED | No Windows execution environment available. Native ACL check remains skipped; Cloud/Linux results do not establish laptop execution. |
+| Owner's live Telegram receive/reply and viewing demonstration | NOT VERIFIED | Requires the laptop's existing connected/authorized bot and the explicit local sample import. Synthetic/mocked tests are not a live bot verification. |
+
+Earlier full-suite attempts exposed a stale schema-version assertion, browser selectors that assumed the old small demo, and rate-limit interference from sharing a server across many demo logins. Regression assertions now target their own records and read actual qualification scores. The committed developer browser runner creates a new isolated server/database per file rather than weakening security rate limits. Final runs passed; no failing critical test is being omitted.
+
+All imported records are **Sample / Fictional**. Genuine interactions with sample inventory remain demonstration viewings, not bookings of real listings. Sample transactions cannot contribute to revenue or sales volume. Import does not enable messaging, register webhooks, start n8n workflows, trigger calendars or make paid-model requests.
+
+See [minimal Windows update/import and customer Telegram test](sample-business-data.md).

@@ -7,7 +7,7 @@ from fastapi import HTTPException
 
 from . import db
 from .availability import inventory_slots
-from .domain import book, match_properties, human_requested
+from .domain import book, match_properties, human_requested, record
 from .telegram_messages import text as safe_text, appointment_date, booking_message, timezone_label, property_recommendations
 
 
@@ -38,6 +38,7 @@ def guided(c, tenant, lead, bot, text, callback, arabic):
         prop = c.execute('SELECT * FROM properties WHERE id=? AND tenant_id=? AND status=?', (property_id, tenant, 'Available')).fetchone()
         if not prop:
             return {'reply': 'العقار لم يعد متاحاً. اطلب /properties للاطلاع على المخزون الحالي.' if arabic else 'This property is no longer available. Use /properties for current inventory.', 'buttons': [], 'matches': []}
+        prop = record(prop)
         if action['kind'] == 'property':
             available = inventory_slots(c, tenant, lead['id'], property_id)
             zone = available.get('timezone') or cfg.get('timezone') or 'Africa/Cairo'

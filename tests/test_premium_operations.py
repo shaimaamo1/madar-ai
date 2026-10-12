@@ -213,7 +213,7 @@ def test_additive_migration_preserves_existing_business_rows(client):
     with db.connection() as c:
         assert original=={name:c.execute('SELECT COUNT(*) FROM '+name).fetchone()[0] for name in original}
         assert c.execute('PRAGMA foreign_key_check').fetchall()==[]
-        assert [r[0] for r in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3]
+        assert [r[0] for r in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3,4]
     assert client.get('/api/state').json()['company']['id']==state['company']['id']
 
 

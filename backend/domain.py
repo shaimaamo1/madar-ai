@@ -10,6 +10,11 @@ from .db import audit, now, settings, uid
 
 def record(row):
     d = dict(row)
+    if d.get('id', '').startswith('sample-'):
+        d['sample'] = True
+        d['sample_label'] = 'Sample / Fictional'
+        if 'size' in d and 'price' in d:
+            d['reference'] = 'SAMPLE-EG-' + d['id'].rsplit('-', 1)[-1]
     if 'amenities' in d:
         d['amenities'] = json.loads(d['amenities'])
     if 'size' in d and 'price' in d and d.get('id', '').startswith('demo-property-'):
@@ -51,7 +56,7 @@ def create_lead(c, tenant, data, actor='system'):
         raise HTTPException(409, 'Contact identities belong to different leads; review before merging')
     if existing:
         return require(c, 'leads', tenant, existing[0]), False
-    agents = c.execute("SELECT u.id,COUNT(l.id) AS load FROM users u LEFT JOIN leads l ON l.assigned_to=u.id AND l.tenant_id=u.tenant_id AND l.stage NOT IN ('Won','Lost') WHERE u.tenant_id=? AND u.active=1 GROUP BY u.id ORDER BY load,u.id", (tenant,)).fetchall()
+    agents = c.execute("SELECT u.id,COUNT(l.id) AS load FROM users u LEFT JOIN leads l ON l.assigned_to=u.id AND l.tenant_id=u.tenant_id AND l.stage NOT IN ('Won','Lost') WHERE u.tenant_id=? AND u.active=1 AND NOT EXISTS (SELECT 1 FROM sample_records sr WHERE sr.tenant_id=u.tenant_id AND sr.table_name='users' AND sr.record_id=u.id) GROUP BY u.id ORDER BY load,u.id", (tenant,)).fetchall()
     lead = {'id': uid(), 'tenant_id': tenant, 'name': 'Website visitor', 'phone': '', 'email': '',
             'source': 'website', 'external_id': '', 'stage': 'New', 'budget': 0, 'location': '',
             'property_type': '', 'intent': 'buy', 'bedrooms': 0, 'min_size': 0, 'amenities': [],
@@ -198,6 +203,9 @@ def rules_reply(c, tenant, lead, text, language=None):
     lines = [f"{p['title']} — {p['price']:,.0f} {currency}, {p['bedrooms']} {'غرف' if arabic else 'bedrooms'}, {p['size']:g} m²" for p in matches[:3]]
     prefix = 'دي العقارات المتاحة اللي بتطابق طلبك:' if arabic else 'These available properties match your requirements:'
     suffix = 'اختار العقار المناسب وموعد معاينة متاح من التقويم. الحجز بيتأكد بعد اختيار الموعد.' if arabic else 'Choose a property and an available viewing time in the booking calendar.'
+    if any(p.get('sample') for p in matches[:3]):
+        suffix = ('العقارات المعلّمة تجريبية / خيالية، وليست عروض بيع حقيقية. ' if arabic else 'Listings marked Sample / Fictional are demonstration inventory, not real offers. ') + suffix
+        lines = [line + (' · تجريبي / خيالي' if arabic else ' · Sample / Fictional') if p.get('sample') else line for line,p in zip(lines,matches)]
     return prefix + '\n' + '\n'.join(lines) + '\n' + suffix, matches
 
 
@@ -205,7 +213,7 @@ def book(c, tenant, data, actor):
     lead = require(c, 'leads', tenant, data['lead_id'])
     prop = require(c, 'properties', tenant, data['property_id'])
     agent = require(c, 'users', tenant, data['agent_id'])
-    if not agent['active'] or prop['status'] != 'Available':
+    if agent.get('sample') or not agent['active'] or prop['status'] != 'Available':
         raise HTTPException(409, 'Agent or property unavailable')
     try:
         start = datetime.fromisoformat(data['start_at'].replace('Z', '+00:00'))
@@ -225,6 +233,11 @@ def book(c, tenant, data, actor):
     conflict = c.execute("SELECT id FROM appointments WHERE tenant_id=? AND status='Booked' AND (agent_id=? OR lead_id=? OR property_id=?) AND start_at<? AND end_at>? AND id<>?", (tenant, data['agent_id'], lead['id'], prop['id'], b, a, data.get('id', ''))).fetchone()
     if conflict:
         raise HTTPException(409, 'This time overlaps an existing appointment')
+    data = dict(data)
+    if prop.get('sample'):
+        label = 'Sample / Fictional viewing; fictional customer. ' if lead.get('sample') else 'Demonstration viewing of a Sample / Fictional property; customer interaction is genuine. '
+        if not data.get('notes', '').startswith(label):
+            data['notes'] = label + data.get('notes', '')
     appointment_id = data.get('id') or uid()
     if data.get('id'):
         require(c, 'appointments', tenant, appointment_id)
@@ -233,6 +246,7 @@ def book(c, tenant, data, actor):
         c.execute('INSERT INTO appointments VALUES(?,?,?,?,?,?,?,?,?,?)', (appointment_id, tenant, lead['id'], prop['id'], agent['id'], a, b, 'Booked', data.get('notes', ''), now()))
     c.execute("UPDATE leads SET stage='Viewing',updated_at=? WHERE tenant_id=? AND id=?", (now(), tenant, lead['id']))
     audit(c, tenant, actor, 'appointment.booked', appointment_id, a)
+    audit(c, tenant, actor, 'lead.viewing_confirmed', lead['id'], appointment_id + ' · ' + prop['title'] + ' · ' + a)
     return require(c, 'appointments', tenant, appointment_id)
 
 
@@ -241,6 +255,8 @@ def insights(c, tenant):
     current = datetime.now(timezone.utc)
     result = []
     for lead in leads:
+        if lead.get('sample'):
+            continue
         if lead['stage'] in ('Won', 'Lost'):
             continue
         age = (current - datetime.fromisoformat(lead['updated_at'])).total_seconds() / 3600
@@ -280,7 +296,7 @@ def tick(c, tenant):
     count = 0
     due = now()
     for row in c.execute("SELECT t.*,l.source,l.consent,l.opted_out FROM tasks t JOIN leads l ON l.id=t.lead_id AND l.tenant_id=t.tenant_id WHERE t.tenant_id=? AND t.status='Pending' AND t.kind<>'handoff' AND t.due_at<=? AND NOT EXISTS (SELECT 1 FROM conversation_controls cc WHERE cc.lead_id=l.id AND cc.tenant_id=l.tenant_id AND cc.human_active=1)", (tenant, due)).fetchall():
-        if not row['consent'] or row['opted_out']:
+        if row['lead_id'].startswith('sample-') or not row['consent'] or row['opted_out']:
             continue
         body = 'Your property adviser is ready to help with your inquiry.'
         if row['kind'] == 'availability':
@@ -293,13 +309,15 @@ def tick(c, tenant):
         count += cursor.rowcount
     horizon = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
     for row in c.execute("SELECT a.*,l.source,l.consent,l.opted_out FROM appointments a JOIN leads l ON l.id=a.lead_id AND l.tenant_id=a.tenant_id WHERE a.tenant_id=? AND a.status='Booked' AND a.start_at>? AND a.start_at<=?", (tenant, due, horizon)).fetchall():
-        if not row['consent'] or row['opted_out']:
+        if row['lead_id'].startswith('sample-') or not row['consent'] or row['opted_out']:
             continue
         cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['lead_id'], row['source'], channel_followup(c, tenant, row, 'Viewing reminder: ' + row['start_at']), '', 'appointment:' + row['id'] + ':' + row['start_at'], 'Pending', 0, due, '', '', due))
         count += cursor.rowcount
     # Once-per-lead reactivation and retention; consent and opt-out are enforced.
     dormant = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
     for row in c.execute("SELECT * FROM leads l WHERE tenant_id=? AND consent=1 AND opted_out=0 AND NOT EXISTS (SELECT 1 FROM conversation_controls cc WHERE cc.lead_id=l.id AND cc.tenant_id=l.tenant_id AND cc.human_active=1) AND ((updated_at<? AND stage NOT IN ('Won','Lost')) OR stage='Won')", (tenant, dormant)).fetchall():
+        if row['id'].startswith('sample-'):
+            continue
         kind = 'retention' if row['stage'] == 'Won' else 'reactivation'
         text = 'Your property adviser is available if you need further help.' if kind == 'retention' else 'Would you like to review your property search preferences?'
         cursor = c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (uid(), tenant, row['id'], row['source'], channel_followup(c, tenant, dict(row, lead_id=row['id']), text), '', kind + ':' + row['id'], 'Pending', 0, due, '', '', due))

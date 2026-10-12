@@ -66,6 +66,8 @@ def property_recommendations(properties, currency, arabic):
                  ('💰 السعر: ' if arabic else '💰 Price: ') + text(price + ' ' + currency, arabic) +
                  ((' شهريًا' if arabic else ' / month') if prop['intent']=='rent' else ''),
                  ('📐 المساحة: ' if arabic else '📐 Area: ') + text(f"{prop['size']:g} m²", arabic)]
+        if prop.get('sample'):
+            lines.append('بيانات تجريبية / خيالية — الصورة توضيحية' if arabic else 'Sample / Fictional — illustrative image')
         if prop['bedrooms'] > 0:
             lines.append(('🛏 غرف النوم: ' if arabic else '🛏 Bedrooms: ') + text(prop['bedrooms'], arabic))
         blocks.append('\n'.join(lines))
@@ -80,6 +82,8 @@ def booking_message(prop, stamp, arabic, zone, reference=None):
     lines = [heading, '', '🏠 ' + text(prop['title'], arabic),
              ('📅 الموعد: ' if arabic else '📅 Date and time: ') + appointment_date(stamp, arabic, zone, include_year=True),
              ('🕒 التوقيت: ' if arabic else '🕒 Timezone: ') + text(timezone_label(stamp, zone), arabic)]
+    if prop.get('sample'):
+        lines.append('عقار تجريبي / خيالي — هذه معاينة توضيحية وليست حجزًا لعقار حقيقي.' if arabic else 'Sample / Fictional property — this is a demonstration viewing, not a reservation of a real listing.')
     if confirmed:
         lines += [('🔖 رقم الحجز: ' if arabic else '🔖 Booking reference: ') + text(reference, arabic), '',
                   'لأي استفسار، استخدم زر التواصل مع مستشار أدناه.' if arabic else 'For assistance, use the contact-an-agent button below.']

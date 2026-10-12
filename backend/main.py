@@ -9,16 +9,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from argon2.exceptions import VerificationError
+from pydantic import StrictBool
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import db
+from . import db, sample_data
 from .assistant import respond
 from .domain import book, create_lead, insights, match_properties, record, require, score, tick
-from .models import Booking, Chat, DealInput, LeadInput, LeadPatch, Login, PasswordInput, PropertyInput, PublicChat, SettingsInput, TaskInput, UserInput, WorkspaceInput
+from .models import Model, Booking, Chat, DealInput, LeadInput, LeadPatch, Login, PasswordInput, PropertyInput, PublicChat, SettingsInput, TaskInput, UserInput, WorkspaceInput
 from .security import DEMO, admin, bootstrap, check_origin, current_user, demo_workspace, digest, hasher, limit, login_session
 
 
@@ -103,7 +104,7 @@ def public_runtime():
 def login(data: Login, request: Request, response: Response):
     limit('login:' + request.client.host, 10, 300)
     with db.connection() as c:
-        user = c.execute('SELECT u.* FROM users u JOIN tenants t ON t.id=u.tenant_id WHERE t.slug=? AND u.email=? AND u.active=1', (data.workspace, data.email.lower())).fetchone()
+        user = c.execute("SELECT u.* FROM users u JOIN tenants t ON t.id=u.tenant_id WHERE t.slug=? AND u.email=? AND u.active=1 AND NOT EXISTS (SELECT 1 FROM sample_records sr WHERE sr.tenant_id=u.tenant_id AND sr.table_name='users' AND sr.record_id=u.id)", (data.workspace, data.email.lower())).fetchone()
         try:
             valid = user and hasher.verify(user['password_hash'], data.password)
         except VerificationError:
@@ -170,7 +171,8 @@ def state(user=Depends(current_user)):
         result = {'company': company, 'user': {k: user[k] for k in ('id', 'name', 'email', 'role')}, 'insights': insights(c, tenant)}
         for table in ('leads', 'properties', 'messages', 'appointments', 'tasks', 'deals', 'activities', 'outbox', 'incidents', 'consent_events'):
             result[table] = [record(r) for r in c.execute(f'SELECT * FROM {table} WHERE tenant_id=? ORDER BY created_at DESC LIMIT 1000', (tenant,))]
-        result['users'] = [dict(r) for r in c.execute('SELECT id,name,email,role,active FROM users WHERE tenant_id=?', (tenant,))]
+        result['sample_data'] = sample_data.status(c, tenant)
+        result['users'] = [record(r) for r in c.execute('SELECT id,name,email,role,active FROM users WHERE tenant_id=?', (tenant,))]
         result['conversation_controls'] = [dict(r) for r in c.execute('SELECT * FROM conversation_controls WHERE tenant_id=?', (tenant,))]
     result['integrations'] = integration_status(tenant)
     return result
@@ -216,7 +218,7 @@ def edit_lead(lead_id: str, data: LeadPatch, user=Depends(current_user)):
             raise HTTPException(422, 'Unknown pipeline stage')
         if patch.get('assigned_to'):
             assigned = require(c, 'users', tenant, patch['assigned_to'])
-            if not assigned['active']:
+            if assigned.get('sample') or not assigned['active']:
                 raise HTTPException(409, 'Choose an active agent')
         if patch.get('opted_out'):
             patch['consent'] = False
@@ -254,10 +256,12 @@ def human_reply(lead_id: str, data: Chat, user=Depends(current_user)):
         if lead['source'] != 'website':
             queue_message(c, user['tenant_id'], lead_id, lead['source'], data.text, 'manual:' + db.uid())
         db.audit(c, user['tenant_id'], user['id'], 'message.human', lead_id)
-    return {'ok': True, 'external_delivery': 'queued, approval gate applies' if lead['source'] != 'website' else 'website inbox'}
+    return {'ok': True, 'external_delivery': 'sample inbox only; external delivery blocked' if lead.get('sample') else 'queued, approval gate applies' if lead['source'] != 'website' else 'website inbox'}
 
 
 def queue_message(c, tenant, lead, channel, body, dedupe):
+    if sample_data.is_sample(c, tenant, 'leads', lead):
+        return
     c.execute('INSERT OR IGNORE INTO outbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', (db.uid(), tenant, lead, channel, body, '', dedupe, 'Pending', 0, db.now(), '', '', db.now()))
 
 
@@ -313,6 +317,8 @@ def edit_property(property_id: str, data: PropertyInput, user=Depends(current_us
 
 def availability_tasks(c, tenant, property_id):
     for row in c.execute("SELECT * FROM leads WHERE tenant_id=? AND consent=1 AND opted_out=0 AND stage NOT IN ('Won','Lost')", (tenant,)).fetchall():
+        if sample_data.is_sample(c, tenant, 'leads', row['id']):
+            continue
         if any(p['id'] == property_id for p in match_properties(c, tenant, record(row))):
             c.execute('INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?)', (db.uid(), tenant, row['id'], 'Matching property now available', db.now(), 'Pending', 'availability', db.now()))
 
@@ -400,15 +406,21 @@ def analytics(user=Depends(current_user)):
         leads = [dict(r) for r in c.execute('SELECT * FROM leads WHERE tenant_id=?', (tenant,))]
         deals = [dict(r) for r in c.execute('SELECT * FROM deals WHERE tenant_id=?', (tenant,))]
         appointments = [dict(r) for r in c.execute('SELECT * FROM appointments WHERE tenant_id=?', (tenant,))]
-        responses = c.execute("SELECT i.created_at AS received, MIN(o.created_at) AS replied FROM messages i JOIN messages o ON o.tenant_id=i.tenant_id AND o.lead_id=i.lead_id AND o.direction='outbound' AND o.created_at>=i.created_at WHERE i.tenant_id=? AND i.direction='inbound' GROUP BY i.id", (tenant,)).fetchall()
-        times = [(datetime.fromisoformat(r['replied']) - datetime.fromisoformat(r['received'])).total_seconds() for r in responses]
+        sample_counts = sample_data.status(c, tenant)['counts']
+        sample_ids = sample_data.owned(c, tenant)
+        real_lead_ids = {l['id'] for l in leads if l['id'] not in sample_ids['leads']}
+        leads = [l for l in leads if l['id'] in real_lead_ids]
+        deals = [d for d in deals if d['lead_id'] in real_lead_ids and d['property_id'] not in sample_ids['properties']]
+        appointments = [a for a in appointments if a['lead_id'] in real_lead_ids and a['id'] not in sample_ids['appointments']]
+        responses = c.execute("SELECT i.lead_id,i.created_at AS received, MIN(o.created_at) AS replied FROM messages i JOIN messages o ON o.tenant_id=i.tenant_id AND o.lead_id=i.lead_id AND o.direction='outbound' AND o.created_at>=i.created_at WHERE i.tenant_id=? AND i.direction='inbound' GROUP BY i.id", (tenant,)).fetchall()
+        times = [(datetime.fromisoformat(r['replied']) - datetime.fromisoformat(r['received'])).total_seconds() for r in responses if r['lead_id'] in real_lead_ids]
         sources = {source: sum(l['source'] == source for l in leads) for source in set(l['source'] for l in leads)}
-        agents = [{'name': r['name'], 'leads': sum(l['assigned_to'] == r['id'] for l in leads), 'won': sum(l['assigned_to'] == r['id'] and l['stage'] == 'Won' for l in leads), 'appointments':sum(a['agent_id']==r['id'] for a in appointments)} for r in c.execute('SELECT id,name FROM users WHERE tenant_id=?', (tenant,))]
-        tasks = [dict(r) for r in c.execute('SELECT status FROM tasks WHERE tenant_id=?', (tenant,))]
+        agents = [{'name': r['name'], 'leads': sum(l['assigned_to'] == r['id'] for l in leads), 'won': sum(l['assigned_to'] == r['id'] and l['stage'] == 'Won' for l in leads), 'appointments':sum(a['agent_id']==r['id'] for a in appointments)} for r in c.execute('SELECT id,name FROM users WHERE tenant_id=?', (tenant,)) if r['id'] not in sample_ids['users']]
+        tasks = [dict(r) for r in c.execute('SELECT * FROM tasks WHERE tenant_id=?', (tenant,)) if r['lead_id'] in real_lead_ids and r['id'] not in sample_ids['tasks']]
         demand = {location:sum(l['location']==location for l in leads) for location in sorted({l['location'] for l in leads if l['location']})}
         appointment_activity = {status:sum(a['status']==status for a in appointments) for status in ('Booked','Completed','Cancelled')}
         demo_scope = bool(c.execute('SELECT demo FROM tenants WHERE id=?', (tenant,)).fetchone()[0])
-        return {'demo':demo_scope, 'demand_by_area':demand, 'appointment_activity':appointment_activity, 'followups':{'total':len(tasks),'completed':sum(t['status']=='Completed' for t in tasks),'pending':sum(t['status']=='Pending' for t in tasks)}, 'total_leads': len(leads), 'qualified': sum(l['score'] >= 65 for l in leads), 'conversion_rate': round(100 * sum(l['stage'] == 'Won' for l in leads) / max(len(leads), 1), 1), 'revenue': sum(d['commission'] for d in deals if d['status'] == 'Won'), 'sales_volume': sum(d['amount'] for d in deals if d['status'] == 'Won'), 'open_pipeline': sum(d['amount'] for d in deals if d['status'] == 'Open'), 'appointments': len(appointments), 'appointment_conversion': round(100 * sum(a['status'] == 'Completed' for a in appointments) / max(len(appointments), 1), 1), 'average_response_seconds': round(sum(times)/len(times), 1) if times else None, 'sources': sources, 'agents': agents, 'pipeline': {s: sum(l['stage'] == s for l in leads) for s in db.settings(c, tenant)['stages']}, 'missed_opportunities': sum(i['type'] == 'Leakage' for i in insights(c, tenant))}
+        return {'sample_counts':sample_counts, 'excludes_sample_activity':True, 'demo':demo_scope, 'demand_by_area':demand, 'appointment_activity':appointment_activity, 'followups':{'total':len(tasks),'completed':sum(t['status']=='Completed' for t in tasks),'pending':sum(t['status']=='Pending' for t in tasks)}, 'total_leads': len(leads), 'qualified': sum(l['score'] >= 65 for l in leads), 'conversion_rate': round(100 * sum(l['stage'] == 'Won' for l in leads) / max(len(leads), 1), 1), 'revenue': sum(d['commission'] for d in deals if d['status'] == 'Won'), 'sales_volume': sum(d['amount'] for d in deals if d['status'] == 'Won'), 'open_pipeline': sum(d['amount'] for d in deals if d['status'] == 'Open'), 'appointments': len(appointments), 'appointment_conversion': round(100 * sum(a['status'] == 'Completed' for a in appointments) / max(len(appointments), 1), 1), 'average_response_seconds': round(sum(times)/len(times), 1) if times else None, 'sources': sources, 'agents': agents, 'pipeline': {s: sum(l['stage'] == s for l in leads) for s in db.settings(c, tenant)['stages']}, 'missed_opportunities': sum(i['type'] == 'Leakage' for i in insights(c, tenant))}
 
 
 @app.put('/api/settings')
@@ -443,6 +455,41 @@ def deactivate(user_id: str, user=Depends(current_user)):
         c.execute('DELETE FROM sessions WHERE user_id=?', (user_id,))
         db.audit(c, user['tenant_id'], user['id'], 'user.deactivated', user_id)
     return {'ok': True}
+
+
+class SampleConfirmation(Model):
+    confirmed: StrictBool = False
+
+
+def confirm_sample(data):
+    if not data.confirmed:
+        raise HTTPException(422, 'Explicit sample data confirmation required')
+
+
+@app.get('/api/sample-data')
+def sample_status(user=Depends(current_user)):
+    admin(user)
+    with db.connection() as c:
+        sample_data.require_real(c, user['tenant_id'])
+        return sample_data.status(c, user['tenant_id'])
+
+
+@app.post('/api/sample-data/load')
+def load_sample(data: SampleConfirmation, user=Depends(current_user)):
+    admin(user)
+    confirm_sample(data)
+    with db.connection() as c:
+        c.execute('BEGIN IMMEDIATE')
+        return sample_data.load(c, user['tenant_id'], user['id'])
+
+
+@app.post('/api/sample-data/remove')
+def remove_sample(data: SampleConfirmation, user=Depends(current_user)):
+    admin(user)
+    confirm_sample(data)
+    with db.connection() as c:
+        c.execute('BEGIN IMMEDIATE')
+        return sample_data.remove(c, user['tenant_id'], user['id'])
 
 
 @app.post('/api/demo/load')

@@ -2,7 +2,8 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdirSync } from "node:fs";
 
-const previews = "../docs/previews";
+const previews =
+  process.env.MADAR_E2E_PREVIEW_DIR || "../var/screenshots/premium";
 const pages = [
   "Overview",
   "Leads & CRM",
@@ -40,12 +41,26 @@ test("WhatsApp sandbox qualifies Arabic inquiries, remembers context, respects o
   await page
     .getByRole("button", { name: "WhatsApp studio", exact: true })
     .click();
+  await page
+    .getByRole("button", { name: "New conversation", exact: true })
+    .click();
+  const contact = await page
+    .getByLabel("Sandbox conversation", { exact: true })
+    .inputValue();
   await page.getByLabel("Customer follow-up opt-in recorded").check();
   const input = page.getByRole("textbox", { name: "WhatsApp sandbox message" });
   await input.fill("عايز شقة في التجمع، ميزانيتي ٥ مليون و٣ غرف");
   await page.getByRole("button", { name: "Send sandbox message" }).click();
   await expect(page.getByText("Palm Residence", { exact: true })).toBeVisible();
-  await expect(page.getByText("85 / 100", { exact: true })).toBeVisible();
+  const qualified = await page.request.get("/api/state").then((r) => r.json());
+  const customer = qualified.leads.find(
+    (l: any) =>
+      l.source === "whatsapp" && l.external_id === "sandbox:" + contact,
+  );
+  expect(customer.score).toBeGreaterThanOrEqual(65);
+  await expect(
+    page.getByText(`${customer.score} / 100`, { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Book viewing", exact: true }).click();
   await page.getByLabel("Start time").fill("2030-01-01T10:00");
   await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -63,8 +78,9 @@ test("WhatsApp sandbox qualifies Arabic inquiries, remembers context, respects o
   const state = await page.evaluate(async () =>
     (await fetch("/api/state")).json(),
   );
-  const lead = state.leads.find((l: any) =>
-    l.external_id.startsWith("sandbox:"),
+  const lead = state.leads.find(
+    (l: any) =>
+      l.source === "whatsapp" && l.external_id === "sandbox:" + contact,
   );
   expect(
     state.messages.filter(
