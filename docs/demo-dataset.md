@@ -14,11 +14,16 @@ In MADAR, sign out of the real company workspace and choose **Open interactive d
 
 The demo login is available only when the existing local demonstration mode is enabled. Load/reset require an administrator and a tenant marked `demo=1`; real-company requests return 403. Older demo workspaces and their untracked starter/custom records are preserved. Open a fresh interactive demo for the exact new dataset counts.
 
-## Inventory and illustrations
+## Inventory and imagery
 
 Listings cover apartments, villas, duplexes, penthouses, offices and commercial units in New Cairo, Fifth Settlement, New Capital, Sheikh Zayed, 6th of October, Maadi and North Coast. Prices are illustrative EGP purchase values or monthly rents; each listing includes area, applicable bedrooms, amenities, availability, description and a stable **DEMO-EG-001 … DEMO-EG-030** reference. Availability includes Available, Reserved, Sold and Rented examples. Additional property categories are accepted by the CRM/inventory forms and shared backend matching/qualification.
 
-All 30 images are bundled, original SVG architectural illustrations with a CC0 dedication, served from `/demo-assets/`. They require no image host or network access. They are **synthetic illustrations, not photographs of verified properties**. Each listing card, description and reference identifies DEMO / FICTIONAL; the workspace also displays a persistent demo banner. See [asset license](../backend/demo_assets/LICENSE.md). Reproduce assets with `python -m scripts.generate_demo_assets`; no generated asset is substituted for a functional workflow.
+All 30 listings now have **distinct photorealistic synthetic images**, matched to apartments, villas, offices, retail units, penthouses and duplexes. The image tool generated original scenes after licensed photo sources could not be reached from Cloud. They are not verified photographs of the fictional properties. Each card carries **DEMO / FICTIONAL** and **AI-generated illustrative image** labels in English/Arabic, with descriptive alt text.
+
+Images are optimized WebP files bundled under `/demo-assets/`, with no hotlinks or runtime network dependency. See [asset provenance and terms](../backend/demo_assets/LICENSE.md) and `backend/demo_assets/manifest.json`. The developer-only `scripts/prepare_demo_assets.py` encodes generated originals; it adds no Windows launcher or application runtime dependency. The obsolete SVG generator and cartoon assets are removed.
+
+Existing records retain their original image URLs. A compatibility handler serves the corresponding new WebP at the old `/demo-assets/property-XX.svg` URL with the correct `image/webp` MIME type. No database migration, seed reset, property/price rewrite, customer update or booking change is needed to upgrade images. New demo records use canonical `.webp` URLs. Refresh the dashboard after updating MADAR.
+
 
 ## CRM, conversations and calendars
 
@@ -40,7 +45,9 @@ The 14 existing n8n exports and their 327 executable nodes are unchanged. Their 
 
 ## Verification
 
-- Full Python regression suite: **137 passed, one native Windows ACL test skipped**; dataset tests verify exact counts, references, non-overlapping bookings, 30 image responses, actual analytics, repeat loading and selective reset.
+- Full Python regression suite: **139 passed, one native Windows ACL test skipped**; dataset tests verify exact counts, references, non-overlapping bookings, 30 WebP image responses, uniqueness/optimization/provenance, legacy-URL compatibility without record rewrites, actual analytics, repeat loading and selective reset.
 - Isolation test preserves a real-company inventory item, booking, Telegram customer/history, webhook receipt and outbox byte-for-byte while loading/resetting a separate demo. Real-workspace load/reset is denied.
-- Browser test loads all 30 images, edits a bundled-image listing, repeats Load, preserves an added customer after Reset, and checks analytics, Arabic RTL and mobile overflow. The existing Telegram demo browser journey also passes.
-- **Four frontend localization tests and production build passed. Two browser journeys (new dataset and existing Telegram demo) passed.** Cached-dependency Linux Docker startup also passed with all 30 bundled image responses, exact record counts, Load/Reset and an empty outbox. A fresh dependency download build was not repeated; the previous Cloud DNS limitation remains distinct from this cached runtime check. Windows execution and the owner's live Telegram/n8n installation are not tested in Cloud. No live external messages or bookings are created by these checks.
+- Browser tests load every image at both canonical and legacy URLs, verify 1024-pixel natural width and illustrative-image labels, edit a bundled-image listing, repeat Load, preserve an added customer after Reset, and check analytics, Arabic RTL and mobile overflow. The existing Telegram demo browser journey also passes.
+- **Four frontend localization tests and production build passed. Four browser journeys (dataset, canonical photos, legacy photos and existing Telegram demo) passed.** Cached-dependency Linux Docker startup also passed with all 30 bundled image responses, exact record counts, Load/Reset and an empty outbox. A fresh dependency download build was not repeated; the previous Cloud DNS limitation remains distinct from this cached runtime check. Windows execution and the owner's live Telegram/n8n installation are not tested in Cloud. No live external messages or bookings are created by these checks.
+
+The photographic update replaces only bundled demo imagery and image-related labels/routes. The 30 distinct images total **3,913,214 bytes** (95,284–196,368 bytes each), with 1024-pixel width. All property specifications, prices, customers, appointments, conversations and analytics are preserved. No reset or reload is necessary for existing demo records: run `Update-Madar.cmd` and refresh the dashboard. Windows execution of this image update remains unverified in Cloud.

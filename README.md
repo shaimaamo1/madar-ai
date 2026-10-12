@@ -6,7 +6,7 @@ The working local journey is **website inquiry → bilingual qualification → v
 
 Telegram now supports local Docker long polling, secure guided setup, bilingual inventory recommendations, confirmed viewing bookings, consent and human handoff. Start with [Telegram setup](docs/telegram-integration.md); [verification](docs/telegram-verification.md) separates automated checks from unverified live delivery. No public endpoint is needed and Telegram sending stays disabled until you enable it.
 
-The interactive demonstration now includes a connected Egyptian portfolio: **30 listings, 40 customers, 25 conversations, 15 viewings, 20 tasks and five sales agents**. Bundled original illustrations, actual-record analytics and demo-only Load/Reset keep presentations polished and real company records isolated. See [demo dataset and Windows instructions](docs/demo-dataset.md).
+The interactive demonstration now includes a connected Egyptian portfolio: **30 listings, 40 customers, 25 conversations, 15 viewings, 20 tasks and five sales agents**. Bundled distinct photorealistic synthetic images, actual-record analytics and demo-only Load/Reset keep presentations polished and real company records isolated. See [demo dataset and Windows instructions](docs/demo-dataset.md).
 
 ## Premium product upgrade
 

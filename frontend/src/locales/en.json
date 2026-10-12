@@ -1182,5 +1182,7 @@
   "Viewings": "Viewings",
   "Isolated demo workspace": "Isolated demo workspace",
   "Fictional CRM records": "Fictional CRM records",
-  "Non-residential": "Non-residential"
+  "Non-residential": "Non-residential",
+  "Illustrative synthetic property image: {name}": "Illustrative synthetic property image: {name}",
+  "AI-generated illustrative image": "AI-generated illustrative image"
 }

@@ -1239,7 +1239,7 @@ export default function App() {
                           alt={
                             p.demo
                               ? tr(
-                                  "Fictional architectural illustration: {name}",
+                                  "Illustrative synthetic property image: {name}",
                                   { name: p.title },
                                 )
                               : p.title
@@ -1274,7 +1274,8 @@ export default function App() {
                       </span>
                       {p.demo && (
                         <p className="fine">
-                          {tr("DEMO / FICTIONAL")} · {p.reference}
+                          {tr("DEMO / FICTIONAL")} · {p.reference} ·{" "}
+                          {tr("AI-generated illustrative image")}
                         </p>
                       )}
                       <h3>{p.title}</h3>

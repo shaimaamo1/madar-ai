@@ -1182,5 +1182,7 @@
   "Viewings": "المعاينات",
   "Isolated demo workspace": "مساحة عرض معزولة",
   "Fictional CRM records": "سجلات عملاء خيالية",
-  "Non-residential": "مساحة غير سكنية"
+  "Non-residential": "مساحة غير سكنية",
+  "Illustrative synthetic property image: {name}": "صورة عقار توضيحية مولّدة: {name}",
+  "AI-generated illustrative image": "صورة توضيحية مولّدة بالذكاء الاصطناعي"
 }

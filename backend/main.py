@@ -502,6 +502,17 @@ from .ai_agents import router as ai_agents_router
 app.include_router(ai_agents_router)
 
 DEMO_ASSETS = Path(__file__).resolve().parent / 'demo_assets'
+
+
+@app.get('/demo-assets/property-{number}.svg', include_in_schema=False)
+def legacy_demo_photo(number: int):
+    # Existing demo rows keep their stored image URLs; only the bundled visuals change.
+    if not 1 <= number <= 30:
+        raise HTTPException(404, 'Demo image not found')
+    return FileResponse(DEMO_ASSETS / f'property-{number:02}.webp', media_type='image/webp',
+                        headers={'Cache-Control': 'public, max-age=3600'})
+
+
 app.mount('/demo-assets', StaticFiles(directory=DEMO_ASSETS), name='demo-assets')
 
 DIST = Path(__file__).resolve().parent.parent / 'frontend' / 'dist'

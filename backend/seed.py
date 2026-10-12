@@ -45,8 +45,8 @@ def seed_demo(c, tenant, admin, password_hash):
     for i,(title,location,kind,intent,price,area,beds,amenities) in enumerate(LISTINGS):
         identifier=identity(tenant,'property',i+1);props.append(identifier)
         status={7:'Reserved',11:'Reserved',19:'Sold',22:'Sold',24:'Rented',26:'Reserved'}.get(i,'Available')
-        description=f'DEMO / FICTIONAL — {title}. An illustrative {area:g} m² {kind.lower()} in {location}, '+('with '+str(beds)+' bedrooms and ' if beds else 'with ')+', '.join(amenities).lower()+'. Original architectural illustration; not a verified photograph, listing or market valuation.'
-        insert(c,tenant,'properties',dict(id=identifier,tenant_id=tenant,title=title,location=location,property_type=kind,intent=intent,price=price,size=area,bedrooms=beds,amenities=json.dumps(amenities),status=status,description=description,image=f'/demo-assets/property-{i+1:02}.svg',created_at=(clock-timedelta(days=30-i)).isoformat()))
+        description=f'DEMO / FICTIONAL — {title}. An illustrative {area:g} m² {kind.lower()} in {location}, '+('with '+str(beds)+' bedrooms and ' if beds else 'with ')+', '.join(amenities).lower()+'. Photorealistic synthetic illustrative image; not a verified photograph, listing or market valuation.'
+        insert(c,tenant,'properties',dict(id=identifier,tenant_id=tenant,title=title,location=location,property_type=kind,intent=intent,price=price,size=area,bedrooms=beds,amenities=json.dumps(amenities),status=status,description=description,image=f'/demo-assets/property-{i+1:02}.webp',created_at=(clock-timedelta(days=30-i)).isoformat()))
     leads=[];targets=[]
     sources=['website','whatsapp','facebook','telegram','website','email','instagram','crm']
     stages=['Qualified','Viewing','New','Negotiation','Won','Lost']
