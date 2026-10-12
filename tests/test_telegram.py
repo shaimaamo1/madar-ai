@@ -96,7 +96,8 @@ def test_authenticated_incoming_updates_are_atomic_and_returning_contacts_match(
     assert len([m for m in current['messages'] if m['channel']=='telegram' and m['lead_id']==leads[0]['id']])==4
     assert len([o for o in current['outbox'] if o['channel']=='telegram'])==2
     assert 'Palm Residence' in current['outbox'][-1]['body']
-    assert '[Deterministic assistant]' in current['outbox'][-1]['body']
+    assert '[Deterministic assistant]' not in current['outbox'][-1]['body']
+    assert '\n📍 Location:' in current['outbox'][-1]['body']
     assert all(o['status']=='Pending' for o in current['outbox'])
 
 
@@ -109,7 +110,8 @@ def test_malformed_updates_fail_safely(client,monkeypatch,event):
 def test_fictional_bilingual_booking_requires_two_selections_and_confirmation(client):
     demo(client)
     started=sandbox(client,1,'/start',language='ar')
-    assert 'مساعد آلي' in started['reply']
+    assert 'MADAR AI Assistant' in started['reply']
+    assert '[مساعد آلي بقواعد محددة]' not in started['reply']
     inquiry=sandbox(client,2,'عايز شقة في التجمع ميزانية خمسة مليون تلات غرف')
     assert 'Palm Residence' in inquiry['reply']
     property_action=inquiry['buttons'][0][0]['callback_data']

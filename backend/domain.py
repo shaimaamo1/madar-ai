@@ -260,6 +260,12 @@ def channel_followup(c, tenant, row, body):
     if row['source'] != 'telegram':
         return body
     language = c.execute('SELECT language FROM telegram_contacts WHERE tenant_id=? AND lead_id=?', (tenant, row['lead_id'])).fetchone()
+    if body.startswith('Viewing reminder: '):
+        from .telegram_messages import appointment_date, timezone_label, text as safe_text
+        stamp = body.removeprefix('Viewing reminder: ')
+        arabic = bool(language and language[0] == 'ar')
+        zone = settings(c, tenant).get('timezone')
+        return ('📅 تذكير بموعد المعاينة: ' if arabic else '📅 Viewing reminder: ') + appointment_date(stamp, arabic, zone, include_year=True) + '\n' + ('🕒 التوقيت: ' if arabic else '🕒 Timezone: ') + safe_text(timezone_label(stamp, zone), arabic)
     if language and language[0] == 'ar':
         if body.startswith('Viewing reminder: '):
             body = 'تذكير بموعد المعاينة: ' + body.removeprefix('Viewing reminder: ')

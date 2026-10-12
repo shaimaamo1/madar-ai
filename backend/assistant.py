@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from typing import Literal
 
 import httpx
@@ -67,6 +68,10 @@ async def respond(c, tenant, lead, text, channel='website', external_id='', allo
             mode = 'rules-fallback'
             audit(c, tenant, 'assistant', 'ai.fallback', lead['id'], 'Provider unavailable; no credentials recorded')
     body, matches = rules_reply(c, tenant, lead, text, reply_language)
+    if channel == 'telegram' and matches and lead['budget'] and lead['location']:
+        from .telegram_messages import property_recommendations
+        arabic = reply_language == 'ar' if reply_language else bool(re.search('[\u0600-\u06ff]', text))
+        body = property_recommendations(matches, settings(c, tenant)['currency'], arabic)
     c.execute('INSERT INTO messages VALUES(?,?,?,?,?,?,?,?)', (uid(), tenant, lead['id'], 'outbound', channel, body, '', now()))
     c.execute('UPDATE leads SET updated_at=? WHERE tenant_id=? AND id=?', (now(), tenant, lead['id']))
     audit(c, tenant, 'assistant', 'conversation.replied', lead['id'], mode)

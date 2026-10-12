@@ -303,8 +303,8 @@ async def process(c, tenant, data, fictional=False):
         db.audit(c, tenant, 'telegram', 'telegram.guided_reply', lead['id'], 'deterministic')
     c.execute("UPDATE messages SET body=? WHERE tenant_id=? AND channel='telegram' AND direction='inbound' AND external_id=?", (text, tenant, event))
     reply = result['reply']
-    if reply and result['mode'].startswith('rules'):
-        reply = ('[مساعد آلي بقواعد محددة]\n' if arabic else '[Deterministic assistant]\n') + reply
+    if reply and text.split()[0].split('@')[0] == '/start':
+        reply = ('مرحبًا بك، أنا MADAR AI Assistant.\n\n' if arabic else 'Welcome, I’m MADAR AI Assistant.\n\n') + reply
         c.execute("UPDATE messages SET body=? WHERE id=(SELECT id FROM messages WHERE tenant_id=? AND lead_id=? AND direction='outbound' ORDER BY created_at DESC LIMIT 1)", (reply, tenant, lead['id']))
     if reply and not fictional:
         control = c.execute('SELECT human_active FROM conversation_controls WHERE tenant_id=? AND lead_id=?', (tenant, lead['id'])).fetchone()
