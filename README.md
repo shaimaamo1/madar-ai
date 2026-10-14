@@ -1,75 +1,118 @@
 # Madar AI
 
-**An AI-assisted real-estate operations platform — project concept and development roadmap.**
+**Real-estate workflow automation | Python prototype + AI-assisted platform roadmap**
 
-Madar AI explores how **n8n workflows, AI assistance, and a connected CRM** could reduce repetitive work for real-estate teams, from incoming inquiries to organized follow-ups.
+[![Python demo tests](https://github.com/shaimaamo1/madar-ai/actions/workflows/python-tests.yml/badge.svg)](https://github.com/shaimaamo1/madar-ai/actions/workflows/python-tests.yml)
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Offline%20Prototype-blue)
 
-> **Project status:** Early-stage concept / planning. This public repository currently contains documentation and a `.gitignore`; no runnable application or n8n workflow export is published here yet.
+Madar AI explores ways to connect lead intake, CRM organization, and follow-up workflows for real-estate teams. This repository includes a **small, runnable, rule-based Python lead-triage demonstration** and a roadmap toward a larger AI-assisted system using n8n.
 
-## The Problem
+> **Scope:** The Python demo is implemented and has unit tests. A production CRM, AI agent, n8n integrations, and real messaging automation are **not** published in this repository.
 
-Real-estate teams can lose time switching between messages, spreadsheets, notes, and disconnected lead lists. Without a consistent workflow, inquiries may be missed and follow-ups can be difficult to track.
+## Try the Working Demo
 
-## Proposed Solution
+**Requirements:** Python 3.11+; standard library only. No API keys, service accounts, or installation required.
 
-Madar AI is being designed around a simple idea: **one organized workflow from lead intake to follow-up**, with human oversight and clear visibility.
+From the root of this repository:
 
-### Planned Capabilities
+```bash
+python examples/lead_triage_demo.py
+```
 
-| Module | Intended role |
+The included `examples/sample_leads.csv` contains **fictional test records**. The demo checks essential fields, skips duplicate contacts, assigns transparent rule-based priority scores, and prepares follow-up drafts **for human review only when contact consent is recorded**.
+
+Expected summary for the included sample:
+
+| Result | Count |
+| --- | ---: |
+| Leads accepted | 3 |
+| Duplicate contacts skipped | 1 |
+| Rows rejected as invalid | 1 |
+
+To test the code:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The five local unit tests cover priority scoring, consent, invalid budgets, duplicates, and missing CSV columns. The GitHub Actions workflow runs this test suite on relevant pushes and pull requests.
+
+To use a different local CSV:
+
+```bash
+python examples/lead_triage_demo.py --input path/to/leads.csv
+```
+
+Required column names: `lead_id, name, email, phone, area, budget_egp, property_type, contact_consent`.
+
+Optional `--output path/to/report.json` saves a report locally. **Do not commit real customer contact details or generated reports to a public repository.**
+
+### What the Demo Does (and Doesn't)
+
+| Included now | Future work |
 | --- | --- |
-| Lead intake | Capture inquiries from supported channels in a consistent format. |
-| CRM workflow | Organize lead details, status, ownership, and next steps. |
-| AI assistance | Suggest classifications, summaries, and draft follow-up messages for review. |
-| Automation | Use n8n to route information, trigger tasks, and connect business tools. |
-| Reporting | Help teams understand their pipeline and operational bottlenecks. |
+| Read a local CSV, validate fields, and skip duplicate contacts | Connect approved lead-intake sources |
+| Calculate explainable, rule-based priority scores | Evaluate AI-assisted lead summaries and classifications |
+| Respect recorded contact consent and prepare draft text | Human-reviewed messaging integrations |
+| Produce a reviewable JSON result | CRM sync, monitoring, error handling, and dashboards |
+| Run standard-library tests | Integration and end-to-end testing |
 
-These are **planned features**, not claims about a released product.
+**This is not an AI model or a finished business product.** No customer messages are sent and no data are uploaded.
 
-## Proposed High-Level Architecture
+## The Business Problem
+
+Real-estate teams may spend time moving inquiries between messaging platforms, spreadsheets, and separate customer lists. Without a consistent pipeline, duplicate records and forgotten next steps can be difficult to spot.
+
+## Proposed Architecture
 
 ```mermaid
 flowchart LR
-    A[Incoming inquiries] --> B[n8n workflow layer]
-    B --> C[Data validation]
-    C --> D[CRM / lead pipeline]
-    C --> E[AI-assisted summaries]
+    A[Lead sources] --> B[n8n automation layer]
+    B --> C[Validation and deduplication]
+    C --> D[CRM pipeline]
+    C --> E[AI-assisted suggestions]
     E --> F[Human review]
     F --> D
     D --> G[Follow-up tasks]
-    D --> H[Reporting]
+    D --> H[Reporting dashboard]
 ```
 
-Actual integrations, data models, and services will be documented when an implementation is added.
-
-## Design Principles
-
-- **Human-in-the-loop:** review consequential external messages and AI-generated suggestions.
-- **Reliability:** validate input, prevent duplicate actions, and plan for failures and retries.
-- **Privacy:** avoid publishing customer records, credentials, or private business data.
-- **Clarity:** document each workflow, its triggers, expected outputs, and limitations.
+This diagram is the **planned architecture**, not an illustration of a deployed system. The current offline prototype implements only CSV validation, basic deduplication, priority scoring, and draft generation.
 
 ## Roadmap
 
-- [ ] Define an MVP use case and measurable success criteria.
-- [ ] Design the lead and CRM data structure.
-- [ ] Build and export a first n8n workflow.
-- [ ] Add error handling, deduplication, and logging.
-- [ ] Document setup with sanitized sample data.
-- [ ] Record a walkthrough of a working end-to-end demo.
+- [x] Publish a working offline Python lead-triage example with synthetic data.
+- [x] Add unit tests and GitHub Actions test configuration.
+- [ ] Define a documented CRM data model and MVP success metrics.
+- [ ] Add an importable n8n workflow and sanitized integration examples.
+- [ ] Build error handling, idempotency, and human approval steps.
+- [ ] Implement a secure CRM integration with consent-aware outreach.
+- [ ] Publish a recorded end-to-end demo and deployment instructions.
 
-## Repository Contents
+## Repository Map
 
 ```text
 madar-ai/
-├── README.md       # Product concept, architecture and roadmap
-└── .gitignore      # Local development exclusions
+├── .github/workflows/python-tests.yml
+├── .gitignore
+├── README.md
+├── examples/
+│   ├── lead_triage_demo.py
+│   └── sample_leads.csv
+└── tests/
+    └── test_lead_triage.py
 ```
 
-## Demo & Setup
+## Safety & Privacy
 
-A runnable demo and installation instructions are **not available in this public repository yet**. They will be added alongside executable code or workflow exports.
+- Use fictitious sample data in public demonstrations.
+- Never commit CRM exports, customer information, API tokens, or `.env` files.
+- Confirm permission and review draft messages before any future outreach.
+- The scoring algorithm is a deliberately simple educational example, **not a validated prediction of customer intent**.
 
-## About
+## Maintainer
 
-Developed by [Shaimaa](https://github.com/shaimaamo1), with a focus on Python, AI-assisted workflows, and business automation.
+[**Shaimaa**](https://github.com/shaimaamo1) — Python, AI Automation, and Computational Biology.
+
+Feedback and constructive collaboration are welcome.
