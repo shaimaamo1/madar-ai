@@ -1,0 +1,6 @@
+lead_id,name,email,phone,area,budget_egp,property_type,contact_consent
+DEMO-001,Nour,nour@example.com,01000000001,New Cairo,3500000,Apartment,yes
+DEMO-002,Salma,salma@example.com,01000000002,,1900000,Apartment,yes
+DEMO-003,Karim,karim@example.com,01000000003,October City,,Villa,no
+DEMO-004,Nour Again,nour@example.com,01000000001,New Cairo,3500000,Apartment,yes
+DEMO-005,Lina,lina@example.com,01000000005,Maadi,unknown,Apartment,yes
